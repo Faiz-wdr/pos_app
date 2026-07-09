@@ -47,8 +47,51 @@ export const HistoryDetailPage = () => {
 
   if (!list) {
     return (
-      <div className="flex-1 flex items-center justify-center p-5 text-center font-bold text-muted-foreground">
-        Loading historical details...
+      <div className="flex-1 flex flex-col justify-between w-full h-full relative select-none pb-20 overflow-hidden text-left">
+        {/* Top Header */}
+        <header className="flex items-center justify-between w-full px-5 py-4 shrink-0 border-b border-border/40 z-30">
+          <div className="w-8 h-8 rounded-full bg-muted animate-pulse" />
+          <div className="flex flex-col items-center space-y-1.5 w-1/3">
+            <div className="w-full h-4 rounded-md bg-muted animate-pulse" />
+            <div className="w-1/2 h-2.5 rounded-md bg-muted animate-pulse" />
+          </div>
+          <div className="w-8 h-8 rounded-full bg-muted animate-pulse" />
+        </header>
+
+        {/* List items skeleton */}
+        <div className="flex-1 flex flex-col px-5 pt-4 space-y-4 overflow-y-auto">
+          {/* Metadata count summaries */}
+          <div className="w-full h-14 rounded-xl bg-card border border-border/20 p-2.5 flex items-center justify-around">
+            {[1, 2, 3].map((n) => (
+              <div key={n} className="flex flex-col items-center space-y-1">
+                <div className="w-12 h-2 rounded bg-muted/40 animate-pulse" />
+                <div className="w-8 h-4 rounded bg-muted/50 animate-pulse" />
+              </div>
+            ))}
+          </div>
+
+          {/* Pulsing list rows */}
+          <div className="space-y-3 pt-2">
+            {[1, 2, 3, 4].map((n) => (
+              <div key={n} className="p-3.5 rounded-xl border border-border/20 bg-card/25 flex items-center justify-between h-14">
+                <div className="flex-1 flex flex-col space-y-1.5">
+                  <div className="w-1/4 h-3.5 rounded-md bg-muted/50 animate-pulse" />
+                  <div className="w-1/6 h-2 rounded-md bg-muted/40 animate-pulse" />
+                </div>
+                <div className="w-10 h-5 rounded bg-muted/55 animate-pulse" />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Footer */}
+        <footer className="absolute bottom-0 left-0 right-0 z-35 bg-background border-t border-border/80 px-5 pt-3 pb-4 space-y-3 flex flex-col">
+          <div className="flex justify-between items-center px-2">
+            <div className="w-16 h-4 rounded bg-muted/40 animate-pulse" />
+            <div className="w-20 h-5 rounded bg-muted/50 animate-pulse" />
+          </div>
+          <div className="w-full h-10 rounded-xl bg-muted/50 animate-pulse" />
+        </footer>
       </div>
     )
   }

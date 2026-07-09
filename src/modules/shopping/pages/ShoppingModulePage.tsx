@@ -66,9 +66,45 @@ export const ShoppingModulePage = () => {
   const { currency, confirmDelete } = useShoppingSettingsStore()
 
   // Database Queries
-  const activeLists = useShoppingListsWithCounts(false) || []
-  const completedLists = useShoppingListsWithCounts(true) || []
-  const templates = useTemplates() || []
+  const activeLists = useShoppingListsWithCounts(false)
+  const completedLists = useShoppingListsWithCounts(true)
+  const templates = useTemplates()
+
+  if (activeLists === undefined || completedLists === undefined || templates === undefined) {
+    return (
+      <div className="flex-1 flex flex-col justify-between w-full h-full relative select-none pb-6 overflow-hidden">
+        {/* Top Header Controls Bar */}
+        <header className="flex items-center justify-between w-full px-5 py-4 shrink-0 border-b border-border/40 z-30">
+          <div className="w-8 h-8 rounded-full bg-muted animate-pulse" />
+          <div className="w-32 h-8 rounded-xl bg-muted animate-pulse" />
+          <div className="w-8 h-8 rounded-full bg-muted animate-pulse" />
+        </header>
+
+        <div className="flex-1 flex flex-col px-5 pt-4 space-y-4 overflow-y-auto">
+          {/* Pulsing search bar */}
+          <div className="w-full h-10 rounded-xl bg-muted/60 animate-pulse" />
+
+          <div className="flex items-center justify-between pt-2">
+            <div className="w-20 h-4 rounded-md bg-muted/50 animate-pulse" />
+            <div className="w-16 h-8 rounded-xl bg-muted/50 animate-pulse" />
+          </div>
+
+          {/* Pulsing cards */}
+          <div className="space-y-3">
+            {[1, 2, 3].map((n) => (
+              <div key={n} className="p-4 rounded-xl border border-border/45 bg-card/10 flex items-center justify-between h-16">
+                <div className="flex-1 flex flex-col space-y-2">
+                  <div className="w-1/3 h-4 rounded-md bg-muted/50 animate-pulse" />
+                  <div className="w-1/2 h-3 rounded-md bg-muted/40 animate-pulse" />
+                </div>
+                <div className="w-12 h-6 rounded-md bg-muted/50 animate-pulse" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   // Filter list search queries
   const filterBySearch = (list: any[]) => {

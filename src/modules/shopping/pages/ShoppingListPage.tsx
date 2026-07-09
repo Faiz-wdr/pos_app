@@ -306,8 +306,56 @@ export const ShoppingListPage = () => {
 
   if (!list) {
     return (
-      <div className="flex-1 flex items-center justify-center p-5 text-center font-bold text-muted-foreground">
-        Loading shopping session...
+      <div className="flex-1 flex flex-col justify-between w-full h-full relative select-none pb-28 overflow-hidden text-left">
+        {/* Top Header */}
+        <header className="flex items-center justify-between w-full px-5 py-4 shrink-0 border-b border-border/40 z-30">
+          <div className="w-8 h-8 rounded-full bg-muted animate-pulse" />
+          <div className="flex flex-col items-center space-y-1.5 w-1/3">
+            <div className="w-full h-4 rounded-md bg-muted animate-pulse" />
+            <div className="w-1/2 h-2.5 rounded-md bg-muted animate-pulse" />
+          </div>
+          <div className="w-8 h-8 rounded-full bg-muted animate-pulse" />
+        </header>
+
+        {/* Items skeleton */}
+        <div className="flex-1 flex flex-col px-5 pt-4 space-y-4 overflow-y-auto">
+          {/* Search bar and adder */}
+          <div className="w-full h-10 rounded-xl bg-muted/60 animate-pulse" />
+          <div className="flex justify-between items-center py-1">
+            <div className="w-24 h-6 rounded-md bg-muted/50 animate-pulse" />
+            <div className="w-20 h-4 rounded-md bg-muted/50 animate-pulse" />
+          </div>
+          <div className="w-full h-10 rounded-xl bg-muted/60 animate-pulse" />
+
+          {/* Pulsing item lines */}
+          <div className="space-y-3 pt-2">
+            {[1, 2, 3, 4].map((n) => (
+              <div key={n} className="p-3.5 rounded-xl border border-border/30 bg-card/20 flex items-center justify-between h-14">
+                <div className="flex items-center space-x-3 flex-1">
+                  <div className="w-6 h-6 rounded-full bg-muted/55 shrink-0" />
+                  <div className="flex-1 flex flex-col space-y-1.5">
+                    <div className="w-1/4 h-3.5 rounded-md bg-muted/50 animate-pulse" />
+                    <div className="w-1/6 h-2 rounded-md bg-muted/40 animate-pulse" />
+                  </div>
+                </div>
+                <div className="w-8 h-5 rounded-md bg-muted/50 animate-pulse" />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Bottom footer */}
+        <footer className="absolute bottom-0 left-0 right-0 z-35 bg-background border-t border-border/80 px-5 pt-3 pb-4 space-y-3.5">
+          <div className="grid grid-cols-3 gap-2">
+            {[1, 2, 3].map((n) => (
+              <div key={n} className="flex flex-col items-center space-y-1">
+                <div className="w-10 h-2 rounded-md bg-muted/40 animate-pulse" />
+                <div className="w-12 h-4 rounded-md bg-muted/50 animate-pulse" />
+              </div>
+            ))}
+          </div>
+          <div className="w-full h-11 rounded-2xl bg-muted/50 animate-pulse" />
+        </footer>
       </div>
     )
   }
