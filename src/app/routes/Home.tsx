@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Search, Pin, History, Sparkles, User } from 'lucide-react'
+import { Search, Pin, Sparkles, User } from 'lucide-react'
 import * as Icons from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
@@ -128,27 +128,7 @@ export const Home = () => {
         )}
       </div>
 
-      {/* Recent Activity Section */}
-      <div className="space-y-3">
-        <div className="flex items-center space-x-2 text-foreground/90 px-1">
-          <History className="w-4 h-4 text-accent" />
-          <h2 className="text-sm font-bold tracking-tight">Recent Activity</h2>
-        </div>
-        
-        <Card className="py-7 bg-card/60">
-          <CardContent className="pt-0 flex flex-col items-center justify-center text-center space-y-2">
-            <div className="p-3 bg-muted/65 rounded-xl text-muted-foreground/60">
-              <History className="w-5 h-5" />
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs font-semibold text-foreground/80">Everything is quiet</p>
-              <p className="text-[11px] text-muted-foreground max-w-[220px]">
-                Your activity feed will show updates as you use your personal system modules.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+
 
       {/* Premium Modules Section */}
       <div className="space-y-3">

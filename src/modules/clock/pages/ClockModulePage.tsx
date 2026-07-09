@@ -11,7 +11,7 @@ import { startAlarm, stopAlarm } from '../services/audio'
 import ClockSettingsDialog from '../components/ClockSettingsDialog'
 import TimerDisplay from '../components/TimerDisplay'
 import TimerPresets from '../components/TimerPresets'
-import { DIGITAL_THEMES, ANALOG_THEMES } from '../components/themes'
+import { THEMES } from '../components/themes'
 import { useDeviceOrientation } from '../hooks/useDeviceOrientation'
 import { useClockTime } from '../hooks/useClockTime'
 import { Maximize, Minimize } from 'lucide-react'
@@ -32,11 +32,9 @@ export const ClockModulePage = () => {
   const setHideSystemNav = useNavigationStore((state) => state.setHideSystemNav)
   const animationsEnabled = useSettingsStore((state) => state.animationsEnabled)
   const { 
-    clockType, 
+    theme, 
     keepAwake, 
     autoHideControls,
-    digitalTheme,
-    analogTheme,
     showSeconds,
     use24Hour,
     dateFormat
@@ -44,9 +42,7 @@ export const ClockModulePage = () => {
   const { isCompleted, dismissCompleted, tick, syncBackground, isRunning } = useTimerStore()
 
   const isDeskModeActive = isLandscape
-  const ActiveThemeComponent = clockType === 'digital'
-    ? DIGITAL_THEMES[digitalTheme]
-    : ANALOG_THEMES[analogTheme]
+  const ActiveThemeComponent = THEMES[theme] || THEMES['modern-digital']
 
   useEffect(() => {
     if (!isDeskModeActive && document.fullscreenElement) {
@@ -144,12 +140,30 @@ export const ClockModulePage = () => {
     if (isCompleted) {
       startAlarm()
       
-      // Dispatch browser notifications
+      // Dispatch browser notifications safely to prevent mobile PWA constructor failures
       if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification('Timer Finished!', {
-          body: 'Your countdown timer has completed.',
-          icon: '/favicon.svg'
-        })
+        try {
+          if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+            navigator.serviceWorker.ready.then((registration) => {
+              registration.showNotification('Timer Finished!', {
+                body: 'Your countdown timer has completed.',
+                icon: '/favicon.svg'
+              })
+            }).catch(() => {
+              new Notification('Timer Finished!', {
+                body: 'Your countdown timer has completed.',
+                icon: '/favicon.svg'
+              })
+            })
+          } else {
+            new Notification('Timer Finished!', {
+              body: 'Your countdown timer has completed.',
+              icon: '/favicon.svg'
+            })
+          }
+        } catch (err) {
+          console.warn('Browser notification trigger failed:', err)
+        }
       }
 
       // Device vibration feedback

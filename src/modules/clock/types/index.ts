@@ -1,18 +1,12 @@
-export type ClockType = 'digital' | 'analog'
 export type DateFormat = 'DD/MM/YYYY' | 'MM/DD/YYYY' | 'long'
-
-export type DigitalTheme = 'classic' | 'modern' | 'led' | 'dashboard' | 'minimal'
-export type AnalogTheme = 'minimal' | 'swiss' | 'modern' | 'classic'
-export type ViewMode = 'portrait' | 'landscape' | 'auto'
+export type ClockTheme = 'modern-digital' | 'minimal-digital' | 'classic-analog' | 'calendar-analog'
 
 export interface ClockSettings {
-  clockType: ClockType
+  theme: ClockTheme
+  themeColor: string
   use24Hour: boolean
   dateFormat: DateFormat
   showSeconds: boolean
   autoHideControls: boolean
   keepAwake: boolean
-  digitalTheme: DigitalTheme
-  analogTheme: AnalogTheme
-  viewMode: ViewMode
 }
