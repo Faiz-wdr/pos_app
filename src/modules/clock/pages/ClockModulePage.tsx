@@ -14,14 +14,13 @@ import TimerPresets from '../components/TimerPresets'
 import { DIGITAL_THEMES, ANALOG_THEMES } from '../components/themes'
 import { useDeviceOrientation } from '../hooks/useDeviceOrientation'
 import { useClockTime } from '../hooks/useClockTime'
-import { RotateCw, Maximize, Minimize } from 'lucide-react'
+import { Maximize, Minimize } from 'lucide-react'
 
 type SubTab = 'clock' | 'timer'
 
 export const ClockModulePage = () => {
   const [activeTab, setActiveTab] = useState<SubTab>('clock')
   const [settingsOpen, setSettingsOpen] = useState(false)
-  const [viewModeSheetOpen, setViewModeSheetOpen] = useState(false)
   const [isFullscreenMode, setIsFullscreenMode] = useState(!!document.fullscreenElement)
 
   // Core hook selectors
@@ -40,40 +39,14 @@ export const ClockModulePage = () => {
     analogTheme,
     showSeconds,
     use24Hour,
-    dateFormat,
-    viewMode,
-    setViewMode
+    dateFormat
   } = useClockStore()
   const { isCompleted, dismissCompleted, tick, syncBackground, isRunning } = useTimerStore()
 
-  const isDeskModeActive = (viewMode === 'landscape' && isLandscape) || (viewMode === 'auto' && isLandscape)
+  const isDeskModeActive = isLandscape
   const ActiveThemeComponent = clockType === 'digital'
     ? DIGITAL_THEMES[digitalTheme]
     : ANALOG_THEMES[analogTheme]
-
-  // Dynamic fullscreen/orientation effects
-  useEffect(() => {
-    const handleOrientationLock = async () => {
-      if (isDeskModeActive) {
-        try {
-          if (screen.orientation && 'lock' in screen.orientation) {
-            await (screen.orientation as any).lock('landscape')
-          }
-        } catch (e) {
-          console.warn('Orientation lock failed:', e)
-        }
-      } else {
-        try {
-          if (screen.orientation && 'unlock' in screen.orientation) {
-            (screen.orientation as any).unlock()
-          }
-        } catch (e) {
-          console.warn('Orientation unlock failed:', e)
-        }
-      }
-    }
-    handleOrientationLock()
-  }, [isDeskModeActive])
 
   useEffect(() => {
     if (!isDeskModeActive && document.fullscreenElement) {
@@ -250,13 +223,6 @@ export const ClockModulePage = () => {
 
             <div className="flex items-center">
               <button
-                onClick={() => setViewModeSheetOpen(true)}
-                className="p-2 rounded-full hover:bg-card border border-border/20 text-muted-foreground hover:text-foreground transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-accent mr-2"
-                aria-label="Toggle Clock View Mode"
-              >
-                <RotateCw className="w-5 h-5" />
-              </button>
-              <button
                 onClick={() => setSettingsOpen(true)}
                 className="p-2 rounded-full hover:bg-card border border-border/20 text-muted-foreground hover:text-foreground transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-accent"
                 aria-label="Clock configuration settings"
@@ -275,11 +241,11 @@ export const ClockModulePage = () => {
         <AnimatePresence mode="wait">
           {activeTab === 'clock' ? (
             <motion.div
-              key="clock"
-              initial={animationsEnabled ? { opacity: 0, scale: 0.98 } : { opacity: 1, scale: 1 }}
+              key={isDeskModeActive ? 'clock-landscape' : 'clock-portrait'}
+              initial={animationsEnabled ? { opacity: 0, scale: 0.94 } : { opacity: 1, scale: 1 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={animationsEnabled ? { opacity: 0, scale: 0.98 } : { opacity: 0, scale: 0.98 }}
-              transition={transition}
+              exit={animationsEnabled ? { opacity: 0, scale: 0.94 } : { opacity: 0, scale: 0.94 }}
+              transition={{ duration: 0.35, ease: 'easeInOut' }}
               className="w-full flex items-center justify-center"
             >
               <ActiveThemeComponent
@@ -360,99 +326,7 @@ export const ClockModulePage = () => {
         )}
       </AnimatePresence>
 
-      {/* Rotation Prompt Overlay */}
-      <AnimatePresence>
-        {viewMode === 'landscape' && !isLandscape && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-45 bg-[#0F0F10] flex flex-col items-center justify-center p-6 text-center select-none"
-          >
-            <motion.div
-              animate={animationsEnabled ? { rotate: [0, 90, 90, 0] } : {}}
-              transition={{ repeat: Infinity, duration: 2.5, repeatDelay: 1, ease: 'easeInOut' }}
-              className="w-16 h-28 rounded-2xl border-4 border-muted-foreground/30 flex items-center justify-center mb-6 relative"
-            >
-              <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40 absolute bottom-1" />
-            </motion.div>
-            <h2 className="text-xl font-black text-foreground tracking-tight">Rotate Your Device</h2>
-            <p className="text-xs text-muted-foreground mt-2 max-w-[200px] font-semibold leading-relaxed">
-              Rotate your device horizontally to enter Landscape Desk Mode.
-            </p>
-            <button
-              onClick={() => setViewMode('portrait')}
-              className="mt-8 px-5 py-2.5 border border-border rounded-xl text-xs font-bold text-muted-foreground hover:text-foreground cursor-pointer"
-            >
-              Cancel & Exit Desk Mode
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
-      {/* View Mode Custom Bottom Sheet */}
-      <AnimatePresence>
-        {viewModeSheetOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setViewModeSheetOpen(false)}
-              className="fixed inset-0 z-40 bg-black/60 backdrop-blur-xs cursor-pointer"
-            />
-            <motion.div
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 220 }}
-              className="fixed bottom-0 left-0 right-0 z-50 max-w-md mx-auto bg-card border-t border-border/80 rounded-t-3xl p-5 select-none text-left"
-            >
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-black text-foreground uppercase tracking-wider">Clock View Mode</h3>
-                <button 
-                  onClick={() => setViewModeSheetOpen(false)}
-                  className="text-xs font-bold text-muted-foreground hover:text-foreground cursor-pointer"
-                >
-                  Done
-                </button>
-              </div>
-
-              <div className="space-y-2.5">
-                {[
-                  { value: 'portrait', label: 'Portrait View', desc: 'Optimized for mobile vertical handheld use' },
-                  { value: 'landscape', label: 'Landscape Desk View', desc: 'Lock or prompt for horizontal table stand clock' },
-                  { value: 'auto', label: 'Auto (Rotate Match)', desc: 'Automatically transition when phone is turned' }
-                ].map((opt) => {
-                  const isSelected = viewMode === opt.value
-                  return (
-                    <button
-                      key={opt.value}
-                      onClick={() => {
-                        setViewMode(opt.value as any)
-                        setViewModeSheetOpen(false)
-                      }}
-                      className={`w-full flex items-center justify-between p-3.5 rounded-2xl border text-xs transition-all cursor-pointer ${
-                        isSelected 
-                          ? 'border-accent bg-accent/5 text-foreground' 
-                          : 'border-border bg-card/45 text-muted-foreground hover:text-foreground'
-                      }`}
-                    >
-                      <div className="flex flex-col text-left space-y-0.5">
-                        <span className="font-extrabold">{opt.label}</span>
-                        <span className="text-[10px] text-muted-foreground/80 font-medium">{opt.desc}</span>
-                      </div>
-                      {isSelected && (
-                        <span className="w-2.5 h-2.5 rounded-full bg-accent" />
-                      )}
-                    </button>
-                  )
-                })}
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
 
       {/* Settings Overlay dialog */}
       <ClockSettingsDialog isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />

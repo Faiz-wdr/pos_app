@@ -1,10 +1,8 @@
-import React from 'react'
 import { Sun, Moon, Monitor } from 'lucide-react'
 import { Dialog } from '@/components/ui/Dialog'
 import { Switch } from '@/components/ui/Switch'
 import { useClockStore } from '../store/clockStore'
 import { useThemeStore, ThemeMode } from '@/core/theme/themeStore'
-import { ViewMode } from '../types'
 
 interface ClockSettingsDialogProps {
   isOpen: boolean
@@ -28,9 +26,7 @@ export const ClockSettingsDialog = ({ isOpen, onClose }: ClockSettingsDialogProp
     digitalTheme,
     setDigitalTheme,
     analogTheme,
-    setAnalogTheme,
-    viewMode,
-    setViewMode
+    setAnalogTheme
   } = useClockStore()
 
   const { theme, setTheme } = useThemeStore()
@@ -81,34 +77,7 @@ export const ClockSettingsDialog = ({ isOpen, onClose }: ClockSettingsDialogProp
           </div>
         </div>
 
-        <hr className="border-border/60" />
 
-        {/* View Mode Settings */}
-        <div className="space-y-1.5">
-          <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">View Mode</label>
-          <div className="grid grid-cols-3 gap-2 bg-muted/65 p-1 rounded-xl border border-border/50">
-            {[
-              { value: 'portrait', label: 'Portrait' },
-              { value: 'landscape', label: 'Desk Mode' },
-              { value: 'auto', label: 'Auto Rotate' }
-            ].map((opt) => {
-              const isSelected = viewMode === opt.value
-              return (
-                <button
-                  key={opt.value}
-                  onClick={() => setViewMode(opt.value as ViewMode)}
-                  className={`py-2.5 px-1 rounded-lg text-xs font-black transition-all cursor-pointer ${
-                    isSelected
-                      ? 'bg-accent text-accent-foreground shadow-xs'
-                      : 'text-muted-foreground hover:text-foreground active:scale-[0.98]'
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              )
-            })}
-          </div>
-        </div>
 
         <hr className="border-border/60" />
 
