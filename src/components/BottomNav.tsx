@@ -1,8 +1,9 @@
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Home, LayoutGrid, Settings, User } from 'lucide-react'
 import { cn } from '@/shared/utils/cn'
 import { useSettingsStore } from '@/core/settings/settingsStore'
+import { useAuth } from '@/core/firebase/hooks/useAuth'
 
 const NAV_ITEMS = [
   { path: '/', label: 'Home', icon: Home },
@@ -13,8 +14,10 @@ const NAV_ITEMS = [
 
 export const BottomNav = () => {
   const location = useLocation()
+  const navigate = useNavigate()
   const currentPath = location.pathname
   const animationsEnabled = useSettingsStore((state) => state.animationsEnabled)
+  const { isGuest, openAuthSheet } = useAuth()
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 bg-background/95 border-t border-border pb-safe flex items-center justify-around h-16 sm:h-18 select-none">
@@ -30,6 +33,18 @@ export const BottomNav = () => {
             <Link
               key={item.path}
               to={item.path}
+              onClick={(e) => {
+                if (item.path === '/profile' && isGuest) {
+                  e.preventDefault()
+                  openAuthSheet({
+                    title: 'Welcome',
+                    description: 'Sign in to access premium modules, restore purchases and sync your data.',
+                    onSuccess: () => {
+                      navigate('/profile')
+                    }
+                  })
+                }
+              }}
               className="relative flex flex-col items-center justify-center w-16 h-12 rounded-xl transition-colors cursor-pointer group focus-visible:outline-2 focus-visible:outline-accent"
               aria-label={item.label}
             >

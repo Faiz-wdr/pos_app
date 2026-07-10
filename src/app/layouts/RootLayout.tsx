@@ -5,6 +5,12 @@ import { BottomNav } from '@/components/BottomNav'
 import { useNavigationStore } from '@/core/navigation/navigationStore'
 import { useSettingsStore } from '@/core/settings/settingsStore'
 import { cn } from '@/shared/utils/cn'
+import { onAuthStateChanged } from 'firebase/auth'
+import { auth } from '@/core/firebase/auth'
+import { useAuthStore } from '@/core/firebase/stores/authStore'
+import { authService } from '@/core/firebase/services/authService'
+import { serializeFirebaseUser } from '@/core/firebase/hooks/useAuth'
+import { LoginBottomSheet } from '@/core/firebase/components/auth/LoginBottomSheet'
 
 export const RootLayout = () => {
   const location = useLocation()
@@ -12,6 +18,24 @@ export const RootLayout = () => {
   const hideSystemNav = useNavigationStore((state) => state.hideSystemNav)
   const isFullscreen = useNavigationStore((state) => state.isFullscreen)
   const animationsEnabled = useSettingsStore((state) => state.animationsEnabled)
+  const restoreSession = useAuthStore((state) => state.restoreSession)
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        try {
+          const profile = await authService.syncUserProfile(firebaseUser.uid, firebaseUser.phoneNumber)
+          restoreSession(profile)
+        } catch (e) {
+          console.error('Error syncing profile on session restore:', e)
+          restoreSession(serializeFirebaseUser(firebaseUser))
+        }
+      } else {
+        restoreSession(null)
+      }
+    })
+    return () => unsubscribe()
+  }, [restoreSession])
 
   useEffect(() => {
     const path = location.pathname
@@ -54,6 +78,7 @@ export const RootLayout = () => {
         </AnimatePresence>
 
         {!hideSystemNav && <BottomNav />}
+        <LoginBottomSheet />
       </main>
     </div>
   )

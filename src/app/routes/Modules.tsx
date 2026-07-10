@@ -1,11 +1,12 @@
 import { useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
 import * as Icons from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/Card'
 import { Switch } from '@/components/ui/Switch'
 import { Button } from '@/components/ui/Button'
 import { useModuleStore } from '@/core/modules/moduleStore'
+import { useAuth } from '@/core/firebase/hooks/useAuth'
 
 const ModuleIcon = ({ name, className }: { name: string; className?: string }) => {
   const IconComponent = (Icons as any)[name]
@@ -15,9 +16,12 @@ const ModuleIcon = ({ name, className }: { name: string; className?: string }) =
 
 export const Modules = () => {
   const { modules, registerModule, toggleModule } = useModuleStore()
+  const navigate = useNavigate()
+  const { isGuest, openAuthSheet } = useAuth()
 
   // Dynamically register modules with POS
   useEffect(() => {
+    // Free Modules
     registerModule({
       id: 'clock',
       name: 'Clock & Timer',
@@ -40,10 +44,47 @@ export const Modules = () => {
       supportsCloudSync: false,
       route: '/modules/shopping'
     })
+    
+    // Premium Modules
+    registerModule({
+      id: 'income',
+      name: 'Income Manager',
+      icon: 'DollarSign',
+      description: 'Track daily transactions, visualize cash flows, and manage budget thresholds.',
+      isPremium: true,
+      enabled: true,
+      requiresLogin: true,
+      supportsCloudSync: true,
+      route: '/modules/income'
+    })
+    registerModule({
+      id: 'diet',
+      name: 'Diet Planner',
+      icon: 'Salad',
+      description: 'Plan weekly recipes, track nutritional stats, and generate grocery baskets.',
+      isPremium: true,
+      enabled: true,
+      requiresLogin: true,
+      supportsCloudSync: true,
+      route: '/modules/diet'
+    })
   }, [registerModule])
 
+  const handleOpenModule = (m: any, e: React.MouseEvent) => {
+    if (m.isPremium && isGuest) {
+      e.preventDefault()
+      openAuthSheet({
+        title: 'Premium Module',
+        description: 'Unlock premium features by signing in with your mobile number.',
+        onSuccess: () => {
+          navigate(m.route)
+        }
+      })
+    }
+  }
+
   return (
-    <div className="flex-1 flex flex-col space-y-6 pb-6 select-none">
+    <div className="flex-1 flex flex-col space-y-6 pb-6 select-none text-left">
       <div className="flex flex-col">
         <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">System Components</span>
         <h1 className="text-2xl font-black text-foreground mt-0.5 tracking-tight">Modules</h1>
@@ -69,7 +110,7 @@ export const Modules = () => {
             <Card key={m.id} className="relative overflow-hidden bg-card/60 dark:bg-card/35 transition-all duration-300">
               <CardContent className="pt-5 space-y-4">
                 <div className="flex items-start justify-between">
-                  <div className="flex items-center space-x-3.5">
+                  <div className="flex items-start space-x-3.5">
                     <div className="p-3.5 bg-accent/10 text-accent rounded-2xl shrink-0">
                       <ModuleIcon name={m.icon} className="w-6 h-6" />
                     </div>
@@ -99,10 +140,14 @@ export const Modules = () => {
                 {/* Open Module Button */}
                 {m.enabled && (
                   <div className="pt-2 border-t border-border/40 dark:border-border/10">
-                    <Link to={m.route} className="block w-full focus-visible:outline-2 focus-visible:outline-accent rounded-xl">
+                    <Link 
+                      to={m.route} 
+                      onClick={(e) => handleOpenModule(m, e)}
+                      className="block w-full focus-visible:outline-2 focus-visible:outline-accent rounded-xl"
+                    >
                       <Button 
                         variant="secondary" 
-                        className="w-full flex justify-between items-center h-10 px-4 text-xs font-black bg-muted/60 dark:bg-card/50 rounded-xl hover:bg-muted active:scale-[0.98] border border-border"
+                        className="w-full flex justify-between items-center h-10 px-4 text-xs font-black bg-muted/60 dark:bg-card/50 rounded-xl hover:bg-muted active:scale-[0.98] border border-border cursor-pointer"
                       >
                         <span>Open Module</span>
                         <ArrowRight className="w-4 h-4 text-accent" />
@@ -118,4 +163,5 @@ export const Modules = () => {
     </div>
   )
 }
+
 export default Modules

@@ -11,6 +11,9 @@ import ShoppingListPage from '@/modules/shopping/pages/ShoppingListPage'
 import HistoryDetailPage from '@/modules/shopping/pages/HistoryDetailPage'
 import Settings from '@/app/routes/Settings'
 import Profile from '@/app/routes/Profile'
+import AuthGuard from '@/core/firebase/components/auth/AuthGuard'
+import IncomeModulePage from '@/app/routes/IncomeModulePage'
+import DietModulePage from '@/app/routes/DietModulePage'
 import './index.css'
 
 import { registerSW } from 'virtual:pwa-register'
@@ -43,6 +46,22 @@ const router = createBrowserRouter([
       {
         path: 'modules/shopping/history/:id',
         element: <HistoryDetailPage />
+      },
+      {
+        path: 'modules/income',
+        element: (
+          <AuthGuard>
+            <IncomeModulePage />
+          </AuthGuard>
+        )
+      },
+      {
+        path: 'modules/diet',
+        element: (
+          <AuthGuard>
+            <DietModulePage />
+          </AuthGuard>
+        )
       },
       {
         path: 'settings',
