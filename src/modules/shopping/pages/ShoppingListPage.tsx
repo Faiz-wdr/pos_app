@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Dialog } from '@/components/ui/Dialog'
 import { db } from '../database/db'
+import { playNotificationSound } from '@/shared/utils/sound'
 
 
 export const ShoppingListPage = () => {
@@ -81,6 +82,13 @@ export const ShoppingListPage = () => {
     title: '',
     description: ''
   })
+
+  // Play notification chime when in-app alert dialogs open
+  useEffect(() => {
+    if (alertDialog.isOpen) {
+      playNotificationSound()
+    }
+  }, [alertDialog.isOpen])
 
   // Core settings store
   const { 

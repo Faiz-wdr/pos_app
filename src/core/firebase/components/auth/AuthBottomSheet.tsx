@@ -6,6 +6,7 @@ import { useAuth } from '@/core/firebase/hooks/useAuth'
 import { LoginForm } from './LoginForm'
 import { SignupForm } from './SignupForm'
 import { ForgotPasswordForm } from './ForgotPasswordForm'
+import { playNotificationSound, playSuccessSound } from '@/shared/utils/sound'
 
 type AuthTab = 'login' | 'signup' | 'forgot'
 
@@ -38,9 +39,17 @@ export const AuthBottomSheet = () => {
     }
   }, [isAuthSheetOpen, resetAuth])
 
+  // Play notification chime when in-app errors pop up
+  useEffect(() => {
+    if (error) {
+      playNotificationSound()
+    }
+  }, [error])
+
   const handleLogin = async (email: string, pass: string) => {
     try {
       await loginWithEmail(email, pass)
+      playSuccessSound()
       closeAuthSheet()
       if (authSuccessCallback) {
         authSuccessCallback()
@@ -53,6 +62,7 @@ export const AuthBottomSheet = () => {
   const handleSignup = async (email: string, pass: string, name: string) => {
     try {
       await signupWithEmail(email, pass, name)
+      playSuccessSound()
       closeAuthSheet()
       if (authSuccessCallback) {
         authSuccessCallback()
