@@ -143,23 +143,32 @@ export const ClockModulePage = () => {
       // Dispatch browser notifications safely to prevent mobile PWA constructor failures
       if ('Notification' in window && Notification.permission === 'granted') {
         try {
-          if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+          if (navigator.serviceWorker) {
             navigator.serviceWorker.ready.then((registration) => {
               registration.showNotification('Timer Finished!', {
                 body: 'Your countdown timer has completed.',
                 icon: '/favicon.svg'
               })
-            }).catch(() => {
+            }).catch((err) => {
+              console.warn('Service Worker notification failed:', err)
+              try {
+                new Notification('Timer Finished!', {
+                  body: 'Your countdown timer has completed.',
+                  icon: '/favicon.svg'
+                })
+              } catch (e) {
+                console.warn('Notification constructor fallback failed:', e)
+              }
+            })
+          } else {
+            try {
               new Notification('Timer Finished!', {
                 body: 'Your countdown timer has completed.',
                 icon: '/favicon.svg'
               })
-            })
-          } else {
-            new Notification('Timer Finished!', {
-              body: 'Your countdown timer has completed.',
-              icon: '/favicon.svg'
-            })
+            } catch (e) {
+              console.warn('Notification constructor failed:', e)
+            }
           }
         } catch (err) {
           console.warn('Browser notification trigger failed:', err)
