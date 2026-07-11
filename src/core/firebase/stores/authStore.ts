@@ -4,10 +4,9 @@ import { safeStorage } from '@/core/storage/storage'
 
 export interface SerializedUser {
   uid: string
-  phoneNumber: string | null
-  displayName: string | null
-  photoURL: string | null
+  fullName: string | null
   email: string | null
+  photoURL: string | null
   createdAt: string
   lastLogin?: string
   isPremium?: boolean
@@ -19,19 +18,18 @@ interface AuthState {
   isAuthenticated: boolean
   isGuest: boolean
   loading: boolean
-  phoneNumber: string
   
-  // UI triggers for global bottom sheet
+  // UI triggers for the global bottom sheet
   isAuthSheetOpen: boolean
   authSheetTitle: string
   authSheetDescription: string
   authSuccessCallback: (() => void) | null
 
   login: (user: SerializedUser) => void
+  signup: (user: SerializedUser) => void
   logout: () => void
   restoreSession: (user: SerializedUser | null) => void
   setLoading: (loading: boolean) => void
-  setPhoneNumber: (phone: string) => void
   openAuthSheet: (options?: { title?: string; description?: string; onSuccess?: () => void }) => void
   closeAuthSheet: () => void
 }
@@ -43,7 +41,6 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       isGuest: true,
       loading: false,
-      phoneNumber: '',
       isAuthSheetOpen: false,
       authSheetTitle: 'Welcome',
       authSheetDescription: 'Sign in to unlock premium modules and sync your data across devices.',
@@ -52,25 +49,26 @@ export const useAuthStore = create<AuthState>()(
       login: (user) => set({ 
         user, 
         isAuthenticated: true, 
-        isGuest: false,
-        phoneNumber: user.phoneNumber || ''
+        isGuest: false
+      }),
+      signup: (user) => set({ 
+        user, 
+        isAuthenticated: true, 
+        isGuest: false
       }),
       logout: () => set({ 
         user: null, 
         isAuthenticated: false, 
         isGuest: true,
-        phoneNumber: '',
         isAuthSheetOpen: false, 
         authSuccessCallback: null 
       }),
       restoreSession: (user) => set({ 
         user, 
         isAuthenticated: user !== null, 
-        isGuest: user === null,
-        phoneNumber: user?.phoneNumber || ''
+        isGuest: user === null
       }),
       setLoading: (loading) => set({ loading }),
-      setPhoneNumber: (phoneNumber) => set({ phoneNumber }),
       openAuthSheet: (options) => set({
         isAuthSheetOpen: true,
         authSheetTitle: options?.title || 'Welcome',
@@ -86,8 +84,7 @@ export const useAuthStore = create<AuthState>()(
       partialize: (state) => ({
         user: state.user,
         isAuthenticated: state.isAuthenticated,
-        isGuest: state.isGuest,
-        phoneNumber: state.phoneNumber
+        isGuest: state.isGuest
       })
     }
   )

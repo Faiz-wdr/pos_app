@@ -1,4 +1,4 @@
-import { User, Calendar, Sparkles, LogOut, Phone, Shield } from 'lucide-react'
+import { User, Calendar, Sparkles, LogOut, Mail, Shield } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { useAuth } from '@/core/firebase/hooks/useAuth'
@@ -48,9 +48,9 @@ export const Profile = () => {
                 <Sparkles className="w-5 h-5" />
               </div>
               <div className="space-y-1">
-                <h3 className="text-xs font-bold text-foreground">Sign In for Remote Sync</h3>
+                <h3 className="text-xs font-bold text-foreground">Sign In to Sync & Save</h3>
                 <p className="text-[11px] text-muted-foreground max-w-[240px] leading-relaxed">
-                  Sign in with your mobile number to unlock premium features, automated database backups, and multi-device cloud sync.
+                  Sign in to unlock Premium Modules and sync your data.
                 </p>
               </div>
             </CardContent>
@@ -84,10 +84,10 @@ export const Profile = () => {
           </div>
           <div>
             <h2 className="text-base font-black text-foreground leading-snug">
-              {user.displayName || 'Personal OS User'}
+              {user.fullName || 'Personal OS User'}
             </h2>
-            <p className="text-xs text-muted-foreground font-semibold tracking-wide">
-              {user.phoneNumber}
+            <p className="text-xs text-muted-foreground font-semibold tracking-wide mt-0.5">
+              {user.email}
             </p>
           </div>
           <span className="text-[9px] font-black tracking-wider uppercase bg-accent/15 text-accent px-3 py-1 rounded-full">
@@ -100,16 +100,27 @@ export const Profile = () => {
       <div className="space-y-2">
         <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-1">Details</label>
         <Card className="bg-card/50">
-          <CardContent className="pt-5 space-y-4 text-xs">
+          <CardContent className="pt-5 space-y-4 text-xs font-semibold">
             {/* User ID */}
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3 text-muted-foreground">
                 <Shield className="w-4 h-4 text-accent" />
-                <span className="font-semibold">User ID</span>
+                <span>User ID</span>
               </div>
-              <span className="font-mono text-[10px] text-foreground font-bold tracking-tight bg-muted/60 px-2 py-0.5 rounded-sm">
+              <span className="font-mono text-[10px] text-foreground font-bold tracking-tight bg-muted/60 px-2 py-0.5 rounded-sm select-all">
                 {user.uid}
               </span>
+            </div>
+
+            <hr className="border-border/60" />
+
+            {/* Email Address */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3 text-muted-foreground">
+                <Mail className="w-4 h-4 text-accent" />
+                <span>Email Address</span>
+              </div>
+              <span className="text-foreground">{user.email}</span>
             </div>
 
             <hr className="border-border/60" />
@@ -118,22 +129,9 @@ export const Profile = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3 text-muted-foreground">
                 <Calendar className="w-4 h-4 text-accent" />
-                <span className="font-semibold">Account Created</span>
+                <span>Account Created</span>
               </div>
-              <span className="font-bold text-foreground">{createdDate}</span>
-            </div>
-
-            <hr className="border-border/60" />
-
-            {/* Phone Verification status */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3 text-muted-foreground">
-                <Phone className="w-4 h-4 text-accent" />
-                <span className="font-semibold">Auth Status</span>
-              </div>
-              <span className="font-bold text-green-500 flex items-center space-x-1">
-                <span>Verified</span>
-              </span>
+              <span className="text-foreground">{createdDate}</span>
             </div>
           </CardContent>
         </Card>
@@ -145,7 +143,7 @@ export const Profile = () => {
           Purchased Modules
         </label>
         <Card className="bg-card/45 border-dashed">
-          <CardContent className="pt-5 pb-5 text-center text-xs text-muted-foreground font-medium">
+          <CardContent className="pt-5 pb-5 text-center text-xs text-muted-foreground font-semibold">
             No Modules Purchased Yet (Empty)
           </CardContent>
         </Card>
@@ -164,7 +162,7 @@ export const Profile = () => {
               </div>
               <div>
                 <h4 className="text-xs font-bold text-foreground leading-none">Cloud Sync</h4>
-                <p className="text-[10px] text-muted-foreground mt-1">Automatic real-time back ups</p>
+                <p className="text-[10px] text-muted-foreground mt-1 font-semibold">Automatic real-time back ups</p>
               </div>
             </div>
             <span className="text-[9px] bg-muted text-muted-foreground font-black uppercase px-2 py-0.5 rounded-full tracking-wider border border-border">

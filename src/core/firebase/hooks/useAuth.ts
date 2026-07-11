@@ -5,33 +5,26 @@ import { User } from 'firebase/auth'
 
 export const serializeFirebaseUser = (user: User): SerializedUser => ({
   uid: user.uid,
-  phoneNumber: user.phoneNumber,
-  displayName: user.displayName,
-  photoURL: user.photoURL,
+  fullName: user.displayName || '',
   email: user.email,
+  photoURL: user.photoURL,
   createdAt: user.metadata.creationTime || new Date().toISOString()
 })
 
 export const useAuth = () => {
   const store = useAuthStore()
   const [error, setError] = useState<string | null>(null)
-  const [authStep, setAuthStep] = useState<'phone' | 'otp'>('phone')
   
-  const setupRecaptcha = (containerId: string) => {
-    setError(null)
-    return authService.setupRecaptcha(containerId)
-  }
-
-  const sendOtp = async (phoneNumber: string, containerId: string) => {
+  const loginWithEmail = async (email: string, password: string) => {
     store.setLoading(true)
     setError(null)
     try {
-      const verifier = setupRecaptcha(containerId)
-      await authService.sendOtp(phoneNumber, verifier)
-      store.setPhoneNumber(phoneNumber)
-      setAuthStep('otp')
+      const firebaseUser = await authService.loginWithEmail(email, password)
+      const profile = await authService.syncUserProfile(firebaseUser.uid, firebaseUser.email, firebaseUser.displayName, false)
+      store.login(profile)
+      return profile
     } catch (e: any) {
-      console.error('Error sending SMS OTP:', e)
+      console.error('Error logging in:', e)
       const mapped = mapFirebaseError(e)
       setError(mapped)
       throw new Error(mapped)
@@ -40,21 +33,31 @@ export const useAuth = () => {
     }
   }
 
-  const verifyOtp = async (code: string) => {
+  const signupWithEmail = async (email: string, password: string, fullName: string) => {
     store.setLoading(true)
     setError(null)
     try {
-      const firebaseUser = await authService.verifyOtp(code)
-      // Create user profile document in Firestore or update lastLogin
-      const profile = await authService.syncUserProfile(firebaseUser.uid, firebaseUser.phoneNumber)
-      
-      // Store globally using Zustand actions
+      const firebaseUser = await authService.signupWithEmail(email, password)
+      const profile = await authService.syncUserProfile(firebaseUser.uid, firebaseUser.email, fullName, true)
       store.login(profile)
-      setError(null)
-      setAuthStep('phone') // Reset step for next flow
       return profile
     } catch (e: any) {
-      console.error('Error verifying SMS OTP:', e)
+      console.error('Error signing up:', e)
+      const mapped = mapFirebaseError(e)
+      setError(mapped)
+      throw new Error(mapped)
+    } finally {
+      store.setLoading(false)
+    }
+  }
+
+  const sendPasswordReset = async (email: string) => {
+    store.setLoading(true)
+    setError(null)
+    try {
+      await authService.sendPasswordReset(email)
+    } catch (e: any) {
+      console.error('Error sending reset email:', e)
       const mapped = mapFirebaseError(e)
       setError(mapped)
       throw new Error(mapped)
@@ -66,7 +69,7 @@ export const useAuth = () => {
   const restoreSession = async (firebaseUser: User | null) => {
     if (firebaseUser) {
       try {
-        const profile = await authService.syncUserProfile(firebaseUser.uid, firebaseUser.phoneNumber)
+        const profile = await authService.syncUserProfile(firebaseUser.uid, firebaseUser.email, firebaseUser.displayName, false)
         store.restoreSession(profile)
       } catch (e) {
         console.error('Error syncing profile on session restore:', e)
@@ -93,7 +96,6 @@ export const useAuth = () => {
 
   const resetAuth = () => {
     setError(null)
-    setAuthStep('phone')
   }
 
   return {
@@ -101,22 +103,20 @@ export const useAuth = () => {
     isAuthenticated: store.isAuthenticated,
     isGuest: store.isGuest,
     loading: store.loading,
-    phoneNumber: store.phoneNumber,
     isAuthSheetOpen: store.isAuthSheetOpen,
     authSheetTitle: store.authSheetTitle,
     authSheetDescription: store.authSheetDescription,
     authSuccessCallback: store.authSuccessCallback,
-    login: store.login,
+    loginWithEmail,
+    signupWithEmail,
+    sendPasswordReset,
     logout,
     restoreSession,
     setLoading: store.setLoading,
     openAuthSheet: store.openAuthSheet,
     closeAuthSheet: store.closeAuthSheet,
     error,
-    authStep,
-    setAuthStep,
-    sendOtp,
-    verifyOtp,
+    setError,
     resetAuth
   }
 }

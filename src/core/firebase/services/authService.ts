@@ -1,94 +1,67 @@
 import { 
-  signInWithPhoneNumber, 
-  RecaptchaVerifier, 
-  signOut,
-  ConfirmationResult
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
+  signOut
 } from 'firebase/auth'
 import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore'
 import { auth } from '../auth'
 import { db } from '../firestore'
 
-let currentConfirmationResult: ConfirmationResult | null = null
-let currentRecaptchaVerifier: RecaptchaVerifier | null = null
-
 export const mapFirebaseError = (error: any): string => {
   const code = error?.code || ''
   const message = error?.message || ''
   switch (code) {
-    case 'auth/invalid-phone-number':
-      return 'Please enter a valid phone number (e.g. +91 98765 43210).'
-    case 'auth/missing-phone-number':
-      return 'Phone number is required.'
+    case 'auth/invalid-email':
+      return 'Please enter a valid email address.'
+    case 'auth/user-disabled':
+      return 'This user account has been disabled. Please contact support.'
+    case 'auth/user-not-found':
+      return 'No account found with this email. Please check the spelling or sign up.'
+    case 'auth/wrong-password':
+      return 'Incorrect password. Please try again.'
+    case 'auth/email-already-in-use':
+      return 'An account already exists with this email address. Please log in instead.'
+    case 'auth/weak-password':
+      return 'Password is too weak. Please use at least 6 characters.'
     case 'auth/too-many-requests':
-      return 'Too many requests. Please wait a few minutes before trying again.'
-    case 'auth/invalid-verification-code':
-      return 'The code entered is incorrect. Please check the SMS and retry.'
-    case 'auth/code-expired':
-      return 'Verification code expired. Please request a new one.'
+      return 'Too many failed login attempts. Please try again later.'
+    case 'auth/invalid-credential':
+      return 'Incorrect email or password. Please check your credentials.'
     case 'auth/network-request-failed':
       return 'Connection failed. Please check your internet connectivity.'
-    case 'auth/app-not-authorized':
-      return 'This domain is not authorized in the Firebase Console. Please add this URL/domain under Firebase Console -> Authentication -> Settings -> Authorized Domains.'
-    case 'auth/invalid-app-credential':
-      return 'Invalid application credentials. Check your Firebase API key configuration.'
-    case 'auth/operation-not-allowed':
-      return 'Phone Authentication is disabled in your Firebase Project. Please go to the Firebase Console -> Authentication -> Sign-in Method, and enable the "Phone" sign-in provider.'
+    case 'permission-denied':
+    case 'firestore/permission-denied':
+      return 'Firestore permissions denied. Please make sure you have initialized a Firestore Database in your Firebase Console and updated your Security Rules to allow user document operations.'
     default:
-      return `Verification failed: ${code || message || 'Please check details and try again.'}`
+      return message || 'Authentication failed. Please check your details and try again.'
   }
 }
 
 export const authService = {
-  setupRecaptcha(containerId: string): RecaptchaVerifier {
-    if (currentRecaptchaVerifier) {
-      try {
-        currentRecaptchaVerifier.clear()
-      } catch (e) {
-        console.warn('Error clearing recaptcha verifier:', e)
-      }
-      currentRecaptchaVerifier = null
-    }
-
-    const container = document.getElementById(containerId)
-    if (container) {
-      container.innerHTML = ''
-    }
-
-    currentRecaptchaVerifier = new RecaptchaVerifier(auth, containerId, {
-      size: 'invisible',
-      callback: () => {
-        // reCAPTCHA solved
-      },
-      'expired-callback': () => {
-        // Recaptcha expired
-      }
-    })
-
-    return currentRecaptchaVerifier
-  },
-
-  async sendOtp(phoneNumber: string, verifier: RecaptchaVerifier): Promise<void> {
-    currentConfirmationResult = await signInWithPhoneNumber(auth, phoneNumber, verifier)
-  },
-
-  async verifyOtp(otp: string): Promise<any> {
-    if (!currentConfirmationResult) {
-      throw new Error('No active verification session. Please request a code first.')
-    }
-    const credential = await currentConfirmationResult.confirm(otp)
-    currentConfirmationResult = null // Clear SMS session
+  async loginWithEmail(email: string, password: string): Promise<any> {
+    const credential = await signInWithEmailAndPassword(auth, email, password)
     return credential.user
   },
 
-  async syncUserProfile(uid: string, phoneNumber: string | null): Promise<any> {
+  async signupWithEmail(email: string, password: string): Promise<any> {
+    const credential = await createUserWithEmailAndPassword(auth, email, password)
+    return credential.user
+  },
+
+  async sendPasswordReset(email: string): Promise<void> {
+    await sendPasswordResetEmail(auth, email)
+  },
+
+  async syncUserProfile(uid: string, email: string | null, fullName: string | null, isNew: boolean): Promise<any> {
     const userRef = doc(db, 'users', uid)
-    const snapshot = await getDoc(userRef)
     
-    if (!snapshot.exists()) {
+    if (isNew) {
       const newProfile = {
         uid,
-        phoneNumber,
-        displayName: '',
+        fullName: fullName || '',
+        email,
+        photoURL: null,
         createdAt: new Date().toISOString(),
         lastLogin: new Date().toISOString(),
         isPremium: false,
@@ -104,29 +77,37 @@ export const authService = {
       await updateDoc(userRef, {
         lastLogin: serverTimestamp()
       })
-      const data = snapshot.data()
-      return {
-        uid: data.uid,
-        phoneNumber: data.phoneNumber || phoneNumber,
-        displayName: data.displayName || '',
-        createdAt: data.createdAt?.toDate?.()?.toISOString() || data.createdAt || new Date().toISOString(),
-        lastLogin: new Date().toISOString(),
-        isPremium: !!data.isPremium,
-        enabledModules: data.enabledModules || []
+      const snapshot = await getDoc(userRef)
+      if (snapshot.exists()) {
+        const data = snapshot.data()
+        return {
+          uid: data.uid,
+          fullName: data.fullName || fullName || '',
+          email: data.email || email,
+          photoURL: data.photoURL || null,
+          createdAt: data.createdAt?.toDate?.()?.toISOString() || data.createdAt || new Date().toISOString(),
+          lastLogin: new Date().toISOString(),
+          isPremium: !!data.isPremium,
+          enabledModules: data.enabledModules || []
+        }
+      } else {
+        // Fallback profile if Firestore sync fails to find doc
+        return {
+          uid,
+          fullName: fullName || '',
+          email,
+          photoURL: null,
+          createdAt: new Date().toISOString(),
+          lastLogin: new Date().toISOString(),
+          isPremium: false,
+          enabledModules: []
+        }
       }
     }
   },
 
   async logout(): Promise<void> {
     await signOut(auth)
-    currentConfirmationResult = null
-    if (currentRecaptchaVerifier) {
-      try {
-        currentRecaptchaVerifier.clear()
-      } catch (e) {
-        // Ignore clear errors on teardown
-      }
-      currentRecaptchaVerifier = null
-    }
   }
 }
+export default authService

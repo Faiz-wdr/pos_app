@@ -10,7 +10,7 @@ import { auth } from '@/core/firebase/auth'
 import { useAuthStore } from '@/core/firebase/stores/authStore'
 import { authService } from '@/core/firebase/services/authService'
 import { serializeFirebaseUser } from '@/core/firebase/hooks/useAuth'
-import { LoginBottomSheet } from '@/core/firebase/components/auth/LoginBottomSheet'
+import { AuthBottomSheet } from '@/core/firebase/components/auth/AuthBottomSheet'
 
 export const RootLayout = () => {
   const location = useLocation()
@@ -24,7 +24,7 @@ export const RootLayout = () => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         try {
-          const profile = await authService.syncUserProfile(firebaseUser.uid, firebaseUser.phoneNumber)
+          const profile = await authService.syncUserProfile(firebaseUser.uid, firebaseUser.email, firebaseUser.displayName, false)
           restoreSession(profile)
         } catch (e) {
           console.error('Error syncing profile on session restore:', e)
@@ -78,7 +78,7 @@ export const RootLayout = () => {
         </AnimatePresence>
 
         {!hideSystemNav && <BottomNav />}
-        <LoginBottomSheet />
+        <AuthBottomSheet />
       </main>
     </div>
   )

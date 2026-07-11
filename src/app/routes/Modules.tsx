@@ -75,7 +75,7 @@ export const Modules = () => {
       e.preventDefault()
       openAuthSheet({
         title: 'Premium Module',
-        description: 'Unlock premium features by signing in with your mobile number.',
+        description: 'Unlock premium features by signing in with your email address.',
         onSuccess: () => {
           navigate(m.route)
         }

@@ -103,7 +103,7 @@ export const Home = () => {
       e.preventDefault()
       openAuthSheet({
         title: 'Premium Module',
-        description: 'Unlock premium features by signing in with your mobile number.',
+        description: 'Unlock premium features by signing in with your email address.',
         onSuccess: () => {
           navigate(m.route)
         }
@@ -134,7 +134,7 @@ export const Home = () => {
             {new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })}
           </span>
           <h1 className="text-2xl font-black text-foreground mt-0.5 tracking-tight">
-            {greeting}, <span className="text-accent">{user?.displayName || (user ? 'User' : 'Guest')}</span>
+            {greeting}, <span className="text-accent">{user?.fullName || (user ? 'User' : 'Guest')}</span>
           </h1>
         </div>
         <button
@@ -145,6 +145,22 @@ export const Home = () => {
           <User className="w-5 h-5 text-foreground/80" />
         </button>
       </div>
+
+      {/* Continue as Guest banner */}
+      {isGuest && (
+        <Card className="bg-accent/5 border border-accent/15 rounded-2xl relative overflow-hidden py-3.5 px-4 flex items-center justify-between shadow-xs">
+          <div className="flex items-center space-x-2 text-xs font-bold text-accent">
+            <Sparkles className="w-4 h-4" />
+            <span>Browsing in Guest Mode</span>
+          </div>
+          <button 
+            onClick={() => navigate('/modules')}
+            className="text-[10px] font-black uppercase tracking-wider text-foreground bg-accent/20 hover:bg-accent/30 px-3 py-1 rounded-lg transition-all cursor-pointer"
+          >
+            Continue as Guest
+          </button>
+        </Card>
+      )}
 
       {/* Search section */}
       <div className="relative">
