@@ -87,7 +87,7 @@ export const CalendarAnalogClock: React.FC<ClockThemeProps> = ({
         return (
           <span
             key={h}
-            className="absolute text-sm font-black text-white/95 font-sans"
+            className="absolute text-sm font-bold text-white/95 font-sans"
             style={{
               left: `${x}px`,
               top: `${y}px`,
@@ -146,14 +146,14 @@ export const CalendarAnalogClock: React.FC<ClockThemeProps> = ({
   const CalendarWidget = (
     <div className="w-[240px] flex flex-col text-left select-none font-sans pl-2">
       {/* Month Header */}
-      <div className="text-[17px] font-black text-[#ff453a] tracking-wider mb-3">
+      <div className="text-[17px] font-bold text-[#ff453a] tracking-wider mb-3">
         {monthName}
       </div>
 
       {/* Weekdays Labels */}
       <div className="grid grid-cols-7 gap-y-2 text-center mb-1.5">
         {weekdays.map((day, idx) => (
-          <span key={idx} className="text-[10px] font-extrabold text-muted-foreground/60">
+          <span key={idx} className="text-[10px] font-bold text-muted-foreground/60">
             {day}
           </span>
         ))}
@@ -174,7 +174,7 @@ export const CalendarAnalogClock: React.FC<ClockThemeProps> = ({
               className="h-[26px] flex items-center justify-center"
             >
               {isToday ? (
-                <span className="w-[26px] h-[26px] rounded-full bg-[#ff453a] text-white flex items-center justify-center font-black text-xs shadow-md">
+                <span className="w-[26px] h-[26px] rounded-full bg-[#ff453a] text-white flex items-center justify-center font-bold text-xs shadow-md">
                   {day}
                 </span>
               ) : (

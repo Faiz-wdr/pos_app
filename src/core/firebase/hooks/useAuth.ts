@@ -94,6 +94,23 @@ export const useAuth = () => {
     }
   }
 
+  const updateProfile = async (fullName: string, email: string, password?: string) => {
+    store.setLoading(true)
+    setError(null)
+    try {
+      const updatedProfile = await authService.updateUserProfile(fullName, email, password)
+      store.login(updatedProfile)
+      return updatedProfile
+    } catch (e: any) {
+      console.error('Error updating profile:', e)
+      const mapped = mapFirebaseError(e)
+      setError(mapped)
+      throw new Error(mapped)
+    } finally {
+      store.setLoading(false)
+    }
+  }
+
   const resetAuth = () => {
     setError(null)
   }
@@ -111,6 +128,7 @@ export const useAuth = () => {
     signupWithEmail,
     sendPasswordReset,
     logout,
+    updateProfile,
     restoreSession,
     setLoading: store.setLoading,
     openAuthSheet: store.openAuthSheet,

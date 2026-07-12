@@ -16,7 +16,7 @@ import IncomeModulePage from '@/app/routes/IncomeModulePage'
 import DietModulePage from '@/app/routes/DietModulePage'
 import './index.css'
 
-import { registerSW } from 'virtual:pwa-register'
+import { registerPWA } from '@/core/pwa/pwa'
 
 const router = createBrowserRouter([
   {
@@ -84,11 +84,4 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 )
 
 // Register PWA service worker
-registerSW({
-  onNeedRefresh() {
-    console.log('New version of Personal OS is available. Refresh to update.')
-  },
-  onOfflineReady() {
-    console.log('Personal OS is fully cached and ready to work offline.')
-  }
-})
+registerPWA()

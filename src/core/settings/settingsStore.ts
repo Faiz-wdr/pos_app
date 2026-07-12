@@ -2,6 +2,10 @@ import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { safeStorage } from '../storage/storage'
 
+declare const __APP_VERSION__: string
+
+const appVersion = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.0.0'
+
 interface SettingsState {
   animationsEnabled: boolean
   keepScreenAwake: boolean
@@ -16,7 +20,7 @@ export const useSettingsStore = create<SettingsState>()(
     (set) => ({
       animationsEnabled: true,
       keepScreenAwake: false,
-      version: '1.0.0',
+      version: appVersion,
       developer: 'Antigravity Architect & User',
       toggleAnimations: () => set((state) => ({ animationsEnabled: !state.animationsEnabled })),
       setKeepScreenAwake: (enabled) => set({ keepScreenAwake: enabled }),
@@ -24,6 +28,10 @@ export const useSettingsStore = create<SettingsState>()(
     {
       name: 'pos-settings-storage',
       storage: createJSONStorage(() => safeStorage),
+      partialize: (state) => ({
+        animationsEnabled: state.animationsEnabled,
+        keepScreenAwake: state.keepScreenAwake
+      })
     }
   )
 )

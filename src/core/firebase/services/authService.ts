@@ -2,7 +2,10 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   sendPasswordResetEmail,
-  signOut
+  signOut,
+  updateProfile as updateAuthProfile,
+  updateEmail,
+  updatePassword
 } from 'firebase/auth'
 import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore'
 import { auth } from '../auth'
@@ -30,6 +33,8 @@ export const mapFirebaseError = (error: any): string => {
       return 'Incorrect email or password. Please check your credentials.'
     case 'auth/network-request-failed':
       return 'Connection failed. Please check your internet connectivity.'
+    case 'auth/requires-recent-login':
+      return 'For security, please log out and log back in to perform this action.'
     case 'permission-denied':
     case 'firestore/permission-denied':
       return 'Firestore permissions denied. Please make sure you have initialized a Firestore Database in your Firebase Console and updated your Security Rules to allow user document operations.'
@@ -106,8 +111,63 @@ export const authService = {
     }
   },
 
+  async updateUserProfile(fullName: string, email: string, password?: string): Promise<any> {
+    const currentUser = auth.currentUser
+    if (!currentUser) throw new Error('No user is logged in.')
+
+    // 1. Update Firebase Auth Profile (Display Name)
+    await updateAuthProfile(currentUser, { displayName: fullName })
+
+    // 2. Update Firebase Auth Email if it has changed (case-insensitive)
+    const normalizedEmail = email?.trim().toLowerCase()
+    const currentEmail = currentUser.email?.trim().toLowerCase()
+    if (normalizedEmail && normalizedEmail !== currentEmail) {
+      await updateEmail(currentUser, normalizedEmail)
+    }
+
+    // 3. Update Firebase Auth Password if provided
+    if (password) {
+      await updatePassword(currentUser, password)
+    }
+
+    // 4. Update Firestore user document
+    const userRef = doc(db, 'users', currentUser.uid)
+    await updateDoc(userRef, {
+      fullName,
+      email
+    })
+
+    // Return updated profile details
+    const snapshot = await getDoc(userRef)
+    if (snapshot.exists()) {
+      const data = snapshot.data()
+      return {
+        uid: data.uid,
+        fullName: data.fullName || fullName || '',
+        email: data.email || email,
+        photoURL: data.photoURL || null,
+        createdAt: data.createdAt?.toDate?.()?.toISOString() || data.createdAt || new Date().toISOString(),
+        lastLogin: new Date().toISOString(),
+        isPremium: !!data.isPremium,
+        enabledModules: data.enabledModules || []
+      }
+    } else {
+      return {
+        uid: currentUser.uid,
+        fullName,
+        email,
+        photoURL: null,
+        createdAt: new Date().toISOString(),
+        lastLogin: new Date().toISOString(),
+        isPremium: false,
+        enabledModules: []
+      }
+    }
+  },
+
   async logout(): Promise<void> {
     await signOut(auth)
   }
 }
 export default authService
+

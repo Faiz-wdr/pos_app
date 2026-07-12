@@ -120,9 +120,9 @@ export const ClockSettingsDialog = ({ isOpen, onClose }: ClockSettingsDialogProp
               }`}
             >
               <div className="w-full h-14 flex items-center justify-center bg-stone-900/60 dark:bg-stone-800/40 rounded-xl mb-1.5">
-                <span className="text-base font-black text-accent drop-shadow-[0_0_3px_#f8b518]">10:09</span>
+                <span className="text-base font-bold text-accent drop-shadow-[0_0_3px_#f8b518]">10:09</span>
               </div>
-              <span className="text-[10px] font-black text-foreground uppercase tracking-wide">Modern Digital</span>
+              <span className="text-[10px] font-bold text-foreground uppercase tracking-wide">Modern Digital</span>
             </button>
 
             {/* StandBy Digital */}
@@ -166,7 +166,7 @@ export const ClockSettingsDialog = ({ isOpen, onClose }: ClockSettingsDialogProp
                   </span>
                 </div>
 
-                <span className="text-white/60 mx-0.5 text-xs font-black scale-95">:</span>
+                <span className="text-white/60 mx-0.5 text-xs font-bold scale-95">:</span>
 
                 {/* Minutes overlapping preview */}
                 <div className="flex items-center relative">
@@ -190,7 +190,7 @@ export const ClockSettingsDialog = ({ isOpen, onClose }: ClockSettingsDialogProp
                   </span>
                 </div>
               </div>
-              <span className="text-[10px] font-black text-foreground uppercase tracking-wide">StandBy Digital</span>
+              <span className="text-[10px] font-bold text-foreground uppercase tracking-wide">StandBy Digital</span>
             </button>
 
             {/* Classic Analog */}
@@ -206,10 +206,10 @@ export const ClockSettingsDialog = ({ isOpen, onClose }: ClockSettingsDialogProp
                 <div className="w-10 h-10 rounded-full border border-accent/20 bg-accent/5 flex items-center justify-center relative">
                   <div className="w-0.5 h-3.5 bg-accent absolute top-1.5 rounded-full origin-bottom" style={{ transform: 'rotate(60deg)' }} />
                   <div className="w-0.5 h-4.5 bg-foreground absolute top-0.5 rounded-full origin-bottom" style={{ transform: 'rotate(180deg)' }} />
-                  <span className="absolute text-[6px] font-black text-foreground top-0.5">12</span>
+                  <span className="absolute text-[6px] font-bold text-foreground top-0.5">12</span>
                 </div>
               </div>
-              <span className="text-[10px] font-black text-foreground uppercase tracking-wide">Classic Analog</span>
+              <span className="text-[10px] font-bold text-foreground uppercase tracking-wide">Classic Analog</span>
             </button>
 
             {/* Calendar Analog */}
@@ -230,14 +230,14 @@ export const ClockSettingsDialog = ({ isOpen, onClose }: ClockSettingsDialogProp
                 </div>
                 {/* Mini Calendar Grid */}
                 <div className="flex flex-col space-y-0.5 scale-90">
-                  <span className="text-[6px] font-black text-[#ff453a] scale-90">OCT</span>
+                  <span className="text-[6px] font-bold text-[#ff453a] scale-90">OCT</span>
                   <div className="grid grid-cols-4 gap-0.5 text-[5px] text-white/50 leading-none">
                     <span>1</span><span>2</span><span>3</span><span className="text-[#ff453a] font-bold">4</span>
                     <span>5</span><span>6</span><span>7</span><span>8</span>
                   </div>
                 </div>
               </div>
-              <span className="text-[10px] font-black text-foreground uppercase tracking-wide">Calendar Analog</span>
+              <span className="text-[10px] font-bold text-foreground uppercase tracking-wide">Calendar Analog</span>
             </button>
           </div>
         </div>

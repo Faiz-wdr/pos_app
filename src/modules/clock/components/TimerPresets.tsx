@@ -26,7 +26,7 @@ export const TimerPresets = () => {
             size="sm"
             disabled={isRunning}
             onClick={() => setDuration(p.value)}
-            className="text-xs font-black h-10 rounded-xl cursor-pointer"
+            className="text-xs font-bold h-10 rounded-xl cursor-pointer"
           >
             {p.label}
           </Button>

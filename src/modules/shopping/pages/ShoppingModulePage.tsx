@@ -240,7 +240,7 @@ export const ShoppingModulePage = () => {
         <div className="flex bg-muted/70 p-1 rounded-xl border border-border/50">
           <button
             onClick={() => { setActiveTab('lists'); setSearchQuery(''); }}
-            className={`flex items-center px-3.5 py-1.5 text-xs font-black rounded-lg transition-all cursor-pointer ${
+            className={`flex items-center px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
               activeTab === 'lists'
                 ? 'bg-accent text-accent-foreground shadow-xs'
                 : 'text-muted-foreground hover:text-foreground'
@@ -251,7 +251,7 @@ export const ShoppingModulePage = () => {
           </button>
           <button
             onClick={() => { setActiveTab('templates'); setSearchQuery(''); }}
-            className={`flex items-center px-3.5 py-1.5 text-xs font-black rounded-lg transition-all cursor-pointer ${
+            className={`flex items-center px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
               activeTab === 'templates'
                 ? 'bg-accent text-accent-foreground shadow-xs'
                 : 'text-muted-foreground hover:text-foreground'
@@ -262,7 +262,7 @@ export const ShoppingModulePage = () => {
           </button>
           <button
             onClick={() => { setActiveTab('history'); setSearchQuery(''); }}
-            className={`flex items-center px-3.5 py-1.5 text-xs font-black rounded-lg transition-all cursor-pointer ${
+            className={`flex items-center px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
               activeTab === 'history'
                 ? 'bg-accent text-accent-foreground shadow-xs'
                 : 'text-muted-foreground hover:text-foreground'
@@ -311,12 +311,12 @@ export const ShoppingModulePage = () => {
               className="flex-1 flex flex-col space-y-4 pb-16"
             >
               <div className="flex items-center justify-between shrink-0 select-none">
-                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Active Sessions</span>
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Active Sessions</span>
                 <Button 
                   onClick={handleCreateList}
                   size="sm"
                   variant="primary" 
-                  className="rounded-xl h-8 text-[11px] font-black cursor-pointer shadow-xs"
+                  className="rounded-xl h-8 text-[11px] font-bold cursor-pointer shadow-xs"
                 >
                   <Plus className="w-3.5 h-3.5 mr-1" />
                   New List
@@ -331,7 +331,7 @@ export const ShoppingModulePage = () => {
                         <ClipboardList className="w-6 h-6" />
                       </div>
                       <div className="space-y-1">
-                        <h3 className="text-sm font-black text-foreground">No Shopping Lists</h3>
+                        <h3 className="text-sm font-bold text-foreground">No Shopping Lists</h3>
                         <p className="text-xs text-muted-foreground max-w-[240px] mx-auto leading-relaxed">
                           {searchQuery.trim() 
                             ? 'No lists match your search query.' 
@@ -357,7 +357,7 @@ export const ShoppingModulePage = () => {
                       <Card key={list.id} className="relative overflow-hidden bg-card/65 dark:bg-card/25 border-border hover:bg-card transition-all duration-200">
                         <CardContent className="pt-4 pb-4 px-4 flex items-center justify-between">
                           <Link to={`/modules/shopping/list/${list.id}`} className="flex-1 flex flex-col space-y-0.5 text-left min-w-0 pr-4">
-                            <h3 className="text-sm font-black text-foreground leading-tight truncate">{list.name}</h3>
+                            <h3 className="text-sm font-bold text-foreground leading-tight truncate">{list.name}</h3>
                             <div className="flex items-center space-x-2 text-[10px] text-muted-foreground font-semibold">
                               <span>{list.remainingCount} remaining</span>
                               <span>•</span>
@@ -366,7 +366,7 @@ export const ShoppingModulePage = () => {
                           </Link>
                           
                           <div className="flex items-center space-x-2 shrink-0">
-                            <span className="text-xs font-extrabold text-accent tabular-nums mr-2">
+                            <span className="text-xs font-bold text-accent tabular-nums mr-2">
                               {currency}{list.actualTotal.toFixed(2)}
                             </span>
                             <div className="flex space-x-1">
@@ -406,12 +406,12 @@ export const ShoppingModulePage = () => {
               className="flex-1 flex flex-col space-y-4 pb-16"
             >
               <div className="flex items-center justify-between shrink-0 select-none">
-                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Reusable Templates</span>
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Reusable Templates</span>
                 <Button 
                   onClick={handleCreateTemplate}
                   size="sm"
                   variant="primary" 
-                  className="rounded-xl h-8 text-[11px] font-black cursor-pointer shadow-xs"
+                  className="rounded-xl h-8 text-[11px] font-bold cursor-pointer shadow-xs"
                 >
                   <Plus className="w-3.5 h-3.5 mr-1" />
                   New Template
@@ -426,7 +426,7 @@ export const ShoppingModulePage = () => {
                         <Sparkles className="w-6 h-6" />
                       </div>
                       <div className="space-y-1">
-                        <h3 className="text-sm font-black text-foreground">No Templates</h3>
+                        <h3 className="text-sm font-bold text-foreground">No Templates</h3>
                         <p className="text-xs text-muted-foreground max-w-[240px] mx-auto leading-relaxed">
                           {searchQuery.trim() 
                             ? 'No templates match your search query.' 
@@ -452,7 +452,7 @@ export const ShoppingModulePage = () => {
                       <CardContent className="pt-5 pb-4 px-5 space-y-4 text-left">
                         <div className="flex items-start justify-between">
                           <div className="flex flex-col space-y-0.5">
-                            <h3 className="text-sm font-black text-foreground line-clamp-1">{template.name}</h3>
+                            <h3 className="text-sm font-bold text-foreground line-clamp-1">{template.name}</h3>
                             <span className="text-[10px] text-muted-foreground font-semibold">
                               Contains {template.itemsCount} templates items
                             </span>
@@ -474,7 +474,7 @@ export const ShoppingModulePage = () => {
                           <Button 
                             onClick={() => handleUseTemplate(template.id, template.name)}
                             variant="secondary" 
-                            className="w-full flex justify-between items-center h-10 px-4 text-xs font-black bg-muted/60 dark:bg-card/50 rounded-xl hover:bg-muted active:scale-[0.98] border border-border cursor-pointer"
+                            className="w-full flex justify-between items-center h-10 px-4 text-xs font-bold bg-muted/60 dark:bg-card/50 rounded-xl hover:bg-muted active:scale-[0.98] border border-border cursor-pointer"
                           >
                             <span>Use Template to Shop</span>
                             <ArrowRight className="w-4 h-4 text-accent" />
@@ -499,7 +499,7 @@ export const ShoppingModulePage = () => {
               className="flex-1 flex flex-col space-y-4 pb-16"
             >
               <div className="flex items-center justify-between shrink-0 select-none">
-                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Completed Sessions</span>
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Completed Sessions</span>
                 <span className="text-[10px] font-bold text-muted-foreground">{completedLists.length} entries</span>
               </div>
 
@@ -511,7 +511,7 @@ export const ShoppingModulePage = () => {
                         <FileSpreadsheet className="w-6 h-6" />
                       </div>
                       <div className="space-y-1">
-                        <h3 className="text-sm font-black text-foreground">No Completed Sessions</h3>
+                        <h3 className="text-sm font-bold text-foreground">No Completed Sessions</h3>
                         <p className="text-xs text-muted-foreground max-w-[240px] mx-auto leading-relaxed">
                           {searchQuery.trim() 
                             ? 'No history matches your search query.' 
@@ -528,14 +528,14 @@ export const ShoppingModulePage = () => {
                       <Card key={list.id} className="relative overflow-hidden bg-card/60 dark:bg-card/20 border-border hover:bg-card transition-all duration-200">
                         <CardContent className="pt-4 pb-4 px-4 flex items-center justify-between">
                           <Link to={`/modules/shopping/history/${list.id}`} className="flex-1 flex flex-col space-y-0.5 text-left min-w-0 pr-4">
-                            <h3 className="text-sm font-black text-foreground leading-tight truncate">{list.name}</h3>
+                            <h3 className="text-sm font-bold text-foreground leading-tight truncate">{list.name}</h3>
                             <span className="text-[10px] text-muted-foreground font-semibold">
                               {list.purchasedCount}/{list.totalItems} items completed
                             </span>
                           </Link>
                           
                           <div className="flex items-center space-x-2 shrink-0">
-                            <span className="text-xs font-extrabold text-accent tabular-nums mr-2">
+                            <span className="text-xs font-bold text-accent tabular-nums mr-2">
                               {currency}{list.actualTotal.toFixed(2)}
                             </span>
                             <div className="flex space-x-1">
@@ -587,7 +587,7 @@ export const ShoppingModulePage = () => {
           <Button
             type="button"
             variant={confirmDialog.variant === 'danger' ? 'secondary' : 'primary'}
-            className={`cursor-pointer font-black text-xs rounded-xl ${
+            className={`cursor-pointer font-bold text-xs rounded-xl ${
               confirmDialog.variant === 'danger' ? 'bg-red-500 hover:bg-red-600 text-white border-0' : ''
             }`}
             onClick={() => {
@@ -633,7 +633,7 @@ export const ShoppingModulePage = () => {
                 promptDialog.onConfirm(promptDialog.value.trim())
                 setPromptDialog(prev => ({ ...prev, isOpen: false }))
               }}
-              className="cursor-pointer font-black text-xs rounded-xl"
+              className="cursor-pointer font-bold text-xs rounded-xl"
             >
               Submit
             </Button>

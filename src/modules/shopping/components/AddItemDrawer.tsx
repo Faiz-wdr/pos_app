@@ -155,15 +155,15 @@ export const AddItemDrawer = ({ isOpen, onClose, listId, editItem }: AddItemDraw
               <button
                 type="button"
                 onClick={() => handleQtyAdjust(-1)}
-                className="w-9 h-9 bg-background hover:bg-card border border-border text-foreground font-black text-base rounded-lg flex items-center justify-center cursor-pointer active:scale-95 transition-all"
+                className="w-9 h-9 bg-background hover:bg-card border border-border text-foreground font-bold text-base rounded-lg flex items-center justify-center cursor-pointer active:scale-95 transition-all"
               >
                 -
               </button>
-              <span className="text-sm font-extrabold w-8 text-center tabular-nums">{quantity}</span>
+              <span className="text-sm font-bold w-8 text-center tabular-nums">{quantity}</span>
               <button
                 type="button"
                 onClick={() => handleQtyAdjust(1)}
-                className="w-9 h-9 bg-background hover:bg-card border border-border text-foreground font-black text-base rounded-lg flex items-center justify-center cursor-pointer active:scale-95 transition-all"
+                className="w-9 h-9 bg-background hover:bg-card border border-border text-foreground font-bold text-base rounded-lg flex items-center justify-center cursor-pointer active:scale-95 transition-all"
               >
                 +
               </button>
@@ -279,7 +279,7 @@ export const AddItemDrawer = ({ isOpen, onClose, listId, editItem }: AddItemDraw
             type="submit"
             variant="primary"
             disabled={!name.trim() || (selectedUnit === 'Custom' && !customUnitInput.trim()) || isSubmitting}
-            className="cursor-pointer font-black text-xs rounded-xl"
+            className="cursor-pointer font-bold text-xs rounded-xl"
           >
             {isSubmitting ? 'Saving...' : editItem ? 'Save Changes' : 'Add Item'}
           </Button>

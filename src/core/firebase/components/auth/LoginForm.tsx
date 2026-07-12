@@ -128,7 +128,7 @@ export const LoginForm = ({
       <div className="space-y-3 pt-2">
         <Button
           type="submit"
-          className="w-full flex items-center justify-center space-x-2 font-black uppercase text-xs tracking-wider h-11 rounded-xl cursor-pointer"
+          className="w-full flex items-center justify-center space-x-2 font-bold uppercase text-xs tracking-wider h-11 rounded-xl cursor-pointer"
           disabled={loading}
         >
           {loading ? (

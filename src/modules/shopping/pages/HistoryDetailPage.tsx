@@ -110,7 +110,7 @@ export const HistoryDetailPage = () => {
         </Link>
 
         <div className="flex flex-col items-center max-w-[50%]">
-          <h1 className="text-sm font-black text-foreground tracking-tight leading-tight line-clamp-1">{list.name}</h1>
+          <h1 className="text-sm font-bold text-foreground tracking-tight leading-tight line-clamp-1">{list.name}</h1>
           <span className="text-[10px] font-bold text-muted-foreground mt-0.5 uppercase tracking-wider">
             Completed {new Date(list.updatedAt).toLocaleDateString()}
           </span>
@@ -138,15 +138,15 @@ export const HistoryDetailPage = () => {
           <div className="grid grid-cols-3 gap-2 bg-muted/30 dark:bg-muted/10 p-3 rounded-2xl border border-border/20 text-center text-xs">
             <div className="flex flex-col">
               <span className="text-muted-foreground font-bold text-[9px] uppercase tracking-wider">Total Items</span>
-              <span className="font-extrabold text-foreground mt-0.5">{totalItems}</span>
+              <span className="font-bold text-foreground mt-0.5">{totalItems}</span>
             </div>
             <div className="flex flex-col border-x border-border/40">
               <span className="text-muted-foreground font-bold text-[9px] uppercase tracking-wider">Purchased</span>
-              <span className="font-extrabold text-emerald-500 mt-0.5">{purchasedCount}</span>
+              <span className="font-bold text-emerald-500 mt-0.5">{purchasedCount}</span>
             </div>
             <div className="flex flex-col">
               <span className="text-muted-foreground font-bold text-[9px] uppercase tracking-wider">Remaining</span>
-              <span className="font-extrabold text-red-500 mt-0.5">{remainingCount}</span>
+              <span className="font-bold text-red-500 mt-0.5">{remainingCount}</span>
             </div>
           </div>
 
@@ -158,7 +158,7 @@ export const HistoryDetailPage = () => {
             </Card>
             <Card className="bg-accent/5 border-accent/25 p-3 flex flex-col items-center">
               <span className="text-[9px] text-accent uppercase tracking-wider">Actual Spent</span>
-              <span className="font-black text-accent mt-0.5 tabular-nums">{currency}{actualTotal.toFixed(2)}</span>
+              <span className="font-bold text-accent mt-0.5 tabular-nums">{currency}{actualTotal.toFixed(2)}</span>
             </Card>
           </div>
         </div>
@@ -209,7 +209,7 @@ export const HistoryDetailPage = () => {
 
                 <div className="flex items-center shrink-0 text-xs">
                   {item.purchased && showActualPrice && item.actualPrice !== undefined ? (
-                    <span className="font-extrabold text-emerald-500 tabular-nums">
+                    <span className="font-bold text-emerald-500 tabular-nums">
                       {currency}{(item.quantity * item.actualPrice).toFixed(2)}
                     </span>
                   ) : showEstimatedPrice && item.expectedPrice !== undefined ? (
@@ -231,7 +231,7 @@ export const HistoryDetailPage = () => {
         <Button
           onClick={handleDuplicate}
           variant="primary"
-          className="w-full h-11 text-xs font-black uppercase tracking-wider rounded-2xl cursor-pointer"
+          className="w-full h-11 text-xs font-bold uppercase tracking-wider rounded-2xl cursor-pointer"
         >
           <Copy className="w-4 h-4 mr-2" />
           Duplicate to Active List

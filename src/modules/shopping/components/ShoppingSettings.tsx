@@ -66,7 +66,7 @@ export const ShoppingSettingsDialog = ({ isOpen, onClose }: ShoppingSettingsDial
                 <button
                   key={opt.value}
                   onClick={() => setCurrency(opt.value)}
-                  className={`py-2 px-1 rounded-lg text-xs font-black transition-all cursor-pointer ${
+                  className={`py-2 px-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                     isSelected
                       ? 'bg-accent text-accent-foreground shadow-xs'
                       : 'text-muted-foreground hover:text-foreground active:scale-[0.98]'

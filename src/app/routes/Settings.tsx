@@ -7,12 +7,35 @@ import { useThemeStore, ThemeMode } from '@/core/theme/themeStore'
 import { useSettingsStore } from '@/core/settings/settingsStore'
 import { useWakeLock } from '@/shared/hooks/useWakeLock'
 import { Dialog } from '@/components/ui/Dialog'
+import { usePWAUpdate } from '@/core/pwa/usePWAUpdate'
 
 export const Settings = () => {
   const { theme, setTheme } = useThemeStore()
   const { animationsEnabled, toggleAnimations, keepScreenAwake, setKeepScreenAwake, version, developer } = useSettingsStore()
   const { isSupported: wakeLockSupported, request: requestWakeLock, release: releaseWakeLock } = useWakeLock()
   const [resetDialogOpen, setResetDialogOpen] = useState(false)
+
+  const { 
+    checkForUpdates, 
+    loading: updatesLoading, 
+    lastUpdated, 
+    error: updatesError, 
+    currentVersion 
+  } = usePWAUpdate()
+  const [checkingResult, setCheckingResult] = useState<string | null>(null)
+
+  const handleCheckForUpdates = async () => {
+    setCheckingResult(null)
+    try {
+      const isNewer = await checkForUpdates(true)
+      if (!isNewer) {
+        setCheckingResult("You're running the latest version.")
+        setTimeout(() => setCheckingResult(null), 4000)
+      }
+    } catch (e) {
+      console.error(e)
+    }
+  }
 
   // Synchronize Screen Wake Lock state with toggle value
   useEffect(() => {
@@ -44,7 +67,7 @@ export const Settings = () => {
       {/* Page Title */}
       <div className="flex flex-col">
         <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Preferences</span>
-        <h1 className="text-2xl font-black text-foreground mt-0.5 tracking-tight">Settings</h1>
+        <h1 className="text-2xl font-bold text-foreground mt-0.5 tracking-tight">Settings</h1>
       </div>
 
       {/* Theme Selection */}
@@ -129,14 +152,14 @@ export const Settings = () => {
                 <div className="p-2 bg-muted rounded-lg"><User className="w-4 h-4" /></div>
                 <span className="text-sm font-semibold">Cloud Profile</span>
               </div>
-              <span className="text-[10px] font-black uppercase bg-muted px-2 py-0.5 rounded-full">Future</span>
+              <span className="text-[10px] font-bold uppercase bg-muted px-2 py-0.5 rounded-full">Future</span>
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <div className="p-2 bg-muted rounded-lg"><Cloud className="w-4 h-4" /></div>
                 <span className="text-sm font-semibold">Database Backup</span>
               </div>
-              <span className="text-[10px] font-black uppercase bg-muted px-2 py-0.5 rounded-full">Future</span>
+              <span className="text-[10px] font-bold uppercase bg-muted px-2 py-0.5 rounded-full">Future</span>
             </div>
           </CardContent>
         </Card>
@@ -168,11 +191,17 @@ export const Settings = () => {
       <div className="space-y-2">
         <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider px-1">About</h2>
         <Card className="bg-card/50">
-          <CardContent className="pt-5 space-y-3 text-xs leading-relaxed">
+          <CardContent className="pt-5 space-y-4 text-xs leading-relaxed">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Version</span>
-              <span className="font-bold text-foreground">{version}</span>
+              <span className="font-bold text-foreground">v{currentVersion || version}</span>
             </div>
+            {lastUpdated && (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Last Updated</span>
+                <span className="font-bold text-foreground">{lastUpdated}</span>
+              </div>
+            )}
             <div className="flex justify-between">
               <span className="text-muted-foreground">Architect</span>
               <span className="font-bold text-foreground">{developer}</span>
@@ -180,6 +209,32 @@ export const Settings = () => {
             <div className="flex justify-between">
               <span className="text-muted-foreground">Build Environment</span>
               <span className="font-bold text-foreground">React 19 + Vite</span>
+            </div>
+
+            <hr className="border-border/60" />
+
+            <div className="flex flex-col space-y-2 pt-1 select-none">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCheckForUpdates}
+                disabled={updatesLoading}
+                className="w-full flex items-center justify-center space-x-1.5 font-bold uppercase text-[10px] tracking-wider rounded-xl cursor-pointer"
+              >
+                <span>{updatesLoading ? 'Checking for updates...' : 'Check for Updates'}</span>
+              </Button>
+
+              {checkingResult && (
+                <p className="text-emerald-500 font-bold text-[9px] text-center uppercase tracking-wider mt-1 animate-in fade-in duration-200">
+                  {checkingResult}
+                </p>
+              )}
+
+              {updatesError && (
+                <p className="text-red-500 font-bold text-[9px] text-center uppercase tracking-wider mt-1 animate-in fade-in duration-200">
+                  {updatesError}
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>

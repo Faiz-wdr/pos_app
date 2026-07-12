@@ -85,7 +85,7 @@ export const CreateListDialog = ({ isOpen, onClose, onCreated }: CreateListDialo
             type="submit"
             variant="primary"
             disabled={!name.trim() || isSubmitting}
-            className="cursor-pointer font-black text-xs rounded-xl"
+            className="cursor-pointer font-bold text-xs rounded-xl"
           >
             {isSubmitting ? 'Creating...' : 'Create & Open'}
           </Button>

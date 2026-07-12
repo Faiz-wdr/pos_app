@@ -55,7 +55,7 @@ export const ForgotPasswordForm = ({
         </div>
         <Button
           onClick={onSwitchToLogin}
-          className="w-full font-black uppercase text-xs tracking-wider h-11 rounded-xl cursor-pointer"
+          className="w-full font-bold uppercase text-xs tracking-wider h-11 rounded-xl cursor-pointer"
         >
           Return to Login
         </Button>
@@ -99,7 +99,7 @@ export const ForgotPasswordForm = ({
 
       <Button
         type="submit"
-        className="w-full flex items-center justify-center space-x-2 font-black uppercase text-xs tracking-wider h-11 rounded-xl cursor-pointer"
+        className="w-full flex items-center justify-center space-x-2 font-bold uppercase text-xs tracking-wider h-11 rounded-xl cursor-pointer"
         disabled={loading || !email}
       >
         {loading ? (

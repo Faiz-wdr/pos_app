@@ -34,7 +34,7 @@ export const ModernAnalogClock: React.FC<ClockThemeProps> = ({
           return (
             <div
               key={num}
-              className="absolute text-foreground font-black text-sm md:text-base select-text"
+              className="absolute text-foreground font-bold text-sm md:text-base select-text"
               style={{
                 transform: `rotate(${rotationAngle}deg) translateY(${isLandscapeMode ? '-105px' : '-85px'}) rotate(-${rotationAngle}deg)`
               }}

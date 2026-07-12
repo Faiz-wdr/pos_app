@@ -6,7 +6,7 @@ export const DietModulePage = () => {
     <div className="flex-1 flex flex-col space-y-6 pb-6 select-none text-left">
       <div className="flex flex-col">
         <span className="text-xs font-semibold text-accent uppercase tracking-wider">Premium Feature Unlocked</span>
-        <h1 className="text-2xl font-black text-foreground mt-0.5 tracking-tight flex items-center space-x-2">
+        <h1 className="text-2xl font-bold text-foreground mt-0.5 tracking-tight flex items-center space-x-2">
           <Salad className="w-6 h-6 text-accent shrink-0" />
           <span>Diet Planner</span>
         </h1>

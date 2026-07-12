@@ -52,20 +52,20 @@ export const TimerDisplay = () => {
           {!isRunning && (
             <button
               onClick={() => handleAdjust('h', 1)}
-              className="p-2 text-muted-foreground hover:text-foreground active:scale-90 font-black text-lg cursor-pointer"
+              className="p-2 text-muted-foreground hover:text-foreground active:scale-90 font-bold text-lg cursor-pointer"
               aria-label="Increase hours"
             >
               ▲
             </button>
           )}
           <div className="w-18 h-18 sm:w-20 sm:h-20 bg-card border border-border/80 rounded-2xl flex items-center justify-center shadow-xs">
-            <span className="text-3xl sm:text-4xl font-extrabold tabular-nums select-text">{hours}</span>
+            <span className="text-3xl sm:text-4xl font-bold tabular-nums select-text">{hours}</span>
           </div>
           <span className="text-[10px] font-bold text-muted-foreground uppercase mt-1">Hrs</span>
           {!isRunning && (
             <button
               onClick={() => handleAdjust('h', -1)}
-              className="p-2 text-muted-foreground hover:text-foreground active:scale-90 font-black text-lg cursor-pointer"
+              className="p-2 text-muted-foreground hover:text-foreground active:scale-90 font-bold text-lg cursor-pointer"
               aria-label="Decrease hours"
             >
               ▼
@@ -73,27 +73,27 @@ export const TimerDisplay = () => {
           )}
         </div>
 
-        <span className="text-2xl font-black text-muted-foreground/60 mb-5 sm:mb-6">:</span>
+        <span className="text-2xl font-bold text-muted-foreground/60 mb-5 sm:mb-6">:</span>
 
         {/* Minutes Column */}
         <div className="flex flex-col items-center">
           {!isRunning && (
             <button
               onClick={() => handleAdjust('m', 1)}
-              className="p-2 text-muted-foreground hover:text-foreground active:scale-90 font-black text-lg cursor-pointer"
+              className="p-2 text-muted-foreground hover:text-foreground active:scale-90 font-bold text-lg cursor-pointer"
               aria-label="Increase minutes"
             >
               ▲
             </button>
           )}
           <div className="w-18 h-18 sm:w-20 sm:h-20 bg-card border border-border/80 rounded-2xl flex items-center justify-center shadow-xs">
-            <span className="text-3xl sm:text-4xl font-extrabold tabular-nums select-text">{minutes}</span>
+            <span className="text-3xl sm:text-4xl font-bold tabular-nums select-text">{minutes}</span>
           </div>
           <span className="text-[10px] font-bold text-muted-foreground uppercase mt-1">Min</span>
           {!isRunning && (
             <button
               onClick={() => handleAdjust('m', -1)}
-              className="p-2 text-muted-foreground hover:text-foreground active:scale-90 font-black text-lg cursor-pointer"
+              className="p-2 text-muted-foreground hover:text-foreground active:scale-90 font-bold text-lg cursor-pointer"
               aria-label="Decrease minutes"
             >
               ▼
@@ -101,27 +101,27 @@ export const TimerDisplay = () => {
           )}
         </div>
 
-        <span className="text-2xl font-black text-muted-foreground/60 mb-5 sm:mb-6">:</span>
+        <span className="text-2xl font-bold text-muted-foreground/60 mb-5 sm:mb-6">:</span>
 
         {/* Seconds Column */}
         <div className="flex flex-col items-center">
           {!isRunning && (
             <button
               onClick={() => handleAdjust('s', 1)}
-              className="p-2 text-muted-foreground hover:text-foreground active:scale-90 font-black text-lg cursor-pointer"
+              className="p-2 text-muted-foreground hover:text-foreground active:scale-90 font-bold text-lg cursor-pointer"
               aria-label="Increase seconds"
             >
               ▲
             </button>
           )}
           <div className="w-18 h-18 sm:w-20 sm:h-20 bg-card border border-border/80 rounded-2xl flex items-center justify-center shadow-xs">
-            <span className="text-3xl sm:text-4xl font-extrabold tabular-nums select-text text-accent">{seconds}</span>
+            <span className="text-3xl sm:text-4xl font-bold tabular-nums select-text text-accent">{seconds}</span>
           </div>
           <span className="text-[10px] font-bold text-muted-foreground uppercase mt-1">Sec</span>
           {!isRunning && (
             <button
               onClick={() => handleAdjust('s', -1)}
-              className="p-2 text-muted-foreground hover:text-foreground active:scale-90 font-black text-lg cursor-pointer"
+              className="p-2 text-muted-foreground hover:text-foreground active:scale-90 font-bold text-lg cursor-pointer"
               aria-label="Decrease seconds"
             >
               ▼

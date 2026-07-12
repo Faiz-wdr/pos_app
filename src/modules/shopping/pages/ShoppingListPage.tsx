@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
-  ArrowLeft, Search, ArrowUpDown,
-  ShoppingBag, ClipboardCheck, ArrowUp, ArrowDown, Sparkles
+  ArrowLeft, Search, ShoppingBag, ClipboardCheck, Sparkles, Check
 } from 'lucide-react'
 import { useShoppingList, useShoppingItems } from '../hooks/useShopping'
 import { useSearchSort } from '../hooks/useSearchSort'
@@ -20,7 +19,7 @@ import { Input } from '@/components/ui/Input'
 import { Dialog } from '@/components/ui/Dialog'
 import { db } from '../database/db'
 import { playNotificationSound } from '@/shared/utils/sound'
-
+import { useSettingsStore } from '@/core/settings/settingsStore'
 
 export const ShoppingListPage = () => {
   const { id } = useParams<{ id: string }>()
@@ -36,7 +35,8 @@ export const ShoppingListPage = () => {
   
   // Search & Filter state
   const [searchQuery, setSearchQuery] = useState('')
-  const [filterBy, setFilterBy] = useState<'all' | 'remaining' | 'purchased'>('all')
+  const [isSearching, setIsSearching] = useState(false)
+  const filterBy = 'all'
 
   // Inline rename & quick add state
   const [isEditingName, setIsEditingName] = useState(false)
@@ -92,10 +92,12 @@ export const ShoppingListPage = () => {
 
   // Core settings store
   const { 
-    defaultSort, currency, showEstimatedPrice, 
+    currency, showEstimatedPrice, 
     showActualPrice, confirmDelete, defaultUnit 
   } = useShoppingSettingsStore()
-  const [sortBy, setSortBy] = useState(defaultSort)
+  
+  // Force default sort basis to unpurchased first (purchased-last)
+  const sortBy = 'purchased-last'
   const animationsEnabled = useSettingsStore((state) => state.animationsEnabled)
 
   // DB queries
@@ -199,13 +201,11 @@ export const ShoppingListPage = () => {
   }
 
   const handleTogglePurchase = async (itemId: string, currentStatus: boolean) => {
-    // If marking purchased, we can default actualPrice to expectedPrice
     const item = items.find((i) => i.id === itemId)
     if (!item) return
 
     const updates: any = { purchased: !currentStatus }
     if (!currentStatus) {
-      // Toggled to purchased
       updates.actualPrice = item.actualPrice !== undefined ? item.actualPrice : (item.expectedPrice || 0)
     }
 
@@ -243,24 +243,6 @@ export const ShoppingListPage = () => {
       expectedPrice: item.expectedPrice,
       notes: item.notes
     })
-  }
-
-  const handleManualReorder = async (itemId: string, direction: 'up' | 'down') => {
-    const currentItem = items.find((i) => i.id === itemId)
-    if (!currentItem) return
-
-    const sorted = [...items].sort((a, b) => a.sortOrder - b.sortOrder)
-    const index = sorted.findIndex((i) => i.id === itemId)
-
-    if (direction === 'up' && index > 0) {
-      const prevItem = sorted[index - 1]
-      await updateShoppingItem(currentItem.id, { sortOrder: prevItem.sortOrder })
-      await updateShoppingItem(prevItem.id, { sortOrder: currentItem.sortOrder })
-    } else if (direction === 'down' && index < sorted.length - 1) {
-      const nextItem = sorted[index + 1]
-      await updateShoppingItem(currentItem.id, { sortOrder: nextItem.sortOrder })
-      await updateShoppingItem(nextItem.id, { sortOrder: currentItem.sortOrder })
-    }
   }
 
   const handleSaveAsTemplate = () => {
@@ -327,7 +309,6 @@ export const ShoppingListPage = () => {
 
         {/* Items skeleton */}
         <div className="flex-1 flex flex-col px-5 pt-4 space-y-4 overflow-y-auto">
-          {/* Search bar and adder */}
           <div className="w-full h-10 rounded-xl bg-muted/60 animate-pulse" />
           <div className="flex justify-between items-center py-1">
             <div className="w-24 h-6 rounded-md bg-muted/50 animate-pulse" />
@@ -369,7 +350,7 @@ export const ShoppingListPage = () => {
   }
 
   return (
-    <div className="flex-1 flex flex-col justify-between w-full h-full relative select-none pb-28 overflow-hidden text-left">
+    <div className="flex-1 flex flex-col justify-between w-full h-full relative select-none pb-28 overflow-hidden text-left bg-background/50">
       
       {/* Top Controls Header */}
       <header className="flex items-center justify-between w-full px-5 py-4 shrink-0 bg-background/90 dark:bg-background/80 backdrop-blur-xs border-b border-border/40 z-30 select-none">
@@ -381,124 +362,95 @@ export const ShoppingListPage = () => {
           <ArrowLeft className="w-5 h-5" />
         </Link>
 
-        <div className="flex flex-col items-center max-w-[50%] select-text">
-          {isEditingName ? (
-            <input
-              type="text"
-              value={tempName}
-              onChange={(e) => setTempName(e.target.value)}
-              onBlur={handleSaveName}
-              onKeyDown={(e) => e.key === 'Enter' && handleSaveName()}
-              autoFocus
-              className="bg-card border border-border px-2 py-0.5 rounded-lg text-xs font-black text-foreground text-center focus:outline-none focus-visible:ring-1 focus-visible:ring-accent"
-            />
-          ) : (
-            <h1 
-              onClick={() => { setTempName(list.name); setIsEditingName(true); }}
-              className="text-sm font-black text-foreground tracking-tight leading-tight line-clamp-1 cursor-pointer hover:text-accent flex items-center space-x-1"
-              title="Click to rename list"
-            >
-              <span>{list.name}</span>
-            </h1>
-          )}
-          <span className="text-[10px] font-bold text-muted-foreground mt-0.5 uppercase tracking-wider select-none">
-            {purchasedCount}/{totalItems} items
-          </span>
-        </div>
-
-        <button
-          onClick={handleSaveAsTemplate}
-          className="p-2 rounded-full hover:bg-card border border-border/20 text-accent hover:text-accent/80 transition-all cursor-pointer flex items-center space-x-1 focus-visible:outline-2 focus-visible:outline-accent"
-          title="Save as Template"
-        >
-          <Sparkles className="w-4 h-4" />
-        </button>
-      </header>
-
-      {/* Main Items View */}
-      <div className="flex-1 flex flex-col px-5 pt-4 overflow-y-auto select-text">
-        
-        {/* Search, Sort, Filter Segment */}
-        <div className="space-y-3.5 mb-4 shrink-0 select-none">
-          {/* Search bar */}
-          <div className="relative">
-            <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-muted-foreground">
-              <Search className="w-4 h-4" />
-            </span>
+        {isSearching ? (
+          <div className="flex-1 mx-4 relative select-text">
             <input
               type="text"
               placeholder="Search items..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-card border border-border/80 rounded-xl text-base sm:text-sm font-semibold text-foreground focus-visible:outline-2 focus-visible:outline-accent transition-colors"
+              autoFocus
+              className="w-full bg-card border border-border/80 px-3.5 py-1.5 rounded-xl text-sm font-semibold text-foreground focus:outline-none focus:ring-1 focus:ring-accent"
             />
+            <button
+              onClick={() => {
+                setIsSearching(false)
+                setSearchQuery('')
+              }}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground text-[10px] font-bold uppercase cursor-pointer"
+            >
+              Close
+            </button>
           </div>
-
-          {/* Inline filters */}
-          <div className="flex items-center justify-between">
-            {/* Filter Toggle Switcher */}
-            <div className="flex bg-muted/60 p-0.5 rounded-lg border border-border/60 text-[10px] font-bold">
-              <button
-                onClick={() => setFilterBy('all')}
-                className={`px-3 py-1 rounded-md transition-all cursor-pointer ${
-                  filterBy === 'all' ? 'bg-background text-foreground shadow-xs' : 'text-muted-foreground'
-                }`}
+        ) : (
+          <div className="flex flex-col items-center max-w-[50%] select-text">
+            {isEditingName ? (
+              <input
+                type="text"
+                value={tempName}
+                onChange={(e) => setTempName(e.target.value)}
+                onBlur={handleSaveName}
+                onKeyDown={(e) => e.key === 'Enter' && handleSaveName()}
+                autoFocus
+                className="bg-card border border-border px-2 py-0.5 rounded-lg text-xs font-bold text-foreground text-center focus:outline-none focus-visible:ring-1 focus-visible:ring-accent"
+              />
+            ) : (
+              <h1 
+                onClick={() => { setTempName(list.name); setIsEditingName(true); }}
+                className="text-sm font-bold text-foreground tracking-tight leading-tight line-clamp-1 cursor-pointer hover:text-accent flex items-center space-x-1"
+                title="Click to rename list"
               >
-                All
-              </button>
-              <button
-                onClick={() => setFilterBy('remaining')}
-                className={`px-3 py-1 rounded-md transition-all cursor-pointer ${
-                  filterBy === 'remaining' ? 'bg-background text-foreground shadow-xs' : 'text-muted-foreground'
-                }`}
-              >
-                Remaining
-              </button>
-              <button
-                onClick={() => setFilterBy('purchased')}
-                className={`px-3 py-1 rounded-md transition-all cursor-pointer ${
-                  filterBy === 'purchased' ? 'bg-background text-foreground shadow-xs' : 'text-muted-foreground'
-                }`}
-              >
-                Purchased
-              </button>
-            </div>
-
-            {/* Sort Toggle Selector */}
-            <div className="flex items-center space-x-1">
-              <ArrowUpDown className="w-3.5 h-3.5 text-muted-foreground" />
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as any)}
-                className="bg-muted border border-border/60 rounded-lg px-2 py-0.5 text-[10px] font-black text-foreground cursor-pointer focus-visible:outline-2 focus-visible:outline-accent hover:border-muted-foreground/30 transition-all select-none"
-              >
-                <option value="manual">Manual Order</option>
-                <option value="alpha">Alphabetical</option>
-                <option value="purchased-last">Unpurchased First</option>
-                <option value="recent">Recently Added</option>
-              </select>
-            </div>
+                <span>{list.name}</span>
+              </h1>
+            )}
+            <span className="text-[10px] font-bold text-muted-foreground mt-0.5 uppercase tracking-wider select-none">
+              {purchasedCount}/{totalItems} items
+            </span>
           </div>
+        )}
 
-          {/* Inline Quick Adder form */}
-          <form onSubmit={handleQuickAdd} className="flex space-x-2 select-text">
-            <input
-              type="text"
-              placeholder="Quick add product name..."
-              value={newItemName}
-              onChange={(e) => setNewItemName(e.target.value)}
-              className="flex-1 px-3.5 py-2 bg-card border border-border/80 rounded-xl text-base sm:text-sm font-semibold text-foreground focus-visible:outline-2 focus-visible:outline-accent transition-colors"
-            />
-            <Button
+        <div className="flex items-center space-x-1.5">
+          {!isSearching && (
+            <button
+              onClick={() => setIsSearching(true)}
+              className="p-2 rounded-full hover:bg-card border border-border/20 text-muted-foreground hover:text-foreground transition-all cursor-pointer flex items-center justify-center focus-visible:outline-2 focus-visible:outline-accent"
+              title="Search Items"
+            >
+              <Search className="w-4 h-4" />
+            </button>
+          )}
+          <button
+            onClick={handleSaveAsTemplate}
+            className="p-2 rounded-full hover:bg-card border border-border/20 text-accent hover:text-accent/80 transition-all cursor-pointer flex items-center justify-center focus-visible:outline-2 focus-visible:outline-accent"
+            title="Save as Template"
+          >
+            <Sparkles className="w-4 h-4" />
+          </button>
+        </div>
+      </header>
+
+      {/* Main Items View */}
+      <div className="flex-1 flex flex-col px-5 pt-4 overflow-y-auto select-text">
+        
+        {/* Sleek Inline Quick Adder form */}
+        <form onSubmit={handleQuickAdd} className="flex items-center space-x-3 px-4 py-2.5 rounded-xl border border-dashed border-border/60 bg-muted/10 hover:bg-muted/20 transition-all select-text mb-4 shrink-0">
+          <span className="text-muted-foreground text-lg font-light pl-1 select-none">+</span>
+          <input
+            type="text"
+            placeholder="Add item (e.g. Milk, 2, Litre, 2.50)..."
+            value={newItemName}
+            onChange={(e) => setNewItemName(e.target.value)}
+            className="flex-1 bg-transparent border-none text-sm font-medium text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-0 p-0"
+          />
+          {newItemName.trim() && (
+            <button
               type="submit"
-              variant="primary"
-              disabled={!newItemName.trim()}
-              className="px-4 font-black text-xs rounded-xl h-10 cursor-pointer shrink-0"
+              className="text-xs font-bold text-accent uppercase tracking-wider pr-1 cursor-pointer hover:text-accent/80 transition-all select-none"
             >
               Add
-            </Button>
-          </form>
-        </div>
+            </button>
+          )}
+        </form>
 
         {/* Dynamic Items list */}
         {processedItems.length === 0 ? (
@@ -510,7 +462,7 @@ export const ShoppingListPage = () => {
                 <span className="text-[11px] text-muted-foreground max-w-[200px] leading-relaxed">
                   {searchQuery.trim() 
                     ? 'No shopping items match your query.' 
-                    : 'Tap the "+" button below to add your first grocery item!'}
+                    : 'Type in the "+ Add item..." box above to add your first grocery item!'}
                 </span>
               </CardContent>
             </Card>
@@ -573,7 +525,7 @@ export const ShoppingListPage = () => {
                         </div>
                       </div>
 
-                      {/* Pricing column and manual sorting controls */}
+                      {/* Pricing column */}
                       <div className="flex items-center space-x-3 shrink-0">
                         {/* Inline actual price input if purchased */}
                         {showActualPrice && item.purchased && (
@@ -594,29 +546,9 @@ export const ShoppingListPage = () => {
 
                         {/* Display expected price details */}
                         {!item.purchased && showEstimatedPrice && item.expectedPrice !== undefined && (
-                          <span className="text-xs font-extrabold text-foreground/80 tabular-nums">
+                          <span className="text-xs font-bold text-foreground/80 tabular-nums">
                             {currency}{(item.quantity * item.expectedPrice).toFixed(2)}
                           </span>
-                        )}
-
-                        {/* Manual reorder arrows */}
-                        {sortBy === 'manual' && filterBy === 'all' && (
-                          <div className="flex flex-col items-center space-y-1 bg-muted/30 p-1 rounded-lg border border-border/30">
-                            <button
-                              onClick={() => handleManualReorder(item.id, 'up')}
-                              className="p-0.5 text-muted-foreground hover:text-foreground cursor-pointer"
-                              title="Move item up"
-                            >
-                              <ArrowUp className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                              onClick={() => handleManualReorder(item.id, 'down')}
-                              className="p-0.5 text-muted-foreground hover:text-foreground cursor-pointer"
-                              title="Move item down"
-                            >
-                              <ArrowDown className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
                         )}
                       </div>
 
@@ -629,8 +561,6 @@ export const ShoppingListPage = () => {
         )}
       </div>
 
-
-
       {/* Sticky Bottom Summary Bar */}
       <footer className="absolute bottom-0 left-0 right-0 z-35 bg-background border-t border-border/80 px-5 pt-3 pb-4 space-y-3.5 shrink-0 select-none shadow-2xl">
         <div className="grid grid-cols-3 gap-2 text-center text-xs">
@@ -638,7 +568,7 @@ export const ShoppingListPage = () => {
           {showEstimatedPrice && (
             <div className="flex flex-col">
               <span className="text-muted-foreground text-[9px] font-bold uppercase tracking-wider">Estimated</span>
-              <span className="font-extrabold text-foreground mt-0.5 tabular-nums">{currency}{estimatedTotal.toFixed(2)}</span>
+              <span className="font-bold text-foreground mt-0.5 tabular-nums">{currency}{estimatedTotal.toFixed(2)}</span>
             </div>
           )}
 
@@ -646,7 +576,7 @@ export const ShoppingListPage = () => {
           {showActualPrice && (
             <div className="flex flex-col">
               <span className="text-muted-foreground text-[9px] font-bold uppercase tracking-wider">Actual Cost</span>
-              <span className="font-black text-accent mt-0.5 tabular-nums">{currency}{actualTotal.toFixed(2)}</span>
+              <span className="font-bold text-accent mt-0.5 tabular-nums">{currency}{actualTotal.toFixed(2)}</span>
             </div>
           )}
 
@@ -654,7 +584,7 @@ export const ShoppingListPage = () => {
           {showEstimatedPrice && showActualPrice && (
             <div className="flex flex-col">
               <span className="text-muted-foreground text-[9px] font-bold uppercase tracking-wider">Difference</span>
-              <span className={`font-black mt-0.5 tabular-nums ${
+              <span className={`font-bold mt-0.5 tabular-nums ${
                 budgetDiff >= 0 ? 'text-emerald-500' : 'text-red-500'
               }`}>
                 {budgetDiff >= 0 ? '+' : ''}{currency}{budgetDiff.toFixed(2)}
@@ -667,7 +597,7 @@ export const ShoppingListPage = () => {
         <Button
           onClick={handleCompleteSession}
           variant="primary"
-          className="w-full h-11 text-xs font-black uppercase tracking-wider rounded-2xl cursor-pointer"
+          className="w-full h-11 text-xs font-bold uppercase tracking-wider rounded-2xl cursor-pointer"
         >
           <ClipboardCheck className="w-4 h-4 mr-2" />
           Finish Shopping
@@ -701,7 +631,7 @@ export const ShoppingListPage = () => {
           <Button
             type="button"
             variant={confirmDialog.variant === 'danger' ? 'secondary' : 'primary'}
-            className={`cursor-pointer font-black text-xs rounded-xl ${
+            className={`cursor-pointer font-bold text-xs rounded-xl ${
               confirmDialog.variant === 'danger' ? 'bg-red-500 hover:bg-red-600 text-white border-0' : ''
             }`}
             onClick={() => {
@@ -747,7 +677,7 @@ export const ShoppingListPage = () => {
                 promptDialog.onConfirm(promptDialog.value.trim())
                 setPromptDialog(prev => ({ ...prev, isOpen: false }))
               }}
-              className="cursor-pointer font-black text-xs rounded-xl"
+              className="cursor-pointer font-bold text-xs rounded-xl"
             >
               Submit
             </Button>
@@ -767,7 +697,7 @@ export const ShoppingListPage = () => {
             type="button"
             variant="primary"
             onClick={() => setAlertDialog(prev => ({ ...prev, isOpen: false }))}
-            className="cursor-pointer font-black text-xs rounded-xl px-5"
+            className="cursor-pointer font-bold text-xs rounded-xl px-5"
           >
             OK
           </Button>
@@ -776,9 +706,5 @@ export const ShoppingListPage = () => {
     </div>
   )
 }
-
-// Simple imported helper workaround to fix checkmark import
-import { Check } from 'lucide-react'
-import { useSettingsStore } from '@/core/settings/settingsStore'
 
 export default ShoppingListPage

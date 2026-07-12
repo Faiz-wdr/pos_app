@@ -222,7 +222,7 @@ export const ClockModulePage = () => {
             <div className="flex bg-muted/70 p-1 rounded-xl border border-border/50">
               <button
                 onClick={() => setActiveTab('clock')}
-                className={`flex items-center px-4 py-1.5 text-xs font-black rounded-lg transition-all cursor-pointer ${
+                className={`flex items-center px-4 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
                   activeTab === 'clock'
                     ? 'bg-accent text-accent-foreground shadow-xs'
                     : 'text-muted-foreground hover:text-foreground'
@@ -233,7 +233,7 @@ export const ClockModulePage = () => {
               </button>
               <button
                 onClick={() => setActiveTab('timer')}
-                className={`flex items-center px-4 py-1.5 text-xs font-black rounded-lg transition-all cursor-pointer ${
+                className={`flex items-center px-4 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
                   activeTab === 'timer'
                     ? 'bg-accent text-accent-foreground shadow-xs'
                     : 'text-muted-foreground hover:text-foreground'
@@ -313,7 +313,7 @@ export const ClockModulePage = () => {
               <BellRing className="w-12 h-12" />
             </motion.div>
 
-            <h1 className="text-3xl font-black text-white tracking-tight uppercase">Timer Completed</h1>
+            <h1 className="text-3xl font-bold text-white tracking-tight uppercase">Timer Completed</h1>
             <p className="text-sm text-neutral-400 mt-2 text-center max-w-[240px]">
               Dismiss the alert to stop alarm sounds and vibration alerts.
             </p>
@@ -321,7 +321,7 @@ export const ClockModulePage = () => {
             <motion.button
               onClick={handleDismissAlarm}
               whileTap={animationsEnabled ? { scale: 0.98 } : {}}
-              className="mt-10 px-8 py-3.5 bg-accent text-accent-foreground font-black rounded-2xl cursor-pointer text-sm shadow-xl focus-visible:outline-2 focus-visible:outline-accent uppercase tracking-wider"
+              className="mt-10 px-8 py-3.5 bg-accent text-accent-foreground font-bold rounded-2xl cursor-pointer text-sm shadow-xl focus-visible:outline-2 focus-visible:outline-accent uppercase tracking-wider"
             >
               Dismiss Alarm
             </motion.button>

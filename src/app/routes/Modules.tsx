@@ -87,7 +87,7 @@ export const Modules = () => {
     <div className="flex-1 flex flex-col space-y-6 pb-6 select-none text-left">
       <div className="flex flex-col">
         <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">System Components</span>
-        <h1 className="text-2xl font-black text-foreground mt-0.5 tracking-tight">Modules</h1>
+        <h1 className="text-2xl font-bold text-foreground mt-0.5 tracking-tight">Modules</h1>
       </div>
 
       {modules.length === 0 ? (
@@ -116,9 +116,9 @@ export const Modules = () => {
                     </div>
                     <div className="flex flex-col space-y-0.5">
                       <div className="flex items-center space-x-2">
-                        <h3 className="text-sm font-black text-foreground">{m.name}</h3>
+                        <h3 className="text-sm font-bold text-foreground">{m.name}</h3>
                         {m.isPremium && (
-                          <span className="text-[9px] bg-accent/10 text-accent font-black uppercase px-2 py-0.5 rounded-full tracking-wide">
+                          <span className="text-[9px] bg-accent/10 text-accent font-bold uppercase px-2 py-0.5 rounded-full tracking-wide">
                             PRO
                           </span>
                         )}
@@ -147,7 +147,7 @@ export const Modules = () => {
                     >
                       <Button 
                         variant="secondary" 
-                        className="w-full flex justify-between items-center h-10 px-4 text-xs font-black bg-muted/60 dark:bg-card/50 rounded-xl hover:bg-muted active:scale-[0.98] border border-border cursor-pointer"
+                        className="w-full flex justify-between items-center h-10 px-4 text-xs font-bold bg-muted/60 dark:bg-card/50 rounded-xl hover:bg-muted active:scale-[0.98] border border-border cursor-pointer"
                       >
                         <span>Open Module</span>
                         <ArrowRight className="w-4 h-4 text-accent" />

@@ -11,6 +11,7 @@ import { useAuthStore } from '@/core/firebase/stores/authStore'
 import { authService } from '@/core/firebase/services/authService'
 import { serializeFirebaseUser } from '@/core/firebase/hooks/useAuth'
 import { AuthBottomSheet } from '@/core/firebase/components/auth/AuthBottomSheet'
+import { UpdateDialog } from '@/core/pwa/UpdateDialog'
 
 export const RootLayout = () => {
   const location = useLocation()
@@ -79,6 +80,7 @@ export const RootLayout = () => {
 
         {!hideSystemNav && <BottomNav />}
         <AuthBottomSheet />
+        <UpdateDialog />
       </main>
     </div>
   )

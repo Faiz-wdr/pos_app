@@ -34,7 +34,7 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
         <Sparkles className="w-10 h-10" />
       </div>
       <div className="space-y-2">
-        <h2 className="text-lg font-black text-foreground tracking-tight">Premium Module</h2>
+        <h2 className="text-lg font-bold text-foreground tracking-tight">Premium Module</h2>
         <p className="text-xs text-muted-foreground leading-relaxed">
           Sign in to access premium features, automated backup engines, and multi-device cloud sync.
         </p>
@@ -46,14 +46,14 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
             title: 'Premium Module',
             description: 'Unlock premium features by signing in with your email address.'
           })}
-          className="w-full font-black uppercase text-xs tracking-wider h-11 rounded-xl cursor-pointer"
+          className="w-full font-bold uppercase text-xs tracking-wider h-11 rounded-xl cursor-pointer"
         >
           Sign In to Unlock
         </Button>
         <Button
           variant="secondary"
           onClick={() => navigate('/')}
-          className="w-full font-black uppercase text-xs tracking-wider h-11 rounded-xl cursor-pointer bg-muted/60 hover:bg-muted border border-border"
+          className="w-full font-bold uppercase text-xs tracking-wider h-11 rounded-xl cursor-pointer bg-muted/60 hover:bg-muted border border-border"
         >
           Back to Dashboard
         </Button>

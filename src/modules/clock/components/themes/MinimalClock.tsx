@@ -48,7 +48,7 @@ export const MinimalClock: React.FC<ClockThemeProps> = ({
         }
       `}} />
 
-      <div className="flex items-center justify-center font-black">
+      <div className="flex items-center justify-center font-bold">
         {/* Hours Digit 1 & 2 Overlapping */}
         <div className="flex items-center relative">
           <span 
