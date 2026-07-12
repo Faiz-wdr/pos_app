@@ -15,6 +15,9 @@ import { THEMES } from '../components/themes'
 import { useDeviceOrientation } from '../hooks/useDeviceOrientation'
 import { useClockTime } from '../hooks/useClockTime'
 import { Maximize, Minimize } from 'lucide-react'
+import { ClockTheme } from '../types'
+
+const THEME_KEYS: ClockTheme[] = ['modern-digital', 'minimal-digital', 'classic-analog', 'calendar-analog']
 
 type SubTab = 'clock' | 'timer'
 
@@ -33,12 +36,25 @@ export const ClockModulePage = () => {
   const animationsEnabled = useSettingsStore((state) => state.animationsEnabled)
   const { 
     theme, 
+    setTheme,
     keepAwake, 
     autoHideControls,
     showSeconds,
     use24Hour,
     dateFormat
   } = useClockStore()
+
+  const handleNextTheme = () => {
+    const currentIndex = THEME_KEYS.indexOf(theme)
+    const nextIndex = (currentIndex + 1) % THEME_KEYS.length
+    setTheme(THEME_KEYS[nextIndex])
+  }
+
+  const handlePrevTheme = () => {
+    const currentIndex = THEME_KEYS.indexOf(theme)
+    const prevIndex = (currentIndex - 1 + THEME_KEYS.length) % THEME_KEYS.length
+    setTheme(THEME_KEYS[prevIndex])
+  }
   const { isCompleted, dismissCompleted, tick, syncBackground, isRunning } = useTimerStore()
 
   const isDeskModeActive = isLandscape
@@ -199,6 +215,7 @@ export const ClockModulePage = () => {
     <div 
       className="flex-1 flex flex-col justify-between w-full h-full relative select-none overflow-hidden"
       onClick={showControls}
+      style={activeTab === 'clock' ? { backgroundColor: '#000000' } : {}}
     >
       {/* Top Header Section */}
       <AnimatePresence>
@@ -208,7 +225,11 @@ export const ClockModulePage = () => {
             animate={{ y: 0, opacity: 1 }}
             exit={animationsEnabled ? { y: -40, opacity: 0 } : { y: -40, opacity: 0 }}
             transition={transition}
-            className="flex items-center justify-between w-full px-5 py-4 shrink-0 bg-background/90 dark:bg-background/80 backdrop-blur-xs border-b border-border/40 z-30 select-none absolute top-0 left-0 right-0"
+            className={`flex items-center justify-between w-full px-5 py-4 shrink-0 backdrop-blur-md z-30 select-none absolute top-0 left-0 right-0 transition-colors duration-300 ${
+              activeTab === 'clock' 
+                ? 'bg-black/40 border-b border-white/5' 
+                : 'bg-background/90 dark:bg-background/80 border-b border-border/40'
+            }`}
           >
             <Link 
               to="/modules" 
@@ -264,12 +285,23 @@ export const ClockModulePage = () => {
         <AnimatePresence mode="wait">
           {activeTab === 'clock' ? (
             <motion.div
-              key={isDeskModeActive ? 'clock-landscape' : 'clock-portrait'}
-              initial={animationsEnabled ? { opacity: 0, scale: 0.94 } : { opacity: 1, scale: 1 }}
+              key={theme + (isDeskModeActive ? '-landscape' : '-portrait')}
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.4}
+              onDragEnd={(_e, info) => {
+                const swipeThreshold = 50
+                if (info.offset.x < -swipeThreshold) {
+                  handleNextTheme()
+                } else if (info.offset.x > swipeThreshold) {
+                  handlePrevTheme()
+                }
+              }}
+              initial={animationsEnabled ? { opacity: 0, scale: 0.96 } : { opacity: 1, scale: 1 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={animationsEnabled ? { opacity: 0, scale: 0.94 } : { opacity: 0, scale: 0.94 }}
-              transition={{ duration: 0.35, ease: 'easeInOut' }}
-              className="w-full flex items-center justify-center"
+              exit={animationsEnabled ? { opacity: 0, scale: 0.96 } : { opacity: 0, scale: 0.96 }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+              className="w-full flex items-center justify-center cursor-grab active:cursor-grabbing touch-none select-none"
             >
               <ActiveThemeComponent
                 time={time}

@@ -2,12 +2,11 @@ import { DateFormat } from '../types'
 
 export const formatTime = (
   date: Date,
-  use24Hour: boolean,
-  showSeconds: boolean
-): { timeStr: string; ampm: string } => {
+  use24Hour: boolean
+): { timeStr: string; ampm: string; secondsStr: string } => {
   let hours = date.getHours()
   const minutes = String(date.getMinutes()).padStart(2, '0')
-  const seconds = showSeconds ? ':' + String(date.getSeconds()).padStart(2, '0') : ''
+  const secondsStr = String(date.getSeconds()).padStart(2, '0')
   let ampm = ''
 
   if (!use24Hour) {
@@ -18,8 +17,9 @@ export const formatTime = (
 
   const hoursStr = String(hours).padStart(2, '0')
   return {
-    timeStr: `${hoursStr}:${minutes}${seconds}`,
-    ampm
+    timeStr: `${hoursStr}:${minutes}`,
+    ampm,
+    secondsStr
   }
 }
 

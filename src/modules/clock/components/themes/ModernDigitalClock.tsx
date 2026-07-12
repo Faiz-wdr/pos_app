@@ -9,39 +9,73 @@ export const ModernDigitalClock: React.FC<ClockThemeProps> = ({
   dateFormat,
   isLandscapeMode
 }) => {
-  const { timeStr, ampm } = formatTime(time, use24Hour, showSeconds)
+  const { timeStr, ampm, secondsStr } = formatTime(time, use24Hour)
   const dateStr = formatDate(time, dateFormat)
 
   return (
     <div className={`flex flex-col items-center justify-center text-center select-none ${
       isLandscapeMode ? 'py-4 max-w-4xl' : 'py-6 w-full'
     }`}>
-      <div className="relative group">
-        {/* Soft atmospheric background glow behind the clock */}
-        <div className="absolute inset-0 bg-accent/5 blur-3xl rounded-full scale-110 pointer-events-none transition-all duration-500" />
-        
-        <div className="flex items-baseline justify-center font-bold tracking-tight text-foreground drop-shadow-[0_0_20px_rgba(248,181,24,0.15)] dark:drop-shadow-[0_0_25px_rgba(248,181,24,0.2)]">
-          <span className={`font-sans rounded-2xl ${
-            isLandscapeMode ? 'text-8xl sm:text-9xl md:text-[12rem] lg:text-[15rem]' : 'text-6xl sm:text-7xl md:text-8xl lg:text-9xl'
-          } font-bold tracking-tighter tabular-nums select-text transition-all duration-300`}>
-            {timeStr}
-          </span>
+      <div className="relative group flex flex-col items-center">
+        {/* Main Clock Layout Grid/Flex */}
+        <div className="flex items-center justify-center font-sans tracking-tight text-foreground select-none">
+          {/* AM/PM indicator on the left */}
           {ampm && (
-            <span className={`font-bold ml-2 px-2 py-0.5 rounded-lg bg-accent/10 text-accent uppercase select-text tracking-wider ${
-              isLandscapeMode ? 'text-xl sm:text-2xl md:text-3xl' : 'text-xs sm:text-sm md:text-base'
-            }`}>
-              {ampm}
-            </span>
+            <div className="flex flex-col items-start justify-center mr-4 sm:mr-6 lg:mr-8 leading-none">
+              <span className={`font-bold uppercase tracking-wider transition-all duration-300 ${
+                ampm === 'AM' 
+                  ? 'text-accent' 
+                  : 'text-stone-300/20 dark:text-stone-800/35'
+              } ${
+                isLandscapeMode ? 'text-xl sm:text-2xl md:text-3xl' : 'text-xs sm:text-sm md:text-base'
+              }`}>
+                AM
+              </span>
+              <span className={`font-bold uppercase tracking-wider transition-all duration-300 ${
+                ampm === 'PM' 
+                  ? 'text-accent' 
+                  : 'text-stone-300/20 dark:text-stone-800/35'
+              } ${
+                isLandscapeMode ? 'text-xl sm:text-2xl md:text-3xl mt-2 lg:mt-3' : 'text-xs sm:text-sm md:text-base mt-1'
+              }`}>
+                PM
+              </span>
+            </div>
           )}
+
+          {/* Time digits */}
+          <div className="flex items-baseline justify-center select-text">
+            {/* Hours and Minutes */}
+            <span className={`font-sans font-light tracking-tighter tabular-nums text-stone-200 dark:text-stone-100 ${
+              isLandscapeMode 
+                ? 'text-7xl sm:text-8xl md:text-[10rem] lg:text-[13rem]' 
+                : 'text-6xl sm:text-7xl md:text-8xl lg:text-9xl'
+            } transition-all duration-300`}>
+              {timeStr}
+            </span>
+
+            {/* Small Ticking Seconds */}
+            {showSeconds && (
+              <span className={`font-sans font-light tracking-tighter tabular-nums text-stone-400 dark:text-stone-500 ml-1.5 sm:ml-3 transition-all duration-300 ${
+                isLandscapeMode 
+                  ? 'text-3xl sm:text-4xl md:text-5xl lg:text-7xl' 
+                  : 'text-xl sm:text-2xl md:text-3xl lg:text-4xl'
+              }`}>
+                :{secondsStr}
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
-      <div className={`text-accent font-semibold tracking-widest uppercase opacity-85 select-text ${
-        isLandscapeMode ? 'text-base sm:text-lg md:text-xl mt-6' : 'text-[10px] sm:text-xs mt-3.5'
+      {/* Date display below */}
+      <div className={`text-accent font-bold tracking-widest uppercase opacity-85 select-text ${
+        isLandscapeMode ? 'text-base sm:text-lg md:text-xl mt-6' : 'text-[10px] sm:text-xs mt-4'
       }`}>
         {dateStr}
       </div>
     </div>
   )
 }
+
 export default ModernDigitalClock

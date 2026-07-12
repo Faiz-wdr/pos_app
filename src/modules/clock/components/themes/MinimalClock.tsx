@@ -16,15 +16,16 @@ export const STANDBY_THEME_COLORS = {
 
 export const MinimalClock: React.FC<ClockThemeProps> = ({
   time,
+  showSeconds,
   use24Hour,
   isLandscapeMode
 }) => {
   const themeColor = useClockStore((state) => state.themeColor)
-  
+
   // Format hours and minutes with padding
   const rawHours = time.getHours()
-  const hoursNum = use24Hour 
-    ? rawHours 
+  const hoursNum = use24Hour
+    ? rawHours
     : (rawHours % 12 === 0 ? 12 : rawHours % 12)
   const hoursStr = String(hoursNum).padStart(2, '0')
   const minutesStr = String(time.getMinutes()).padStart(2, '0')
@@ -39,7 +40,8 @@ export const MinimalClock: React.FC<ClockThemeProps> = ({
   return (
     <div className="flex items-center justify-center select-none w-full h-full py-8">
       {/* Inject Google Font dynamically for round stand-by style digits */}
-      <style dangerouslySetInnerHTML={{__html: `
+      <style dangerouslySetInnerHTML={{
+        __html: `
         @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@800;900&display=swap');
         .standby-font {
           font-family: 'Fredoka', sans-serif;
@@ -51,10 +53,9 @@ export const MinimalClock: React.FC<ClockThemeProps> = ({
       <div className="flex items-center justify-center font-bold">
         {/* Hours Digit 1 & 2 Overlapping */}
         <div className="flex items-center relative">
-          <span 
-            className={`standby-font leading-none select-text inline-block ${
-              isLandscapeMode ? 'text-[32vw] md:text-[27vw]' : 'text-[38vw]'
-            }`}
+          <span
+            className={`standby-font leading-none select-text inline-block ${isLandscapeMode ? 'text-[32vw] md:text-[27vw]' : 'text-[38vw]'
+              }`}
             style={{
               color: colorSet.dark,
               textShadow: '0 4px 16px rgba(0, 0, 0, 0.45)',
@@ -63,10 +64,9 @@ export const MinimalClock: React.FC<ClockThemeProps> = ({
           >
             {hoursStr[0]}
           </span>
-          <span 
-            className={`standby-font leading-none select-text -ml-[0.24em] z-10 opacity-92 mix-blend-screen inline-block ${
-              isLandscapeMode ? 'text-[32vw] md:text-[27vw]' : 'text-[38vw]'
-            }`}
+          <span
+            className={`standby-font leading-none select-text -ml-[0.24em] z-10 opacity-92 mix-blend-screen inline-block ${isLandscapeMode ? 'text-[32vw] md:text-[27vw]' : 'text-[38vw]'
+              }`}
             style={{
               color: colorSet.light,
               textShadow: '0 4px 16px rgba(0, 0, 0, 0.45)',
@@ -85,10 +85,9 @@ export const MinimalClock: React.FC<ClockThemeProps> = ({
 
         {/* Minutes Digit 1 & 2 Overlapping */}
         <div className="flex items-center relative">
-          <span 
-            className={`standby-font leading-none select-text inline-block ${
-              isLandscapeMode ? 'text-[32vw] md:text-[27vw]' : 'text-[38vw]'
-            }`}
+          <span
+            className={`standby-font leading-none select-text inline-block ${isLandscapeMode ? 'text-[32vw] md:text-[27vw]' : 'text-[38vw]'
+              }`}
             style={{
               color: colorSet.dark,
               textShadow: '0 4px 16px rgba(0, 0, 0, 0.45)',
@@ -97,10 +96,9 @@ export const MinimalClock: React.FC<ClockThemeProps> = ({
           >
             {minutesStr[0]}
           </span>
-          <span 
-            className={`standby-font leading-none select-text -ml-[0.24em] z-10 opacity-92 mix-blend-screen inline-block ${
-              isLandscapeMode ? 'text-[32vw] md:text-[27vw]' : 'text-[38vw]'
-            }`}
+          <span
+            className={`standby-font leading-none select-text -ml-[0.24em] z-10 opacity-92 mix-blend-screen inline-block ${isLandscapeMode ? 'text-[32vw] md:text-[27vw]' : 'text-[38vw]'
+              }`}
             style={{
               color: colorSet.light,
               textShadow: '0 4px 16px rgba(0, 0, 0, 0.45)',
@@ -110,6 +108,19 @@ export const MinimalClock: React.FC<ClockThemeProps> = ({
             {minutesStr[1]}
           </span>
         </div>
+
+        {/* Small Ticking Seconds next to minutes */}
+        {showSeconds && (
+          <div
+            className="flex flex-col justify-end ml-3 sm:ml-4 select-none self-end pb-[2.5vw]"
+            style={{ color: colorSet.light }}
+          >
+            <span className={`standby-font leading-none tabular-nums tracking-wider opacity-85 ${isLandscapeMode ? 'text-[5vw]' : 'text-[6vw]'
+              }`}>
+              {String(time.getSeconds()).padStart(2, '0')}
+            </span>
+          </div>
+        )}
       </div>
     </div>
   )

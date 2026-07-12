@@ -1,12 +1,12 @@
 import ModernDigitalClock from './ModernDigitalClock'
 import MinimalClock from './MinimalClock'
-import ModernAnalogClock from './ModernAnalogClock'
+import DotMatrixClock from './DotMatrixClock'
 import CalendarAnalogClock from './CalendarAnalogClock'
 
 export const THEMES = {
   'modern-digital': ModernDigitalClock,
   'minimal-digital': MinimalClock,
-  'classic-analog': ModernAnalogClock,
+  'classic-analog': DotMatrixClock,
   'calendar-analog': CalendarAnalogClock
 }
 

@@ -193,7 +193,7 @@ export const ClockSettingsDialog = ({ isOpen, onClose }: ClockSettingsDialogProp
               <span className="text-[10px] font-bold text-foreground uppercase tracking-wide">StandBy Digital</span>
             </button>
 
-            {/* Classic Analog */}
+            {/* Dot Matrix */}
             <button
               onClick={() => setActiveTheme('classic-analog')}
               className={`flex flex-col items-center justify-center p-3 rounded-2xl border-2 cursor-pointer transition-all ${
@@ -202,14 +202,49 @@ export const ClockSettingsDialog = ({ isOpen, onClose }: ClockSettingsDialogProp
                   : 'border-border bg-card/45 hover:border-muted-foreground/30'
               }`}
             >
-              <div className="w-full h-14 flex items-center justify-center bg-stone-900/60 dark:bg-stone-800/40 rounded-xl mb-1.5">
-                <div className="w-10 h-10 rounded-full border border-accent/20 bg-accent/5 flex items-center justify-center relative">
-                  <div className="w-0.5 h-3.5 bg-accent absolute top-1.5 rounded-full origin-bottom" style={{ transform: 'rotate(60deg)' }} />
-                  <div className="w-0.5 h-4.5 bg-foreground absolute top-0.5 rounded-full origin-bottom" style={{ transform: 'rotate(180deg)' }} />
-                  <span className="absolute text-[6px] font-bold text-foreground top-0.5">12</span>
+              <div className="w-full h-14 flex flex-col items-center justify-center bg-black border border-neutral-900 rounded-xl mb-1.5 px-2 relative overflow-hidden">
+                {/* Tiny AM/PM */}
+                <div className="flex space-x-[2px] absolute top-[4px] left-[10px] scale-75 opacity-70">
+                  <div className="flex flex-col space-y-[1px]">
+                    <div className="flex space-x-[1px]">
+                      <div className="w-[1.5px] h-[1.5px] bg-white rounded-xs" />
+                      <div className="w-[1.5px] h-[1.5px] bg-white rounded-xs" />
+                    </div>
+                    <div className="flex space-x-[1px]">
+                      <div className="w-[1.5px] h-[1.5px] bg-white rounded-xs" />
+                      <div className="w-[1.5px] h-[1.5px] bg-white rounded-xs" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Tiny digits matrix layout preview */}
+                <div className="flex items-center space-x-[3px] mt-1.5">
+                  {/* Zero */}
+                  <div className="grid grid-cols-3 gap-[1px]">
+                    <div className="w-1 h-1 bg-white rounded-xs" /><div className="w-1 h-1 bg-white rounded-xs" /><div className="w-1 h-1 bg-white rounded-xs" />
+                    <div className="w-1 h-1 bg-white rounded-xs" /><div className="w-1 h-1 bg-transparent" /><div className="w-1 h-1 bg-white rounded-xs" />
+                    <div className="w-1 h-1 bg-white rounded-xs" /><div className="w-1 h-1 bg-white rounded-xs" /><div className="w-1 h-1 bg-white rounded-xs" />
+                  </div>
+                  {/* One */}
+                  <div className="grid grid-cols-3 gap-[1px]">
+                    <div className="w-1 h-1 bg-transparent" /><div className="w-1 h-1 bg-white rounded-xs" /><div className="w-1 h-1 bg-transparent" />
+                    <div className="w-1 h-1 bg-transparent" /><div className="w-1 h-1 bg-white rounded-xs" /><div className="w-1 h-1 bg-transparent" />
+                    <div className="w-1 h-1 bg-white rounded-xs" /><div className="w-1 h-1 bg-white rounded-xs" /><div className="w-1 h-1 bg-white rounded-xs" />
+                  </div>
+                  {/* Colon */}
+                  <div className="flex flex-col space-y-1 mx-[1px]">
+                    <div className="w-1 h-1 bg-white rounded-xs" />
+                    <div className="w-1 h-1 bg-white rounded-xs" />
+                  </div>
+                  {/* Five */}
+                  <div className="grid grid-cols-3 gap-[1px]">
+                    <div className="w-1 h-1 bg-white rounded-xs" /><div className="w-1 h-1 bg-white rounded-xs" /><div className="w-1 h-1 bg-white rounded-xs" />
+                    <div className="w-1 h-1 bg-white rounded-xs" /><div className="w-1 h-1 bg-white rounded-xs" /><div className="w-1 h-1 bg-transparent" />
+                    <div className="w-1 h-1 bg-white rounded-xs" /><div className="w-1 h-1 bg-white rounded-xs" /><div className="w-1 h-1 bg-white rounded-xs" />
+                  </div>
                 </div>
               </div>
-              <span className="text-[10px] font-bold text-foreground uppercase tracking-wide">Classic Analog</span>
+              <span className="text-[10px] font-bold text-foreground uppercase tracking-wide">Dot Matrix</span>
             </button>
 
             {/* Calendar Analog */}
