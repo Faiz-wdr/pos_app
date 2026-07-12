@@ -45,6 +45,14 @@ class PWAUpdateService {
         console.log('App focused. Checking for updates...')
         this.checkForUpdates()
       })
+
+      // 3. Listen for app visibility changes (crucial for PWA resumes on mobile/tablet)
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          console.log('App visible. Checking for updates...')
+          this.checkForUpdates()
+        }
+      })
     }
   }
 
