@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 export const useWakeLock = () => {
   const [isSupported, setIsSupported] = useState(false)
   const [isActive, setIsActive] = useState(false)
+  const [shouldBeActive, setShouldBeActive] = useState(false)
   const wakeLockRef = useRef<any>(null) // Use any for WakeLockSentinel type safety across environments
 
   useEffect(() => {
@@ -11,6 +12,8 @@ export const useWakeLock = () => {
 
   const request = useCallback(async () => {
     if (!('wakeLock' in navigator)) return false
+
+    setShouldBeActive(true)
 
     try {
       // Re-use current lock if it exists
@@ -34,6 +37,7 @@ export const useWakeLock = () => {
   }, [])
 
   const release = useCallback(async () => {
+    setShouldBeActive(false)
     if (!wakeLockRef.current) return
 
     try {
@@ -45,11 +49,25 @@ export const useWakeLock = () => {
     }
   }, [])
 
-  // Auto re-acquire wake lock if active and page becomes visible again
+  // Auto re-acquire wake lock if it should be active and page becomes visible again
   useEffect(() => {
     const handleVisibilityChange = async () => {
-      if (isActive && document.visibilityState === 'visible') {
-        await request()
+      if (shouldBeActive && document.visibilityState === 'visible') {
+        try {
+          if (!wakeLockRef.current) {
+            const wakeLock = await (navigator as any).wakeLock.request('screen')
+            wakeLockRef.current = wakeLock
+            setIsActive(true)
+
+            wakeLock.addEventListener('release', () => {
+              wakeLockRef.current = null
+              setIsActive(false)
+            })
+            console.log('Wake Lock auto-reacquired successfully on visibility change.')
+          }
+        } catch (err) {
+          console.warn('Failed to re-acquire wake lock on visibility change:', err)
+        }
       }
     }
 
@@ -57,7 +75,7 @@ export const useWakeLock = () => {
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
-  }, [isActive, request])
+  }, [shouldBeActive])
 
   return {
     isSupported,

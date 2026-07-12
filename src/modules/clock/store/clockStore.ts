@@ -22,7 +22,7 @@ export const useClockStore = create<ClockStoreState>()(
       dateFormat: 'long',
       showSeconds: true,
       autoHideControls: false,
-      keepAwake: false,
+      keepAwake: true,
 
       setTheme: (theme) => set({ theme }),
       setThemeColor: (themeColor) => set({ themeColor }),
