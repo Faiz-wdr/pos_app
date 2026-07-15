@@ -12,6 +12,7 @@ import { authService } from '@/core/firebase/services/authService'
 import { serializeFirebaseUser } from '@/core/firebase/hooks/useAuth'
 import { AuthBottomSheet } from '@/core/firebase/components/auth/AuthBottomSheet'
 import { UpdateDialog } from '@/core/pwa/UpdateDialog'
+import { useUserHeartbeat } from '@/shared/hooks/useUserHeartbeat'
 
 export const RootLayout = () => {
   const location = useLocation()
@@ -20,6 +21,9 @@ export const RootLayout = () => {
   const isFullscreen = useNavigationStore((state) => state.isFullscreen)
   const animationsEnabled = useSettingsStore((state) => state.animationsEnabled)
   const restoreSession = useAuthStore((state) => state.restoreSession)
+
+  // Start the background heartbeat activity reporter
+  useUserHeartbeat()
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {

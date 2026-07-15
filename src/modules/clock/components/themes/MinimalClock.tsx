@@ -50,12 +50,16 @@ export const MinimalClock: React.FC<ClockThemeProps> = ({
         }
       `}} />
 
-      <div className="flex items-center justify-center font-bold">
+      <div 
+        className="flex items-center justify-center font-bold"
+        style={{
+          fontSize: isLandscapeMode ? '38vh' : '38vw'
+        }}
+      >
         {/* Hours Digit 1 & 2 Overlapping */}
         <div className="flex items-center relative">
           <span
-            className={`standby-font leading-none select-text inline-block ${isLandscapeMode ? 'text-[32vw] md:text-[27vw]' : 'text-[38vw]'
-              }`}
+            className="standby-font leading-none select-text inline-block"
             style={{
               color: colorSet.dark,
               textShadow: '0 4px 16px rgba(0, 0, 0, 0.45)',
@@ -65,8 +69,7 @@ export const MinimalClock: React.FC<ClockThemeProps> = ({
             {hoursStr[0]}
           </span>
           <span
-            className={`standby-font leading-none select-text -ml-[0.24em] z-10 opacity-92 mix-blend-screen inline-block ${isLandscapeMode ? 'text-[32vw] md:text-[27vw]' : 'text-[38vw]'
-              }`}
+            className="standby-font leading-none select-text -ml-[0.24em] z-10 opacity-92 mix-blend-screen inline-block"
             style={{
               color: colorSet.light,
               textShadow: '0 4px 16px rgba(0, 0, 0, 0.45)',
@@ -78,16 +81,15 @@ export const MinimalClock: React.FC<ClockThemeProps> = ({
         </div>
 
         {/* Pulsing Colon (soft white blurred dots) */}
-        <div className={`flex flex-col space-y-3.5 mx-2 md:mx-4 items-center justify-center transition-opacity duration-300 ${colonOpacity}`}>
-          <div className="w-3 h-3 md:w-5 md:h-5 rounded-full bg-white/70 shadow-[0_0_8px_rgba(255,255,255,0.35)]" />
-          <div className="w-3 h-3 md:w-5 md:h-5 rounded-full bg-white/70 shadow-[0_0_8px_rgba(255,255,255,0.35)]" />
+        <div className={`flex flex-col gap-[0.04em] mx-[0.05em] items-center justify-center transition-opacity duration-300 ${colonOpacity}`}>
+          <div className="w-[0.045em] h-[0.045em] rounded-full bg-white/70 shadow-[0_0_8px_rgba(255,255,255,0.35)]" />
+          <div className="w-[0.045em] h-[0.045em] rounded-full bg-white/70 shadow-[0_0_8px_rgba(255,255,255,0.35)]" />
         </div>
 
         {/* Minutes Digit 1 & 2 Overlapping */}
         <div className="flex items-center relative">
           <span
-            className={`standby-font leading-none select-text inline-block ${isLandscapeMode ? 'text-[32vw] md:text-[27vw]' : 'text-[38vw]'
-              }`}
+            className="standby-font leading-none select-text inline-block"
             style={{
               color: colorSet.dark,
               textShadow: '0 4px 16px rgba(0, 0, 0, 0.45)',
@@ -97,8 +99,7 @@ export const MinimalClock: React.FC<ClockThemeProps> = ({
             {minutesStr[0]}
           </span>
           <span
-            className={`standby-font leading-none select-text -ml-[0.24em] z-10 opacity-92 mix-blend-screen inline-block ${isLandscapeMode ? 'text-[32vw] md:text-[27vw]' : 'text-[38vw]'
-              }`}
+            className="standby-font leading-none select-text -ml-[0.24em] z-10 opacity-92 mix-blend-screen inline-block"
             style={{
               color: colorSet.light,
               textShadow: '0 4px 16px rgba(0, 0, 0, 0.45)',
@@ -112,11 +113,10 @@ export const MinimalClock: React.FC<ClockThemeProps> = ({
         {/* Small Ticking Seconds next to minutes */}
         {showSeconds && (
           <div
-            className="flex flex-col justify-end ml-3 sm:ml-4 select-none self-end pb-[2.5vw]"
+            className="flex flex-col justify-end ml-[0.05em] select-none self-end pb-[0.08em]"
             style={{ color: colorSet.light }}
           >
-            <span className={`standby-font leading-none tabular-nums tracking-wider opacity-85 ${isLandscapeMode ? 'text-[5vw]' : 'text-[6vw]'
-              }`}>
+            <span className="standby-font leading-none tabular-nums tracking-wider opacity-85 text-[0.16em]">
               {String(time.getSeconds()).padStart(2, '0')}
             </span>
           </div>
@@ -127,3 +127,4 @@ export const MinimalClock: React.FC<ClockThemeProps> = ({
 }
 
 export default MinimalClock
+

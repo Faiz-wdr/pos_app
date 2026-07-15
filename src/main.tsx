@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { lazy, Suspense } from 'react'
 import ReactDOM from 'react-dom/client'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import { ThemeProvider } from '@/core/theme/ThemeProvider'
@@ -17,6 +17,20 @@ import DietModulePage from '@/app/routes/DietModulePage'
 import './index.css'
 
 import { registerPWA } from '@/core/pwa/pwa'
+
+// Lazy loaded admin views for bundle isolation
+const AdminGuard = lazy(() => import('@/admin/components/AdminGuard'))
+const AdminLayout = lazy(() => import('@/admin/layouts/AdminLayout'))
+const AdminLoginPage = lazy(() => import('@/admin/pages/AdminLoginPage'))
+const UnauthorizedPage = lazy(() => import('@/admin/pages/UnauthorizedPage'))
+const DashboardPage = lazy(() => import('@/admin/pages/DashboardPage'))
+const UsersPage = lazy(() => import('@/admin/pages/UsersPage'))
+const ModulesPage = lazy(() => import('@/admin/pages/ModulesPage'))
+const AnalyticsPage = lazy(() => import('@/admin/pages/AnalyticsPage'))
+const PaymentsPage = lazy(() => import('@/admin/pages/PaymentsPage'))
+const ReleasesPage = lazy(() => import('@/admin/pages/ReleasesPage'))
+const SupportPage = lazy(() => import('@/admin/pages/SupportPage'))
+const SettingsPage = lazy(() => import('@/admin/pages/SettingsPage'))
 
 const router = createBrowserRouter([
   {
@@ -72,6 +86,78 @@ const router = createBrowserRouter([
         element: <Profile />
       }
     ]
+  },
+  {
+    path: '/admin',
+    element: (
+      <Suspense fallback={
+        <div className="min-h-screen bg-neutral-950 flex flex-col items-center justify-center space-y-4">
+          <div className="w-8 h-8 rounded-full border-2 border-accent border-t-transparent animate-spin" />
+        </div>
+      }>
+        <AdminGuard>
+          <AdminLayout />
+        </AdminGuard>
+      </Suspense>
+    ),
+    children: [
+      {
+        index: true,
+        element: <DashboardPage />
+      },
+      {
+        path: 'users',
+        element: <UsersPage />
+      },
+      {
+        path: 'modules',
+        element: <ModulesPage />
+      },
+      {
+        path: 'analytics',
+        element: <AnalyticsPage />
+      },
+      {
+        path: 'payments',
+        element: <PaymentsPage />
+      },
+      {
+        path: 'releases',
+        element: <ReleasesPage />
+      },
+      {
+        path: 'support',
+        element: <SupportPage />
+      },
+      {
+        path: 'settings',
+        element: <SettingsPage />
+      }
+    ]
+  },
+  {
+    path: '/admin/login',
+    element: (
+      <Suspense fallback={
+        <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-full border-2 border-accent border-t-transparent animate-spin" />
+        </div>
+      }>
+        <AdminLoginPage />
+      </Suspense>
+    )
+  },
+  {
+    path: '/admin/unauthorized',
+    element: (
+      <Suspense fallback={
+        <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-full border-2 border-accent border-t-transparent animate-spin" />
+        </div>
+      }>
+        <UnauthorizedPage />
+      </Suspense>
+    )
   }
 ])
 

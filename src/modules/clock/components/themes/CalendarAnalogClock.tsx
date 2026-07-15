@@ -49,7 +49,7 @@ export const CalendarAnalogClock: React.FC<ClockThemeProps> = ({
   const hourLabels = [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 
   const ClockFace = (
-    <div className="relative w-[230px] h-[230px] flex items-center justify-center select-none bg-black rounded-full shadow-[0_0_50px_rgba(0,0,0,0.85)] border border-neutral-900/30">
+    <div className="relative w-full h-full flex items-center justify-center select-none bg-black rounded-full shadow-[0_0_50px_rgba(0,0,0,0.85)] border border-neutral-900/30">
       <svg className="w-full h-full transform -rotate-90 absolute" viewBox="0 0 200 200">
         {/* Render minute/hour ticks */}
         {ticks.map((t, idx) => {
@@ -74,86 +74,95 @@ export const CalendarAnalogClock: React.FC<ClockThemeProps> = ({
             />
           )
         })}
+
+        {/* Render Numeric Hours inside the SVG */}
+        {hourLabels.map((h) => {
+          const angle = (h * 30) * (Math.PI / 180)
+          const radius = 64
+          const x = 100 + radius * Math.cos(angle)
+          const y = 100 + radius * Math.sin(angle)
+
+          return (
+            <text
+              key={h}
+              x={x}
+              y={y}
+              fill="rgba(255, 255, 255, 0.95)"
+              fontSize="12"
+              fontWeight="bold"
+              fontFamily="sans-serif"
+              textAnchor="middle"
+              dominantBaseline="central"
+              transform={`rotate(90, ${x}, ${y})`}
+            >
+              {h}
+            </text>
+          )
+        })}
+
+        {/* Clock Hands inside the SVG */}
+        {/* Hour Hand */}
+        <line
+          x1="100"
+          y1="100"
+          x2="146"
+          y2="100"
+          stroke="#FFFFFF"
+          strokeWidth="4"
+          strokeLinecap="round"
+          transform={`rotate(${hourDeg}, 100, 100)`}
+        />
+
+        {/* Minute Hand */}
+        <line
+          x1="100"
+          y1="100"
+          x2="166"
+          y2="100"
+          stroke="#FFFFFF"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          transform={`rotate(${minuteDeg}, 100, 100)`}
+        />
+
+        {/* Second Hand */}
+        {showSeconds && (
+          <line
+            x1="86"
+            y1="100"
+            x2="170"
+            y2="100"
+            stroke="#ff453a"
+            strokeWidth="1.2"
+            strokeLinecap="round"
+            transform={`rotate(${secondDeg}, 100, 100)`}
+          />
+        )}
+
+        {/* Center Pivot Pin */}
+        <circle cx="100" cy="100" r="3.5" fill="#ff453a" stroke="#000000" strokeWidth="0.8" />
       </svg>
-
-      {/* Render Numeric Hours */}
-      {hourLabels.map((h) => {
-        // Calculate angle. 12 is at top (0 deg / -90 deg relative to normal SVG polar starting at right)
-        const angle = (h * 30 - 90) * (Math.PI / 180)
-        const radius = 64 // Radius positioning
-        const x = 115 + radius * Math.cos(angle)
-        const y = 115 + radius * Math.sin(angle)
-
-        return (
-          <span
-            key={h}
-            className="absolute text-sm font-bold text-white/95 font-sans"
-            style={{
-              left: `${x}px`,
-              top: `${y}px`,
-              transform: 'translate(-50%, -50%)',
-            }}
-          >
-            {h}
-          </span>
-        )
-      })}
-
-      {/* Clock Hands */}
-      {/* Hour Hand */}
-      <div
-        className="absolute w-1.5 rounded-full bg-white origin-bottom"
-        style={{
-          height: '46px',
-          bottom: '50%',
-          transform: `rotate(${hourDeg}deg)`,
-          transformOrigin: '50% 100%',
-        }}
-      />
-
-      {/* Minute Hand */}
-      <div
-        className="absolute w-1 rounded-full bg-white origin-bottom"
-        style={{
-          height: '66px',
-          bottom: '50%',
-          transform: `rotate(${minuteDeg}deg)`,
-          transformOrigin: '50% 100%',
-        }}
-      />
-
-      {/* Second Hand */}
-      {showSeconds && (
-        <div
-          className="absolute w-0.5 bg-[#ff453a] origin-bottom flex items-end justify-center"
-          style={{
-            height: '80px',
-            bottom: '50%',
-            transform: `rotate(${secondDeg}deg)`,
-            transformOrigin: '50% 100%',
-          }}
-        >
-          {/* Extended tail past pivot */}
-          <div className="w-0.5 h-4 bg-[#ff453a] absolute top-[80px]" />
-        </div>
-      )}
-
-      {/* Center Pivot Pin */}
-      <div className="absolute w-2 h-2 rounded-full bg-[#ff453a] z-10 border border-black" />
     </div>
   )
 
   const CalendarWidget = (
-    <div className="w-[240px] flex flex-col text-left select-none font-sans pl-2">
+    <div className="w-full flex flex-col text-left select-none font-sans pl-2">
       {/* Month Header */}
-      <div className="text-[17px] font-bold text-[#ff453a] tracking-wider mb-3">
+      <div 
+        className="text-lg sm:text-xl md:text-2xl font-bold text-[#ff453a] tracking-wider mb-2 lg:mb-4"
+        style={isLandscapeMode ? { fontSize: 'max(16px, 2.5vh)', marginBottom: 'max(8px, 1.2vh)' } : {}}
+      >
         {monthName}
       </div>
 
       {/* Weekdays Labels */}
       <div className="grid grid-cols-7 gap-y-2 text-center mb-1.5">
         {weekdays.map((day, idx) => (
-          <span key={idx} className="text-[10px] font-bold text-muted-foreground/60">
+          <span 
+            key={idx} 
+            className="text-[10px] sm:text-xs md:text-sm font-bold text-muted-foreground/60"
+            style={isLandscapeMode ? { fontSize: 'max(10px, 1.3vh)' } : {}}
+          >
             {day}
           </span>
         ))}
@@ -163,7 +172,13 @@ export const CalendarAnalogClock: React.FC<ClockThemeProps> = ({
       <div className="grid grid-cols-7 gap-y-1.5 text-center">
         {calendarDays.map((day, idx) => {
           if (day === null) {
-            return <div key={idx} className="h-[26px]" />
+            return (
+              <div 
+                key={idx} 
+                className="h-7 sm:h-8 md:h-10" 
+                style={isLandscapeMode ? { height: 'max(24px, 3.5vh)' } : {}}
+              />
+            )
           }
           
           const isToday = day === todayDate
@@ -171,14 +186,25 @@ export const CalendarAnalogClock: React.FC<ClockThemeProps> = ({
           return (
             <div
               key={idx}
-              className="h-[26px] flex items-center justify-center"
+              className="h-7 sm:h-8 md:h-10 flex items-center justify-center"
+              style={isLandscapeMode ? { height: 'max(24px, 3.5vh)' } : {}}
             >
               {isToday ? (
-                <span className="w-[26px] h-[26px] rounded-full bg-[#ff453a] text-white flex items-center justify-center font-bold text-xs shadow-md">
+                <span 
+                  className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 rounded-full bg-[#ff453a] text-white flex items-center justify-center font-bold text-xs sm:text-sm md:text-base shadow-md"
+                  style={isLandscapeMode ? { 
+                    width: 'max(24px, 3.5vh)', 
+                    height: 'max(24px, 3.5vh)', 
+                    fontSize: 'max(11px, 1.6vh)' 
+                  } : {}}
+                >
                   {day}
                 </span>
               ) : (
-                <span className="text-xs font-bold text-foreground/90">
+                <span 
+                  className="text-xs sm:text-sm md:text-base font-bold text-foreground/90"
+                  style={isLandscapeMode ? { fontSize: 'max(11px, 1.6vh)' } : {}}
+                >
                   {day}
                 </span>
               )}
@@ -191,19 +217,28 @@ export const CalendarAnalogClock: React.FC<ClockThemeProps> = ({
 
   if (isLandscapeMode) {
     return (
-      <div className="w-full max-w-2xl flex flex-row items-center justify-around space-x-12 px-6">
-        {ClockFace}
-        {CalendarWidget}
+      <div className="w-full max-w-6xl flex flex-row items-center justify-center gap-12 md:gap-16 lg:gap-24 px-6 md:px-12 py-8">
+        <div className="w-[32vw] h-[32vw] max-w-[380px] max-h-[380px] min-w-[200px] min-h-[200px] md:w-[42vh] md:h-[42vh] lg:w-[48vh] lg:h-[48vh] flex-shrink-0">
+          {ClockFace}
+        </div>
+        <div className="w-[32vw] max-w-[340px] min-w-[200px] md:w-[42vh] lg:w-[48vh] flex-shrink-0">
+          {CalendarWidget}
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="flex flex-col items-center justify-center space-y-10 py-4">
-      {ClockFace}
-      {CalendarWidget}
+    <div className="flex flex-col items-center justify-center space-y-10 md:space-y-16 py-8 w-full">
+      <div className="w-[55vw] h-[55vw] sm:w-[45vw] sm:h-[45vw] md:w-[35vw] md:h-[35vw] max-w-[360px] max-h-[360px] min-w-[200px] min-h-[200px] flex-shrink-0">
+        {ClockFace}
+      </div>
+      <div className="w-[60vw] sm:w-[50vw] md:w-[40vw] max-w-[340px] min-w-[200px] flex-shrink-0">
+        {CalendarWidget}
+      </div>
     </div>
   )
 }
 
 export default CalendarAnalogClock
+
