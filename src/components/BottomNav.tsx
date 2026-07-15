@@ -45,21 +45,9 @@ export const BottomNav = () => {
                   })
                 }
               }}
-              className="relative flex flex-col items-center justify-center w-16 h-12 rounded-xl transition-colors cursor-pointer group focus-visible:outline-2 focus-visible:outline-accent"
+              className="relative flex flex-col items-center justify-center w-16 h-12 transition-colors cursor-pointer group focus-visible:outline-2 focus-visible:outline-accent"
               aria-label={item.label}
             >
-              {/* Sliding active bubble */}
-              {isActive && animationsEnabled && (
-                <motion.div
-                  layoutId="bottom-nav-active"
-                  className="absolute inset-x-1 inset-y-0.5 bg-accent/8 dark:bg-accent/15 rounded-xl -z-10"
-                  transition={{ type: 'spring', damping: 26, stiffness: 350 }}
-                />
-              )}
-              {/* Static active bubble if animations disabled */}
-              {isActive && !animationsEnabled && (
-                <div className="absolute inset-x-1 inset-y-0.5 bg-accent/8 dark:bg-accent/15 rounded-xl -z-10" />
-              )}
               
               <Icon
                 className={cn(

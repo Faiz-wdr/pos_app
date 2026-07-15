@@ -31,7 +31,6 @@ export const Profile = () => {
       <div className="flex-1 flex flex-col space-y-6 pb-6 select-none text-left">
         {/* Title */}
         <div className="flex flex-col">
-          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Account</span>
           <h1 className="text-2xl font-bold text-foreground mt-0.5 tracking-tight">Profile</h1>
         </div>
 
@@ -136,7 +135,6 @@ export const Profile = () => {
       {/* Title */}
       <div className="flex items-center justify-between">
         <div className="flex flex-col">
-          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Account</span>
           <h1 className="text-2xl font-bold text-foreground mt-0.5 tracking-tight">Profile</h1>
         </div>
         {!isEditing && (

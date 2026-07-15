@@ -66,7 +66,6 @@ export const Settings = () => {
       
       {/* Page Title */}
       <div className="flex flex-col">
-        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Preferences</span>
         <h1 className="text-2xl font-bold text-foreground mt-0.5 tracking-tight">Settings</h1>
       </div>
 

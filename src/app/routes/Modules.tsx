@@ -26,7 +26,7 @@ export const Modules = () => {
       id: 'clock',
       name: 'Clock & Timer',
       icon: 'Clock',
-      description: 'High-visibility digital & analog bedside clock with count-down presets and background alert engines.',
+      description: 'Digital & analog bedside clock with countdown presets.',
       isPremium: false,
       enabled: true,
       requiresLogin: false,
@@ -37,7 +37,7 @@ export const Modules = () => {
       id: 'shopping',
       name: 'Shopping List',
       icon: 'ShoppingCart',
-      description: 'Offline-first grocery checklist organizer with quick-add chips, drag sorting, and price calculations.',
+      description: 'Offline-first grocery checklist with price calculations.',
       isPremium: false,
       enabled: true,
       requiresLogin: false,
@@ -50,7 +50,7 @@ export const Modules = () => {
       id: 'income',
       name: 'Income Manager',
       icon: 'DollarSign',
-      description: 'Track daily transactions, visualize cash flows, and manage budget thresholds.',
+      description: 'Track daily expenses, cash flow, and budget thresholds.',
       isPremium: true,
       enabled: true,
       requiresLogin: true,
@@ -61,7 +61,7 @@ export const Modules = () => {
       id: 'diet',
       name: 'Diet Planner',
       icon: 'Salad',
-      description: 'Plan weekly recipes, track nutritional stats, and generate grocery baskets.',
+      description: 'Plan weekly meals, recipes, and automated grocery lists.',
       isPremium: true,
       enabled: true,
       requiresLogin: true,
@@ -83,10 +83,28 @@ export const Modules = () => {
     }
   }
 
+  const moduleStyles: Record<string, { bg: string; btnText: string }> = {
+    clock: {
+      bg: 'bg-gradient-to-br from-[#EAB308] to-[#D97706]',
+      btnText: 'text-[#D97706]'
+    },
+    shopping: {
+      bg: 'bg-gradient-to-br from-[#10B981] to-[#059669]',
+      btnText: 'text-[#059669]'
+    },
+    income: {
+      bg: 'bg-gradient-to-br from-[#3B82F6] to-[#1D4ED8]',
+      btnText: 'text-[#1D4ED8]'
+    },
+    diet: {
+      bg: 'bg-gradient-to-br from-[#F43F5E] to-[#E11D48]',
+      btnText: 'text-[#E11D48]'
+    }
+  }
+
   return (
     <div className="flex-1 flex flex-col space-y-6 pb-6 select-none text-left">
       <div className="flex flex-col">
-        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">System Components</span>
         <h1 className="text-2xl font-bold text-foreground mt-0.5 tracking-tight">Modules</h1>
       </div>
 
@@ -106,58 +124,57 @@ export const Modules = () => {
         </Card>
       ) : (
         <div className="grid grid-cols-1 gap-4">
-          {modules.map((m) => (
-            <Card key={m.id} className="relative overflow-hidden bg-card/60 dark:bg-card/35 transition-all duration-300">
-              <CardContent className="pt-5 space-y-4">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start space-x-3.5">
-                    <div className="p-3.5 bg-accent/10 text-accent rounded-2xl shrink-0">
-                      <ModuleIcon name={m.icon} className="w-6 h-6" />
-                    </div>
-                    <div className="flex flex-col space-y-0.5">
-                      <div className="flex items-center space-x-2">
-                        <h3 className="text-sm font-bold text-foreground">{m.name}</h3>
-                        {m.isPremium && (
-                          <span className="text-[9px] bg-accent/10 text-accent font-bold uppercase px-2 py-0.5 rounded-full tracking-wide">
-                            PRO
-                          </span>
-                        )}
+          {modules.map((m) => {
+            const style = moduleStyles[m.id] || { bg: 'bg-card', btnText: 'text-accent' }
+            return (
+              <Card 
+                key={m.id} 
+                onClick={(e) => {
+                  if (m.enabled) {
+                    handleOpenModule(m, e)
+                    if (!e.defaultPrevented) {
+                      navigate(m.route)
+                    }
+                  }
+                }}
+                className={`relative overflow-hidden transition-all duration-300 border-none shadow-md text-white ${style.bg} ${
+                  m.enabled ? 'cursor-pointer hover:scale-[1.01] active:scale-[0.99]' : 'opacity-70'
+                }`}
+              >
+                <CardContent className="p-3.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3.5">
+                      <div className="p-2.5 bg-white/20 text-white rounded-xl shrink-0">
+                        <ModuleIcon name={m.icon} className="w-5 h-5" />
                       </div>
-                      <p className="text-xs text-muted-foreground leading-relaxed pr-2">
-                        {m.description}
-                      </p>
+                      <div className="flex flex-col space-y-0.5">
+                        <div className="flex items-center space-x-2">
+                          <h3 className="text-sm font-extrabold tracking-tight text-white leading-none">{m.name}</h3>
+                          {m.isPremium && (
+                            <span className="text-[8px] bg-white/20 text-white font-extrabold uppercase px-2 py-0.5 rounded-full tracking-wide">
+                              PRO
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-white/85 leading-normal pr-2 font-medium">
+                          {m.description}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    {/* Enabled Toggle Switch */}
+                    <div onClick={(e) => e.stopPropagation()} className="flex items-center">
+                      <Switch
+                        checked={m.enabled}
+                        onCheckedChange={(checked) => toggleModule(m.id, checked)}
+                        className="shrink-0"
+                      />
                     </div>
                   </div>
-                  
-                  {/* Enabled Toggle Switch */}
-                  <Switch
-                    checked={m.enabled}
-                    onCheckedChange={(checked) => toggleModule(m.id, checked)}
-                    className="shrink-0 mt-1"
-                  />
-                </div>
-
-                {/* Open Module Button */}
-                {m.enabled && (
-                  <div className="pt-2 border-t border-border/40 dark:border-border/10">
-                    <Link 
-                      to={m.route} 
-                      onClick={(e) => handleOpenModule(m, e)}
-                      className="block w-full focus-visible:outline-2 focus-visible:outline-accent rounded-xl"
-                    >
-                      <Button 
-                        variant="secondary" 
-                        className="w-full flex justify-between items-center h-10 px-4 text-xs font-bold bg-muted/60 dark:bg-card/50 rounded-xl hover:bg-muted active:scale-[0.98] border border-border cursor-pointer"
-                      >
-                        <span>Open Module</span>
-                        <ArrowRight className="w-4 h-4 text-accent" />
-                      </Button>
-                    </Link>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            )
+          })}
         </div>
       )}
     </div>
