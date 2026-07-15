@@ -1,8 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
 import { Home, LayoutGrid, Settings, User } from 'lucide-react'
 import { cn } from '@/shared/utils/cn'
-import { useSettingsStore } from '@/core/settings/settingsStore'
 import { useAuth } from '@/core/firebase/hooks/useAuth'
 
 const NAV_ITEMS = [
@@ -16,7 +14,6 @@ export const BottomNav = () => {
   const location = useLocation()
   const navigate = useNavigate()
   const currentPath = location.pathname
-  const animationsEnabled = useSettingsStore((state) => state.animationsEnabled)
   const { isGuest, openAuthSheet } = useAuth()
 
   return (

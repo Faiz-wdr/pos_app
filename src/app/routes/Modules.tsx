@@ -1,10 +1,8 @@
 import { useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { ArrowRight } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import * as Icons from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/Card'
 import { Switch } from '@/components/ui/Switch'
-import { Button } from '@/components/ui/Button'
 import { useModuleStore } from '@/core/modules/moduleStore'
 import { useAuth } from '@/core/firebase/hooks/useAuth'
 
