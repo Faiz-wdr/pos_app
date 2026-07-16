@@ -12,7 +12,8 @@ import {
   Settings,
   Users,
   Timer,
-  Play
+  Play,
+  CalendarCheck
 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/Card'
 
@@ -23,6 +24,7 @@ const getIconComponent = (iconName: string) => {
     case 'ShoppingCart': return ShoppingCart
     case 'TrendingUp': return TrendingUp
     case 'Heart': return Heart
+    case 'CalendarCheck': return CalendarCheck
     default: return Layers
   }
 }

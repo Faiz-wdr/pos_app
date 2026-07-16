@@ -80,14 +80,14 @@ const DEFAULT_MODULES = [
   },
   {
     id: 'diet',
-    name: 'Diet Planner',
-    description: 'Log meals, track daily water hydration targets, and check complete dashboard goals.',
-    category: 'Health',
+    name: 'Day Planner',
+    description: 'Log daily tasks, track habits, and plan your schedules.',
+    category: 'Productivity',
     free: false,
     premium: true,
     price: 399,
     accentColor: '#8b5cf6',
-    icon: 'Heart',
+    icon: 'CalendarCheck',
     version: '1.0.0',
     status: 'coming-soon',
     enabled: true

@@ -57,9 +57,9 @@ export const Modules = () => {
     })
     registerModule({
       id: 'diet',
-      name: 'Diet Planner',
-      icon: 'Salad',
-      description: 'Plan weekly meals, recipes, and automated grocery lists.',
+      name: 'Day Planner',
+      icon: 'CalendarCheck',
+      description: 'Organize tasks, track habits, and plan your schedules.',
       isPremium: true,
       enabled: true,
       requiresLogin: true,

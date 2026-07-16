@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/Input'
 import { useModuleStore } from '@/core/modules/moduleStore'
 import { useAuth } from '@/core/firebase/hooks/useAuth'
 import { motion, AnimatePresence } from 'framer-motion'
+import moneyImg from '@/assets/money.png'
+import plannerImg from '@/assets/planner.png'
 
 const ModuleIcon = ({ name, className, strokeWidth = 2 }: { name: string; className?: string; strokeWidth?: number }) => {
   const IconComponent = (Icons as any)[name]
@@ -109,9 +111,9 @@ export const Home = () => {
     })
     registerModule({
       id: 'diet',
-      name: 'Diet Planner',
-      icon: 'Salad',
-      description: 'Plan weekly recipes, track nutritional stats, and generate grocery baskets.',
+      name: 'Day Planner',
+      icon: 'CalendarCheck',
+      description: 'Organize tasks, track habits, and plan your schedules.',
       isPremium: true,
       enabled: true,
       requiresLogin: true,
@@ -180,7 +182,7 @@ export const Home = () => {
         title: slideId === 'upgrade' ? 'Go Pro with PersonalOS' : 'Unlock Pro Module',
         description: slideId === 'upgrade' 
           ? 'Sign in to access all premium modules, unlock cloud sync, and premium lifestyle trackers.'
-          : `Sign in to unlock the ${slideId === 'income' ? 'Income Manager' : 'Diet Planner'} module.`,
+          : `Sign in to unlock the ${slideId === 'income' ? 'Income Manager' : 'Day Planner'} module.`,
         onSuccess: () => {
           if (slideId === 'income') navigate('/modules/income')
           else if (slideId === 'diet') navigate('/modules/diet')
@@ -239,8 +241,8 @@ export const Home = () => {
     },
     {
       id: 'income',
-      title: 'Income Manager',
-      description: 'Sophisticated daily expense tracking and cash flow budget analytics.',
+      title: 'Take Control of Your Money',
+      description: 'Know where your salary goes, stay within budget and build better saving habits.',
       badge: 'Pro Module',
       accentColor: 'text-white bg-white/20',
       gradient: 'from-[#3b82f6] via-[#2563eb] to-[#1d4ed8]',
@@ -250,65 +252,31 @@ export const Home = () => {
       disclaimer: 'PersonalOS Premium Modules • Cloud Sync Enabled',
       action: () => handlePromoAction('income'),
       illustration: (
-        <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-[0_8px_16px_rgba(0,0,0,0.25)]">
-          <defs>
-            <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#ffffff" stopOpacity="0.8" />
-              <stop offset="100%" stopColor="#ffffff" stopOpacity="0.1" />
-            </linearGradient>
-            <linearGradient id="coinGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#e5e7eb" />
-              <stop offset="100%" stopColor="#9ca3af" />
-            </linearGradient>
-          </defs>
-          <circle cx="50" cy="50" r="32" fill="none" stroke="url(#ringGrad)" strokeWidth="10" strokeDasharray="150 50" strokeLinecap="round" transform="rotate(-45 50 50)" />
-          <circle cx="50" cy="50" r="32" fill="none" stroke="#e5e7eb" strokeWidth="10" strokeDasharray="40 160" strokeLinecap="round" transform="rotate(45 50 50)" />
-          <path d="M 85,25 Q 85,30 90,30 Q 85,30 85,35 Q 85,30 80,30 Q 85,30 85,25 Z" fill="#ffd700" className="animate-pulse" />
-          <g transform="translate(42, 60) rotate(15)">
-            <ellipse cx="0" cy="0" rx="14" ry="9" fill="#9ca3af" />
-            <ellipse cx="0" cy="-2" rx="14" ry="9" fill="url(#coinGrad)" stroke="#ffffff" strokeWidth="0.5" />
-            <text x="0" y="1.5" fill="#4b5563" fontSize="8" fontWeight="extrabold" textAnchor="middle" dominantBaseline="central">$</text>
-          </g>
-          <g transform="translate(62, 45) rotate(-10)">
-            <ellipse cx="0" cy="0" rx="14" ry="9" fill="#d1d5db" />
-            <ellipse cx="0" cy="-2" rx="14" ry="9" fill="#ffffff" stroke="#ffffff" strokeWidth="0.5" />
-            <text x="0" y="1.5" fill="#1f2937" fontSize="8" fontWeight="extrabold" textAnchor="middle" dominantBaseline="central">$</text>
-          </g>
-        </svg>
+        <img 
+          src={plannerImg} 
+          alt="Income Manager" 
+          className="w-full h-full object-contain drop-shadow-[0_8px_16px_rgba(0,0,0,0.25)]" 
+        />
       )
     },
     {
       id: 'diet',
-      title: 'Diet Planner',
-      description: 'Personalized weekly recipe planner and automated grocery basket lists.',
+      title: 'Master Your Day, Step by Step',
+      description: 'Organize tasks, track habits, and achieve your daily goals with clarity.',
       badge: 'Pro Module',
       accentColor: 'text-white bg-white/20',
       gradient: 'from-[#f43f5e] via-[#e11d48] to-[#be123c]',
       btnTextColor: 'text-[#e11d48]',
-      icon: 'Salad',
+      icon: 'CalendarCheck',
       actionText: 'Unlock',
       disclaimer: 'PersonalOS Premium Modules • Cloud Sync Enabled',
       action: () => handlePromoAction('diet'),
       illustration: (
-        <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-[0_8px_16px_rgba(0,0,0,0.25)]">
-          <defs>
-            <linearGradient id="appleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#ff4d4d" />
-              <stop offset="40%" stopColor="#ff0000" />
-              <stop offset="100%" stopColor="#990000" />
-            </linearGradient>
-            <linearGradient id="leafGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#4ade80" />
-              <stop offset="100%" stopColor="#15803d" />
-            </linearGradient>
-          </defs>
-          <path d="M 20,65 Q 20,70 25,70 Q 20,70 20,75 Q 20,70 15,70 Q 20,70 20,65 Z" fill="#ffd700" className="animate-pulse" />
-          <g transform="translate(50, 52)">
-            <path d="M 0, -10 C -15,-25 -38,-15 -35,15 C -32,35 -15,40 0,35 C 15,40 32,35 35,15 C 38,-15 15,-25 0,-10 Z" fill="url(#appleGrad)" />
-            <path d="M 0,-18 Q -3,-32 -12,-36 Q -7,-30 0,-21 Z" fill="#78350f" />
-            <path d="M -2,-28 Q 12,-38 25,-26 Q 10,-20 -2,-28 Z" fill="url(#leafGrad)" />
-          </g>
-        </svg>
+        <img 
+          src={moneyImg} 
+          alt="Day Planner" 
+          className="w-full h-full object-contain drop-shadow-[0_8px_16px_rgba(0,0,0,0.25)]" 
+        />
       )
     }
   ]
@@ -418,7 +386,7 @@ export const Home = () => {
                 <h3 className="text-sm sm:text-base font-bold tracking-tight text-white">
                   {promoSlides[currentSlide].title}
                 </h3>
-                <p className="text-[10px] sm:text-[11px] text-white/80 font-medium leading-normal max-w-sm">
+                <p className="text-[10px] sm:text-[11px] text-white/80 font-medium leading-tight max-w-sm">
                   {promoSlides[currentSlide].description}
                 </p>
               </div>
@@ -437,7 +405,7 @@ export const Home = () => {
             </div>
 
             {/* Right Column: Beautiful SVG illustration */}
-            <div className="hidden xs:flex items-center justify-center w-[80px] h-[80px] sm:w-[100px] sm:h-[100px] z-10 shrink-0 pointer-events-none select-none">
+            <div className="flex items-center justify-center w-[80px] h-[80px] sm:w-[100px] sm:h-[100px] z-10 shrink-0 pointer-events-none select-none">
               {promoSlides[currentSlide].illustration}
             </div>
           </motion.div>
@@ -564,7 +532,7 @@ export const Home = () => {
               </div>
 
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Thank you for being a Pro Member! You have full access to all premium modules including <span className="font-semibold text-foreground">Income Manager</span>, <span className="font-semibold text-foreground">Diet Planner</span>, and secure cloud synchronization.
+                Thank you for being a Pro Member! You have full access to all premium modules including <span className="font-semibold text-foreground">Income Manager</span>, <span className="font-semibold text-foreground">Day Planner</span>, and secure cloud synchronization.
               </p>
 
               <div className="pt-2 flex justify-end">
