@@ -13,7 +13,7 @@ import Settings from '@/app/routes/Settings'
 import Profile from '@/app/routes/Profile'
 import AuthGuard from '@/core/firebase/components/auth/AuthGuard'
 import IncomeModulePage from '@/app/routes/IncomeModulePage'
-import DietModulePage from '@/app/routes/DietModulePage'
+import DayPlannerModulePage from '@/modules/day-planner/pages/DayPlannerModulePage'
 import './index.css'
 
 import { registerPWA } from '@/core/pwa/pwa'
@@ -70,12 +70,8 @@ const router = createBrowserRouter([
         )
       },
       {
-        path: 'modules/diet',
-        element: (
-          <AuthGuard>
-            <DietModulePage />
-          </AuthGuard>
-        )
+        path: 'modules/day-planner',
+        element: <DayPlannerModulePage />
       },
       {
         path: 'settings',

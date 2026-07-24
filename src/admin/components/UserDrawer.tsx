@@ -126,7 +126,7 @@ export const UserDrawer: React.FC<UserDrawerProps> = ({
     return new Date(date).toLocaleString()
   }
 
-  const allSystemModules = ['clock', 'shopping', 'income', 'diet']
+  const allSystemModules = ['clock', 'shopping', 'income', 'day-planner']
 
   return (
     <>

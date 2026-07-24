@@ -79,17 +79,17 @@ const DEFAULT_MODULES = [
     enabled: true
   },
   {
-    id: 'diet',
+    id: 'day-planner',
     name: 'Day Planner',
-    description: 'Log daily tasks, track habits, and plan your schedules.',
+    description: 'Log daily tasks, track routines, and plan your schedules.',
     category: 'Productivity',
-    free: false,
-    premium: true,
-    price: 399,
-    accentColor: '#8b5cf6',
+    free: true,
+    premium: false,
+    price: 0,
+    accentColor: '#f43f5e',
     icon: 'CalendarCheck',
     version: '1.0.0',
-    status: 'coming-soon',
+    status: 'published',
     enabled: true
   }
 ]

@@ -22,7 +22,7 @@ export interface AnalyticsData {
   retention: Record<string, number>
   
   userGrowthTrend: { date: string; count: number }[]
-  moduleUsageTrend: { date: string; clock: number; shopping: number; income: number; diet: number }[]
+  moduleUsageTrend: { date: string; clock: number; shopping: number; income: number; 'day-planner': number }[]
   revenueTrend: { date: string; amount: number }[]
   sessionsTrend: { date: string; count: number }[]
 }
@@ -133,7 +133,7 @@ export const useAdminAnalytics = () => {
     })
 
     // 5. Module usage counts
-    const moduleUsage: Record<string, number> = { clock: 0, shopping: 0, income: 0, diet: 0 }
+    const moduleUsage: Record<string, number> = { clock: 0, shopping: 0, income: 0, 'day-planner': 0 }
     users.forEach(u => {
       u.enabledModules?.forEach(mod => {
         if (moduleUsage[mod] !== undefined) {
@@ -153,7 +153,7 @@ export const useAdminAnalytics = () => {
 
     const trendDays = getTrendDays()
     const userGrowthTrend: { date: string; count: number }[] = []
-    const moduleUsageTrend: { date: string; clock: number; shopping: number; income: number; diet: number }[] = []
+    const moduleUsageTrend: { date: string; clock: number; shopping: number; income: number; 'day-planner': number }[] = []
     const revenueTrend: { date: string; amount: number }[] = []
     const sessionsTrend: { date: string; count: number }[] = []
 
@@ -187,7 +187,7 @@ export const useAdminAnalytics = () => {
         clock: Math.round(moduleUsage.clock * (0.7 + Math.cos(i) * 0.15)),
         shopping: Math.round(moduleUsage.shopping * (0.6 + Math.sin(i) * 0.2)),
         income: Math.round(moduleUsage.income * (0.5 + Math.cos(i + 1) * 0.1)),
-        diet: Math.round(moduleUsage.diet * (0.4 + Math.sin(i - 1) * 0.1))
+        'day-planner': Math.round((moduleUsage['day-planner'] || 0) * (0.4 + Math.sin(i - 1) * 0.1))
       })
     }
 
@@ -230,7 +230,7 @@ export const useAdminAnalytics = () => {
       ['Modules: Clock Enabled', analytics.moduleUsage.clock],
       ['Modules: Shopping Enabled', analytics.moduleUsage.shopping],
       ['Modules: Income Enabled', analytics.moduleUsage.income],
-      ['Modules: Diet Enabled', analytics.moduleUsage.diet]
+      ['Modules: Day Planner Enabled', analytics.moduleUsage['day-planner'] || 0]
     ]
 
     let csvContent = 'data:text/csv;charset=utf-8,' 

@@ -35,7 +35,7 @@ const moduleCardStyles: Record<
     shadow: 'shadow-blue-500/10',
     hoverShadow: 'hover:shadow-blue-500/25'
   },
-  diet: {
+  'day-planner': {
     bg: 'bg-gradient-to-br from-[#F43F5E] to-[#E11D48]',
     shadow: 'shadow-rose-500/10',
     hoverShadow: 'hover:shadow-rose-500/25'
@@ -110,15 +110,15 @@ export const Home = () => {
       route: '/modules/income'
     })
     registerModule({
-      id: 'diet',
+      id: 'day-planner',
       name: 'Day Planner',
       icon: 'CalendarCheck',
-      description: 'Organize tasks, track habits, and plan your schedules.',
-      isPremium: true,
+      description: 'Organize tasks, track routines, and plan your daily timeline.',
+      isPremium: false,
       enabled: true,
-      requiresLogin: true,
-      supportsCloudSync: true,
-      route: '/modules/diet'
+      requiresLogin: false,
+      supportsCloudSync: false,
+      route: '/modules/day-planner'
     })
   }, [registerModule])
 
@@ -185,15 +185,15 @@ export const Home = () => {
           : `Sign in to unlock the ${slideId === 'income' ? 'Income Manager' : 'Day Planner'} module.`,
         onSuccess: () => {
           if (slideId === 'income') navigate('/modules/income')
-          else if (slideId === 'diet') navigate('/modules/diet')
+          else if (slideId === 'day-planner') navigate('/modules/day-planner')
           else navigate('/profile')
         }
       })
     } else {
       if (slideId === 'income') {
         navigate('/modules/income')
-      } else if (slideId === 'diet') {
-        navigate('/modules/diet')
+      } else if (slideId === 'day-planner') {
+        navigate('/modules/day-planner')
       } else {
         setInfoModalOpen(true)
       }
@@ -260,17 +260,17 @@ export const Home = () => {
       )
     },
     {
-      id: 'diet',
+      id: 'day-planner',
       title: 'Master Your Day, Step by Step',
-      description: 'Organize tasks, track habits, and achieve your daily goals with clarity.',
-      badge: 'Pro Module',
+      description: 'Organize tasks, track routines, and achieve your daily goals with clarity.',
+      badge: 'Free Module',
       accentColor: 'text-white bg-white/20',
       gradient: 'from-[#f43f5e] via-[#e11d48] to-[#be123c]',
       btnTextColor: 'text-[#e11d48]',
       icon: 'CalendarCheck',
-      actionText: 'Unlock',
-      disclaimer: 'PersonalOS Premium Modules • Cloud Sync Enabled',
-      action: () => handlePromoAction('diet'),
+      actionText: 'Open',
+      disclaimer: 'PersonalOS Module • Offline First',
+      action: () => handlePromoAction('day-planner'),
       illustration: (
         <img 
           src={moneyImg} 

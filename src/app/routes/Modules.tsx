@@ -56,15 +56,15 @@ export const Modules = () => {
       route: '/modules/income'
     })
     registerModule({
-      id: 'diet',
+      id: 'day-planner',
       name: 'Day Planner',
       icon: 'CalendarCheck',
-      description: 'Organize tasks, track habits, and plan your schedules.',
-      isPremium: true,
+      description: 'Organize tasks, track routines, and plan your daily timeline.',
+      isPremium: false,
       enabled: true,
-      requiresLogin: true,
-      supportsCloudSync: true,
-      route: '/modules/diet'
+      requiresLogin: false,
+      supportsCloudSync: false,
+      route: '/modules/day-planner'
     })
   }, [registerModule])
 
@@ -94,7 +94,7 @@ export const Modules = () => {
       bg: 'bg-gradient-to-br from-[#3B82F6] to-[#1D4ED8]',
       btnText: 'text-[#1D4ED8]'
     },
-    diet: {
+    'day-planner': {
       bg: 'bg-gradient-to-br from-[#F43F5E] to-[#E11D48]',
       btnText: 'text-[#E11D48]'
     }
