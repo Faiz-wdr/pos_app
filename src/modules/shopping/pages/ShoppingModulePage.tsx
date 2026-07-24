@@ -227,7 +227,7 @@ export const ShoppingModulePage = () => {
     <div className="flex-1 flex flex-col justify-between w-full h-full relative select-none pb-6 overflow-hidden">
       
       {/* Top Header Controls Bar */}
-      <header className="flex items-center justify-between w-full px-5 py-4 shrink-0 bg-background/90 dark:bg-background/80 backdrop-blur-xs border-b border-border/40 z-30 select-none">
+      <header className="flex items-center justify-between w-full px-4 py-2.5 shrink-0 bg-background/90 dark:bg-background/80 backdrop-blur-xs border-b border-border/40 z-30 select-none">
         <Link 
           to="/modules" 
           className="p-2 rounded-full hover:bg-card border border-border/20 text-muted-foreground hover:text-foreground transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-accent"
@@ -283,7 +283,7 @@ export const ShoppingModulePage = () => {
       </header>
 
       {/* Main content body */}
-      <div className="flex-1 flex flex-col px-5 pt-4 overflow-y-auto select-text">
+      <div className="flex-1 flex flex-col px-4 pt-3 overflow-y-auto select-text">
         
         {/* Search bar inside lists page */}
         <div className="relative mb-4 shrink-0 select-none">

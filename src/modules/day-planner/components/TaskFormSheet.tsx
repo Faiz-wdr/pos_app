@@ -98,14 +98,14 @@ export const TaskFormSheet = ({
       isOpen={isOpen}
       onClose={onClose}
       title={taskToEdit ? 'Edit Task' : 'Quick Add Task'}
-      description={taskToEdit ? 'Update details for your scheduled task.' : 'Add a new task or load a prebuilt 1-day routine.'}
+      description={taskToEdit ? 'Update details for your scheduled task.' : undefined}
     >
       <form onSubmit={handleSubmit} className="space-y-4 pt-1 pb-4 text-left select-none">
         {/* Prebuilt 1-Day Routine Selector */}
         {!taskToEdit && (
           <div className="space-y-1.5 p-3 rounded-xl bg-muted/30 border border-border/50">
             <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
-              Load 1-Day Routine Presets (05:30 AM - 11:00 PM)
+              Routine Preset
             </label>
             <div className="grid grid-cols-2 gap-2">
               <button
@@ -114,10 +114,9 @@ export const TaskFormSheet = ({
                   await applyPresetRoutineToDate('Student', date)
                   onClose()
                 }}
-                className="px-2.5 py-1.5 text-[11px] font-bold rounded-lg bg-indigo-500/10 text-indigo-500 hover:bg-indigo-500/20 border border-indigo-500/20 transition-all cursor-pointer text-left flex flex-col space-y-0.5"
+                className="py-2 px-3 text-xs font-bold rounded-xl bg-indigo-500/10 text-indigo-500 hover:bg-indigo-500/20 border border-indigo-500/20 transition-all cursor-pointer text-center flex items-center justify-center"
               >
-                <span>🎓 Student Routine</span>
-                <span className="text-[9px] font-normal text-muted-foreground">5:30 AM - 11:00 PM</span>
+                Student
               </button>
 
               <button
@@ -126,10 +125,9 @@ export const TaskFormSheet = ({
                   await applyPresetRoutineToDate('Freelancer', date)
                   onClose()
                 }}
-                className="px-2.5 py-1.5 text-[11px] font-bold rounded-lg bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 border border-amber-500/20 transition-all cursor-pointer text-left flex flex-col space-y-0.5"
+                className="py-2 px-3 text-xs font-bold rounded-xl bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 border border-amber-500/20 transition-all cursor-pointer text-center flex items-center justify-center"
               >
-                <span>💼 Freelancer Routine</span>
-                <span className="text-[9px] font-normal text-muted-foreground">5:30 AM - 11:00 PM</span>
+                Freelancer
               </button>
             </div>
           </div>

@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { Plus, Sun, Moon } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { getTodayKey, getTomorrowKey, formatDisplayDate } from '../utils/dateUtils'
+import { getTodayKey, formatDisplayDate } from '../utils/dateUtils'
 import { useTasksForDate, useDayProgress } from '../hooks/useDayPlanner'
 import { createTask, updateTask, deleteTask, toggleTaskCompleted } from '../services/plannerService'
 import { PlannerTask } from '../types'
@@ -70,49 +70,16 @@ export const CalendarPage = () => {
     setDeleteConfirm({ isOpen: false, id: '', title: '' })
   }
 
-  const todayKey = getTodayKey()
-  const tomorrowKey = getTomorrowKey()
-
   return (
     <div className="flex-1 flex flex-col space-y-3 pb-24 text-left select-none relative">
-      {/* Page Title & Quick Jump Chips */}
-      <div className="flex items-center justify-between">
-        <div className="flex flex-col">
-          <span className="text-[10px] font-bold text-accent uppercase tracking-wider">
-            Calendar View
-          </span>
-          <h1 className="text-lg font-extrabold text-foreground tracking-tight leading-none mt-0.5">
-            Select & View Plans
-          </h1>
-        </div>
-
-        {/* Quick Date Switcher Chips */}
-        <div className="flex items-center space-x-1.5 bg-muted/60 p-1 rounded-xl border border-[#D9D9D9] dark:border-[#27272a]">
-          <button
-            type="button"
-            onClick={() => setSelectedDateKey(todayKey)}
-            className={`px-2.5 py-1 text-[11px] font-bold rounded-lg transition-all cursor-pointer flex items-center space-x-1 ${
-              selectedDateKey === todayKey
-                ? 'bg-accent text-accent-foreground shadow-xs'
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            <Sun className="w-3 h-3" />
-            <span>Today</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setSelectedDateKey(tomorrowKey)}
-            className={`px-2.5 py-1 text-[11px] font-bold rounded-lg transition-all cursor-pointer flex items-center space-x-1 ${
-              selectedDateKey === tomorrowKey
-                ? 'bg-accent text-accent-foreground shadow-xs'
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            <Moon className="w-3 h-3" />
-            <span>Tomorrow</span>
-          </button>
-        </div>
+      {/* Page Title */}
+      <div className="flex flex-col">
+        <span className="text-[10px] font-bold text-accent uppercase tracking-wider">
+          Calendar View
+        </span>
+        <h1 className="text-lg font-extrabold text-foreground tracking-tight leading-none mt-0.5">
+          Select & View Plans
+        </h1>
       </div>
 
       {/* Calendar Grid Component */}

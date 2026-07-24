@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, ChevronDown, ChevronUp, Moon, Calendar as CalendarIcon } from 'lucide-react'
+import { Plus, ChevronDown, ChevronUp, Moon } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { getTodayKey, getTomorrowKey, formatDisplayDate } from '../utils/dateUtils'
 import { useTasksForDate, useDayProgress } from '../hooks/useDayPlanner'
@@ -95,7 +95,6 @@ export const TomorrowPage = () => {
           className="group flex items-center space-x-1 text-[10px] font-bold text-accent uppercase tracking-wider cursor-pointer hover:opacity-90 w-fit"
           title="Click to select any date"
         >
-          <CalendarIcon className="w-3 h-3 text-accent shrink-0 group-hover:scale-110 transition-transform" />
           <span>{dayName}, {formattedDate}</span>
           <ChevronDown className="w-3 h-3 text-accent shrink-0 opacity-70 group-hover:opacity-100" />
         </button>

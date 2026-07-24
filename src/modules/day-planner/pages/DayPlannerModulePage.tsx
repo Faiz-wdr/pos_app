@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, Sun, Moon, Calendar, Sparkles, Settings } from 'lucide-react'
@@ -8,6 +8,7 @@ import { CalendarPage } from './CalendarPage'
 import { TemplatesPage } from './TemplatesPage'
 import { SettingsPage } from './SettingsPage'
 import { cn } from '@/shared/utils/cn'
+import { useNavigationStore } from '@/core/navigation/navigationStore'
 
 type PlannerTab = 'today' | 'tomorrow' | 'calendar' | 'templates' | 'settings'
 
@@ -21,6 +22,14 @@ const TABS: { id: PlannerTab; label: string; icon: any }[] = [
 
 export const DayPlannerModulePage = () => {
   const [activeTab, setActiveTab] = useState<PlannerTab>('today')
+  const setHideSystemNav = useNavigationStore((state) => state.setHideSystemNav)
+
+  useEffect(() => {
+    setHideSystemNav(true)
+    return () => {
+      setHideSystemNav(false)
+    }
+  }, [setHideSystemNav])
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -40,7 +49,7 @@ export const DayPlannerModulePage = () => {
   return (
     <div className="flex-1 flex flex-col justify-between w-full h-full relative select-none pb-0 overflow-hidden">
       {/* Top Header Navigation Bar (Left-Aligned Text, No Icon) */}
-      <header className="flex items-center w-full px-4 py-2 shrink-0 bg-background/90 dark:bg-background/80 backdrop-blur-xs border-b border-border/40 z-30 select-none space-x-2.5">
+      <header className="flex items-center w-full px-4 py-2.5 shrink-0 bg-background/90 dark:bg-background/80 backdrop-blur-xs border-b border-border/40 z-30 select-none space-x-2.5">
         <Link
           to="/modules"
           className="p-1.5 rounded-full hover:bg-card border border-border/20 text-muted-foreground hover:text-foreground transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-accent shrink-0"
@@ -55,7 +64,7 @@ export const DayPlannerModulePage = () => {
       </header>
 
       {/* Main Tab Screen Content Area */}
-      <div className="flex-1 flex flex-col px-4 pt-2 overflow-y-auto select-text">
+      <div className="flex-1 flex flex-col px-4 pt-3 overflow-y-auto select-text">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
