@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { BottomNav } from '@/components/BottomNav'
 import { useNavigationStore } from '@/core/navigation/navigationStore'
 import { useSettingsStore } from '@/core/settings/settingsStore'
