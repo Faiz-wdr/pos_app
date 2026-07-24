@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, Calendar as CalendarIcon, Sun, Moon } from 'lucide-react'
+import { Plus, Sun, Moon } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { getTodayKey, getTomorrowKey, formatDisplayDate } from '../utils/dateUtils'
 import { useTasksForDate, useDayProgress } from '../hooks/useDayPlanner'

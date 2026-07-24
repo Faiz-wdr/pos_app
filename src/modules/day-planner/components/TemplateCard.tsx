@@ -1,6 +1,6 @@
 import { Card, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
-import { Copy, Edit, Trash2, CalendarCheck, Sparkles } from 'lucide-react'
+import { Copy, Edit, Trash2, Sparkles } from 'lucide-react'
 import { PlannerTemplate } from '../types'
 import { CategoryBadge } from './CategoryBadge'
 

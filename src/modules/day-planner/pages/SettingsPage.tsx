@@ -1,7 +1,7 @@
 import { Card, CardContent } from '@/components/ui/Card'
 import { Switch } from '@/components/ui/Switch'
 import { Button } from '@/components/ui/Button'
-import { Bell, Calendar, Clock, Tag, Eye } from 'lucide-react'
+import { Bell, Calendar, Clock, Eye } from 'lucide-react'
 import { usePlannerSettingsStore } from '../store/plannerSettingsStore'
 import { usePlannerNotifications } from '../hooks/usePlannerNotifications'
 import { TaskCategory, ReminderOption } from '../types'

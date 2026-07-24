@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { motion, useAnimation } from 'framer-motion'
 import { Check, Clock, Trash2, Edit } from 'lucide-react'
 import { PlannerTask } from '../types'
@@ -17,7 +16,6 @@ interface TaskCardProps {
 export const TaskCard = ({ task, onToggleComplete, onEdit, onDelete }: TaskCardProps) => {
   const { timeFormat } = usePlannerSettingsStore()
   const controls = useAnimation()
-  const [isOpenLeft, setIsOpenLeft] = useState(false)
 
   const formattedStartTime = formatTime(task.startTime, timeFormat)
   const durationStr = calculateDuration(task.startTime, task.endTime)
@@ -35,18 +33,15 @@ export const TaskCard = ({ task, onToggleComplete, onEdit, onDelete }: TaskCardP
     }
     // Swipe Left (Show Edit & Delete actions)
     else if (info.offset.x < -swipeThreshold) {
-      setIsOpenLeft(true)
       controls.start({ x: -100 })
     }
     // Snap back
     else {
-      setIsOpenLeft(false)
       controls.start({ x: 0 })
     }
   }
 
   const closeActions = () => {
-    setIsOpenLeft(false)
     controls.start({ x: 0 })
   }
 

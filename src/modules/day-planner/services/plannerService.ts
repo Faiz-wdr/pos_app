@@ -1,6 +1,5 @@
 import { db } from '../database/db'
-import { PlannerTask, PlannerTemplate, TaskCategory, RepeatOption, ReminderOption } from '../types'
-import { getTodayKey } from '../utils/dateUtils'
+import { PlannerTask, PlannerTemplate, TemplateItem, RepeatOption } from '../types'
 
 export const STUDENT_ROUTINE_ITEMS: TemplateItem[] = [
   { title: 'Wake Up & Morning Refreshment', startTime: '05:30', endTime: '06:15', category: 'Health', repeat: 'Daily', reminder: 'At Time', notes: 'Drink water & light exercise' },

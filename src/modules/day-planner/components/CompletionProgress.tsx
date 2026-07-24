@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion'
-import { Card, CardContent } from '@/components/ui/Card'
-import { CheckCircle2, Sparkles } from 'lucide-react'
+import { CheckCircle2 } from 'lucide-react'
 
 interface CompletionProgressProps {
   completed: number
