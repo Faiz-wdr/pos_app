@@ -1,77 +1,46 @@
-import React, { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { useMoneyStore } from '@/modules/money-manager/store/moneyStore'
-import { TabNavigation } from '@/modules/money-manager/components/TabNavigation'
-import { DashboardTab } from '@/modules/money-manager/pages/DashboardTab'
-import { TransactionsTab } from '@/modules/money-manager/pages/TransactionsTab'
-import { ReportsTab } from '@/modules/money-manager/pages/ReportsTab'
-import { BudgetTab } from '@/modules/money-manager/pages/BudgetTab'
-import { SettingsTab } from '@/modules/money-manager/pages/SettingsTab'
-import { useSettingsStore } from '@/core/settings/settingsStore'
+import React from 'react'
+import { Link } from 'react-router-dom'
+import { ArrowLeft, Wallet } from 'lucide-react'
+import { ModuleOptionsMenu } from '@/components/ModuleOptionsMenu'
+import { Card, CardContent } from '@/components/ui/Card'
 
 export const IncomeModulePage: React.FC = () => {
-  const { loadData, loading } = useMoneyStore()
-  const animationsEnabled = useSettingsStore((state) => state.animationsEnabled)
-  const [activeTab, setActiveTab] = useState<string>('dashboard')
-
-  // Load offline tables from IndexedDB
-  useEffect(() => {
-    loadData()
-  }, [loadData])
-
-  const renderActiveTabContent = () => {
-    switch (activeTab) {
-      case 'dashboard':
-        return (
-          <DashboardTab 
-            onNavigateToHistory={() => setActiveTab('transactions')} 
-          />
-        )
-      case 'transactions':
-        return <TransactionsTab />
-      case 'reports':
-        return <ReportsTab />
-      case 'budget':
-        return <BudgetTab />
-      case 'settings':
-        return <SettingsTab />
-      default:
-        return <DashboardTab onNavigateToHistory={() => setActiveTab('transactions')} />
-    }
-  }
-
-  if (loading) {
-    return (
-      <div className="flex-1 flex flex-col justify-center items-center py-20 select-none">
-        <div className="w-8 h-8 rounded-full border-2 border-accent border-t-transparent animate-spin mb-4" />
-        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-          Loading Wallet...
-        </span>
-      </div>
-    )
-  }
-
   return (
-    <div className="flex-1 flex flex-col justify-between min-h-[75vh] md:max-w-xl md:mx-auto w-full">
-      {/* Scrollable Main Viewport */}
-      <div className="flex-1 pb-20 px-1">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeTab}
-            initial={animationsEnabled ? { opacity: 0, x: -4 } : { opacity: 1, x: 0 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={animationsEnabled ? { opacity: 0, x: 4 } : { opacity: 1 }}
-            transition={{ duration: 0.15, ease: 'easeInOut' }}
-            className="h-full"
+    <div className="flex-1 flex flex-col justify-between w-full h-full relative select-none overflow-hidden">
+      {/* Top Header Navigation Bar */}
+      <header className="flex items-center justify-between w-full px-4 py-2.5 shrink-0 bg-background/90 dark:bg-background/80 backdrop-blur-xs border-b border-border/40 z-30 select-none">
+        <div className="flex items-center space-x-2.5">
+          <Link
+            to="/modules"
+            className="p-1.5 rounded-full hover:bg-card border border-border/20 text-muted-foreground hover:text-foreground transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-accent shrink-0"
+            aria-label="Back to POS modules"
           >
-            {renderActiveTabContent()}
-          </motion.div>
-        </AnimatePresence>
-      </div>
+            <ArrowLeft className="w-4 h-4" />
+          </Link>
 
-      {/* Tab Navigation Fixed Bottom */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-t border-border/40">
-        <TabNavigation activeTab={activeTab} onChange={setActiveTab} />
+          <span className="text-sm font-extrabold text-foreground tracking-tight">
+            Income Manager
+          </span>
+        </div>
+
+        <ModuleOptionsMenu />
+      </header>
+
+      {/* Clean Slate Content Area */}
+      <div className="flex-1 flex flex-col items-center justify-center p-6 text-center select-none">
+        <Card className="border-dashed border-border bg-transparent shadow-none max-w-sm py-12">
+          <CardContent className="pt-0 flex flex-col items-center justify-center text-center space-y-3">
+            <div className="p-4 bg-accent/10 rounded-2xl text-accent">
+              <Wallet className="w-8 h-8" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-base font-extrabold text-foreground">Income Manager</h3>
+              <p className="text-xs text-muted-foreground max-w-[240px] mx-auto leading-relaxed">
+                Clean slate ready for rebuild.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )

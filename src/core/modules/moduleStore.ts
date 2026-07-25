@@ -10,16 +10,30 @@ interface ModuleState {
   setModules: (modules: AppModule[]) => void
 }
 
+const VALID_MODULE_IDS = ['clock', 'shopping', 'income', 'day-planner']
+
 export const useModuleStore = create<ModuleState>()(
   persist(
     (set) => ({
       modules: [], // Empty by default
       registerModule: (module) =>
         set((state) => {
-          if (state.modules.some((m) => m.id === module.id)) {
-            return state // Avoid duplicate registrations
+          if (!VALID_MODULE_IDS.includes(module.id)) {
+            return state
           }
-          return { modules: [...state.modules, module] }
+          // Filter out obsolete/removed modules from persisted localStorage (e.g. 'diet-planner')
+          const cleanModules = (state.modules || []).filter((m) => VALID_MODULE_IDS.includes(m.id))
+          const existingIndex = cleanModules.findIndex((m) => m.id === module.id)
+
+          if (existingIndex >= 0) {
+            const updated = [...cleanModules]
+            updated[existingIndex] = {
+              ...module,
+              enabled: cleanModules[existingIndex].enabled
+            }
+            return { modules: updated }
+          }
+          return { modules: [...cleanModules, module] }
         }),
       toggleModule: (id, enabled) =>
         set((state) => ({
@@ -27,7 +41,7 @@ export const useModuleStore = create<ModuleState>()(
             m.id === id ? { ...m, enabled } : m
           ),
         })),
-      setModules: (modules) => set({ modules }),
+      setModules: (modules) => set({ modules: modules.filter((m) => VALID_MODULE_IDS.includes(m.id)) }),
     }),
     {
       name: 'pos-modules-storage',

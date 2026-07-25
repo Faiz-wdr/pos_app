@@ -29,10 +29,7 @@ export const SettingsPage = () => {
     <div className="flex-1 flex flex-col space-y-3 pb-24 text-left select-none">
       {/* Header Title */}
       <div className="flex flex-col">
-        <span className="text-[10px] font-bold text-accent uppercase tracking-wider">
-          Preferences
-        </span>
-        <h1 className="text-lg font-extrabold text-foreground tracking-tight leading-none mt-0.5">
+        <h1 className="text-lg font-extrabold text-foreground tracking-tight leading-none">
           Planner Settings
         </h1>
       </div>
@@ -42,7 +39,7 @@ export const SettingsPage = () => {
         <Card className="bg-card/70 border-border/70 shadow-xs rounded-2xl overflow-hidden">
           <CardContent className="p-4 sm:p-5 space-y-4">
             <h3 className="text-xs font-extrabold uppercase text-muted-foreground tracking-wider flex items-center">
-              <Calendar className="w-3.5 h-3.5 mr-1.5 text-accent" />
+              <Calendar className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
               Calendar & Time Format
             </h3>
 
@@ -106,7 +103,7 @@ export const SettingsPage = () => {
         <Card className="bg-card/70 border-border/70 shadow-xs rounded-2xl overflow-hidden">
           <CardContent className="p-4 sm:p-5 space-y-4">
             <h3 className="text-xs font-extrabold uppercase text-muted-foreground tracking-wider flex items-center">
-              <Clock className="w-3.5 h-3.5 mr-1.5 text-accent" />
+              <Clock className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
               Task Defaults
             </h3>
 
@@ -156,7 +153,7 @@ export const SettingsPage = () => {
         <Card className="bg-card/70 border-border/70 shadow-xs rounded-2xl overflow-hidden">
           <CardContent className="p-4 sm:p-5 space-y-4">
             <h3 className="text-xs font-extrabold uppercase text-muted-foreground tracking-wider flex items-center">
-              <Eye className="w-3.5 h-3.5 mr-1.5 text-accent" />
+              <Eye className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
               View & Notifications
             </h3>
 

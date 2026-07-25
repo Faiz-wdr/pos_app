@@ -74,10 +74,7 @@ export const CalendarPage = () => {
     <div className="flex-1 flex flex-col space-y-3 pb-24 text-left select-none relative">
       {/* Page Title */}
       <div className="flex flex-col">
-        <span className="text-[10px] font-bold text-accent uppercase tracking-wider">
-          Calendar View
-        </span>
-        <h1 className="text-lg font-extrabold text-foreground tracking-tight leading-none mt-0.5">
+        <h1 className="text-lg font-extrabold text-foreground tracking-tight leading-none">
           Select & View Plans
         </h1>
       </div>

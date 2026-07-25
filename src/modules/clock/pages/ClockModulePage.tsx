@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Settings, Clock, Hourglass, BellRing } from 'lucide-react'
+import { ArrowLeft, Clock, Hourglass, BellRing } from 'lucide-react'
 import { useNavigationStore } from '@/core/navigation/navigationStore'
 import { useClockStore } from '../store/clockStore'
 import { useTimerStore } from '../store/timerStore'
@@ -9,6 +9,7 @@ import { useAutoHide } from '../hooks/useAutoHide'
 import { useWakeLock } from '@/shared/hooks/useWakeLock'
 import { startAlarm, stopAlarm } from '../services/audio'
 import ClockSettingsDialog from '../components/ClockSettingsDialog'
+import { ModuleOptionsMenu } from '@/components/ModuleOptionsMenu'
 import TimerDisplay from '../components/TimerDisplay'
 import TimerPresets from '../components/TimerPresets'
 import { THEMES } from '../components/themes'
@@ -265,15 +266,10 @@ export const ClockModulePage = () => {
               </button>
             </div>
 
-            <div className="flex items-center">
-              <button
-                onClick={() => setSettingsOpen(true)}
-                className="p-2 rounded-full hover:bg-card border border-border/20 text-muted-foreground hover:text-foreground transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-accent"
-                aria-label="Clock configuration settings"
-              >
-                <Settings className="w-5 h-5" />
-              </button>
-            </div>
+            <ModuleOptionsMenu 
+              onOpenModuleSettings={() => setSettingsOpen(true)} 
+              moduleSettingsLabel="Clock Settings" 
+            />
           </motion.header>
         )}
       </AnimatePresence>

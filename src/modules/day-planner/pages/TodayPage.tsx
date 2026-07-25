@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Plus, ChevronDown, ChevronUp } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { getTodayKey, getTomorrowKey, formatDisplayDate, getGreeting } from '../utils/dateUtils'
+import { getTodayKey, getTomorrowKey, formatDisplayDate } from '../utils/dateUtils'
 import { useTasksForDate, useDayProgress } from '../hooks/useDayPlanner'
 import { createTask, updateTask, deleteTask, toggleTaskCompleted } from '../services/plannerService'
 import { usePlannerSettingsStore } from '../store/plannerSettingsStore'
@@ -19,7 +19,6 @@ export const TodayPage = () => {
   const todayKey = getTodayKey()
   const [activeDateKey, setActiveDateKey] = useState(todayKey)
   const { dayName, formattedDate } = formatDisplayDate(activeDateKey)
-  const greeting = getGreeting()
   const { showCompletedTasks } = usePlannerSettingsStore()
 
   const tasks = useTasksForDate(activeDateKey)
@@ -88,20 +87,17 @@ export const TodayPage = () => {
 
   return (
     <div className="flex-1 flex flex-col space-y-3 pb-24 text-left select-none relative">
-      {/* Header Greeting & Clickable Date Header */}
+      {/* Clickable Date Header */}
       <div className="flex flex-col">
         <button
           type="button"
           onClick={() => setDatePickerOpen(true)}
-          className="group flex items-center space-x-1 text-[10px] font-bold text-accent uppercase tracking-wider cursor-pointer hover:opacity-90 w-fit"
+          className="group flex items-center space-x-1.5 text-xs font-bold text-muted-foreground uppercase tracking-wider cursor-pointer hover:text-foreground w-fit"
           title="Click to select any date"
         >
           <span>{dayName}, {formattedDate}</span>
-          <ChevronDown className="w-3 h-3 text-accent shrink-0 opacity-70 group-hover:opacity-100" />
+          <ChevronDown className="w-3.5 h-3.5 text-muted-foreground shrink-0 opacity-70 group-hover:opacity-100" />
         </button>
-        <h1 className="text-lg font-extrabold text-foreground tracking-tight leading-none mt-0.5">
-          {greeting}
-        </h1>
       </div>
 
       {/* Completion Progress Bar */}

@@ -124,10 +124,7 @@ export const TemplatesPage = () => {
       {/* Header & New Template Button */}
       <div className="flex items-center justify-between">
         <div className="flex flex-col">
-          <span className="text-[10px] font-bold text-accent uppercase tracking-wider">
-            Reusable Routines
-          </span>
-          <h1 className="text-lg font-extrabold text-foreground tracking-tight leading-none mt-0.5">
+          <h1 className="text-lg font-extrabold text-foreground tracking-tight leading-none">
             Schedule Templates
           </h1>
         </div>

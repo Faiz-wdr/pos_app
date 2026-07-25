@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
-  ArrowLeft, Settings, ShoppingBag, Plus, Sparkles, History,
+  ArrowLeft, ShoppingBag, Plus, Sparkles, History,
   Trash2, Copy, FileSpreadsheet, ArrowRight, ClipboardList, Search
 } from 'lucide-react'
 import { useShoppingSettingsStore } from '../store/settingsStore'
@@ -15,6 +15,7 @@ import {
   createShoppingList
 } from '../services/shoppingService'
 import ShoppingSettingsDialog from '../components/ShoppingSettings'
+import { ModuleOptionsMenu } from '@/components/ModuleOptionsMenu'
 import { Card, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -273,13 +274,10 @@ export const ShoppingModulePage = () => {
           </button>
         </div>
 
-        <button
-          onClick={() => setSettingsOpen(true)}
-          className="p-2 rounded-full hover:bg-card border border-border/20 text-muted-foreground hover:text-foreground transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-accent"
-          aria-label="Shopping list preferences settings"
-        >
-          <Settings className="w-5 h-5" />
-        </button>
+        <ModuleOptionsMenu 
+          onOpenModuleSettings={() => setSettingsOpen(true)} 
+          moduleSettingsLabel="Shopping Preferences" 
+        />
       </header>
 
       {/* Main content body */}

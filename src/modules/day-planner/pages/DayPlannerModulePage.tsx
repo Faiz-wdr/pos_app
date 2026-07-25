@@ -1,20 +1,21 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Sun, Moon, Calendar, Sparkles, Settings } from 'lucide-react'
+import { ArrowLeft, Sun, Calendar, Sparkles, Settings } from 'lucide-react'
 import { TodayPage } from './TodayPage'
-import { TomorrowPage } from './TomorrowPage'
 import { CalendarPage } from './CalendarPage'
 import { TemplatesPage } from './TemplatesPage'
 import { SettingsPage } from './SettingsPage'
+import { ModuleOptionsMenu } from '@/components/ModuleOptionsMenu'
 import { cn } from '@/shared/utils/cn'
 import { useNavigationStore } from '@/core/navigation/navigationStore'
+import { useTaskReminderScheduler } from '../hooks/useTaskReminderScheduler'
+import { TaskReminderAlertModal } from '../components/TaskReminderAlertModal'
 
-type PlannerTab = 'today' | 'tomorrow' | 'calendar' | 'templates' | 'settings'
+type PlannerTab = 'today' | 'calendar' | 'templates' | 'settings'
 
 const TABS: { id: PlannerTab; label: string; icon: any }[] = [
   { id: 'today', label: 'Today', icon: Sun },
-  { id: 'tomorrow', label: 'Tomorrow', icon: Moon },
   { id: 'calendar', label: 'Calendar', icon: Calendar },
   { id: 'templates', label: 'Templates', icon: Sparkles },
   { id: 'settings', label: 'Settings', icon: Settings }
@@ -23,6 +24,9 @@ const TABS: { id: PlannerTab; label: string; icon: any }[] = [
 export const DayPlannerModulePage = () => {
   const [activeTab, setActiveTab] = useState<PlannerTab>('today')
   const setHideSystemNav = useNavigationStore((state) => state.setHideSystemNav)
+
+  // Start real-time task reminder scheduler
+  useTaskReminderScheduler()
 
   useEffect(() => {
     setHideSystemNav(true)
@@ -35,8 +39,6 @@ export const DayPlannerModulePage = () => {
     switch (activeTab) {
       case 'today':
         return <TodayPage />
-      case 'tomorrow':
-        return <TomorrowPage />
       case 'calendar':
         return <CalendarPage />
       case 'templates':
@@ -49,18 +51,22 @@ export const DayPlannerModulePage = () => {
   return (
     <div className="flex-1 flex flex-col justify-between w-full h-full relative select-none pb-0 overflow-hidden">
       {/* Top Header Navigation Bar (Left-Aligned Text, No Icon) */}
-      <header className="flex items-center w-full px-4 py-2.5 shrink-0 bg-background/90 dark:bg-background/80 backdrop-blur-xs border-b border-border/40 z-30 select-none space-x-2.5">
-        <Link
-          to="/modules"
-          className="p-1.5 rounded-full hover:bg-card border border-border/20 text-muted-foreground hover:text-foreground transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-accent shrink-0"
-          aria-label="Back to POS modules"
-        >
-          <ArrowLeft className="w-4 h-4" />
-        </Link>
+      <header className="flex items-center justify-between w-full px-4 py-2.5 shrink-0 bg-background/90 dark:bg-background/80 backdrop-blur-xs border-b border-border/40 z-30 select-none">
+        <div className="flex items-center space-x-2.5">
+          <Link
+            to="/modules"
+            className="p-1.5 rounded-full hover:bg-card border border-border/20 text-muted-foreground hover:text-foreground transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-accent shrink-0"
+            aria-label="Back to POS modules"
+          >
+            <ArrowLeft className="w-4 h-4" />
+          </Link>
 
-        <span className="text-sm font-extrabold text-foreground tracking-tight">
-          Day Planner
-        </span>
+          <span className="text-sm font-extrabold text-foreground tracking-tight">
+            Day Planner
+          </span>
+        </div>
+
+        <ModuleOptionsMenu />
       </header>
 
       {/* Main Tab Screen Content Area */}
@@ -79,7 +85,7 @@ export const DayPlannerModulePage = () => {
         </AnimatePresence>
       </div>
 
-      {/* Module Specific Bottom Navigation Bar (5 tabs) */}
+      {/* Module Specific Bottom Navigation Bar (4 tabs) */}
       <nav className="fixed bottom-0 left-0 right-0 z-40 bg-background/95 border-t border-border pb-safe flex items-center justify-around h-16 sm:h-18 select-none">
         <div className="w-full max-w-md mx-auto flex items-center justify-around px-1">
           {TABS.map((tab) => {
@@ -90,25 +96,18 @@ export const DayPlannerModulePage = () => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className="relative flex flex-col items-center justify-center w-14 h-12 transition-colors cursor-pointer group focus-visible:outline-2 focus-visible:outline-accent"
+                className="relative flex flex-col items-center justify-center w-16 h-12 transition-colors cursor-pointer group focus-visible:outline-2 focus-visible:outline-accent"
                 aria-label={tab.label}
               >
-                {isActive && (
-                  <motion.div
-                    layoutId="activeTabIndicator"
-                    className="absolute inset-0 bg-accent/10 rounded-xl"
-                    transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-                  />
-                )}
                 <Icon
                   className={cn(
-                    'w-5 h-5 transition-colors duration-200 z-10',
+                    'w-5 h-5 transition-colors duration-200',
                     isActive ? 'text-accent' : 'text-muted-foreground group-hover:text-foreground'
                   )}
                 />
                 <span
                   className={cn(
-                    'text-[10px] font-bold mt-1 transition-colors duration-200 z-10',
+                    'text-[10px] font-bold mt-1 transition-colors duration-200',
                     isActive ? 'text-accent' : 'text-muted-foreground group-hover:text-foreground'
                   )}
                 >
@@ -119,6 +118,9 @@ export const DayPlannerModulePage = () => {
           })}
         </div>
       </nav>
+
+      {/* Task Reminder Audio & Popup Alert Overlay */}
+      <TaskReminderAlertModal />
     </div>
   )
 }
