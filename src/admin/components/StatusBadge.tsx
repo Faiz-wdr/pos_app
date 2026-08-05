@@ -4,11 +4,23 @@ import { cn } from '@/shared/utils/cn'
 
 interface StatusBadgeProps {
   lastActivity: any
+  status?: 'active' | 'suspended'
   className?: string
 }
 
-export const StatusBadge: React.FC<StatusBadgeProps> = ({ lastActivity, className = '' }) => {
-  const status = getStatusFromLastActivity(lastActivity)
+export const StatusBadge: React.FC<StatusBadgeProps> = ({ lastActivity, status = 'active', className = '' }) => {
+  if (status === 'suspended') {
+    return (
+      <span className={cn(
+        'text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border leading-none inline-block select-none bg-red-500/10 text-red-500 border-red-500/20',
+        className
+      )}>
+        Suspended
+      </span>
+    )
+  }
+
+  const actStatus = getStatusFromLastActivity(lastActivity)
 
   const badges = {
     online: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
@@ -25,10 +37,10 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ lastActivity, classNam
   return (
     <span className={cn(
       'text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border leading-none inline-block select-none',
-      badges[status],
+      badges[actStatus],
       className
     )}>
-      {labels[status]}
+      {labels[actStatus]}
     </span>
   )
 }

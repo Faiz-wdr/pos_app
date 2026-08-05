@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Clock, Hourglass, BellRing } from 'lucide-react'
+import { ArrowLeft, Clock, Hourglass, BellRing, RotateCw } from 'lucide-react'
 import { useNavigationStore } from '@/core/navigation/navigationStore'
 import { useClockStore } from '../store/clockStore'
 import { useTimerStore } from '../store/timerStore'
@@ -17,6 +17,7 @@ import { useDeviceOrientation } from '../hooks/useDeviceOrientation'
 import { useClockTime } from '../hooks/useClockTime'
 import { Maximize, Minimize } from 'lucide-react'
 import { ClockTheme } from '../types'
+import { cn } from '@/shared/utils/cn'
 
 const THEME_KEYS: ClockTheme[] = ['modern-digital', 'minimal-digital', 'classic-analog', 'calendar-analog']
 
@@ -42,8 +43,19 @@ export const ClockModulePage = () => {
     autoHideControls,
     showSeconds,
     use24Hour,
-    dateFormat
+    dateFormat,
+    landscapeRotation
   } = useClockStore()
+
+  // Manual orientation override state
+  const [manualLandscape, setManualLandscape] = useState<boolean | null>(null)
+
+  // Determine active landscape layout mode
+  const isDeskModeActive = manualLandscape !== null 
+    ? manualLandscape 
+    : (landscapeRotation ? isLandscape : false)
+
+  const needsPhysicalRotation = isDeskModeActive && !isLandscape
 
   const handleNextTheme = () => {
     const currentIndex = THEME_KEYS.indexOf(theme)
@@ -58,7 +70,6 @@ export const ClockModulePage = () => {
   }
   const { isCompleted, dismissCompleted, tick, syncBackground, isRunning } = useTimerStore()
 
-  const isDeskModeActive = isLandscape
   const ActiveThemeComponent = THEMES[theme] || THEMES['modern-digital']
 
   useEffect(() => {
@@ -214,7 +225,10 @@ export const ClockModulePage = () => {
 
   return (
     <div 
-      className="flex-1 flex flex-col justify-between w-full h-full relative select-none overflow-hidden"
+      className={cn(
+        "flex-1 flex flex-col justify-between w-full h-full relative select-none overflow-hidden",
+        needsPhysicalRotation && "rotate-landscape-content bg-black"
+      )}
       onClick={showControls}
       style={activeTab === 'clock' ? { backgroundColor: '#000000' } : {}}
     >
@@ -266,10 +280,22 @@ export const ClockModulePage = () => {
               </button>
             </div>
 
-            <ModuleOptionsMenu 
-              onOpenModuleSettings={() => setSettingsOpen(true)} 
-              moduleSettingsLabel="Clock Settings" 
-            />
+            <div className="flex items-center space-x-1 sm:space-x-2">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setManualLandscape(prev => prev === null ? !landscapeRotation : !prev)
+                }}
+                className="p-2 rounded-full hover:bg-card border border-border/20 text-muted-foreground hover:text-foreground transition-all cursor-pointer focus-visible:outline-2"
+                aria-label="Toggle Layout Rotation"
+              >
+                <RotateCw className={cn("w-5 h-5 transition-transform duration-300", isLandscape && "rotate-90")} />
+              </button>
+              <ModuleOptionsMenu 
+                onOpenModuleSettings={() => setSettingsOpen(true)} 
+                moduleSettingsLabel="Clock Settings" 
+              />
+            </div>
           </motion.header>
         )}
       </AnimatePresence>
@@ -316,8 +342,8 @@ export const ClockModulePage = () => {
               transition={transition}
               className="w-full max-w-sm flex flex-col items-center justify-center space-y-5"
             >
-              <TimerDisplay />
-              <TimerPresets />
+              <TimerDisplay isLandscapeMode={isDeskModeActive} />
+              {!isDeskModeActive && <TimerPresets />}
             </motion.div>
           )}
         </AnimatePresence>
@@ -354,6 +380,25 @@ export const ClockModulePage = () => {
               Dismiss Alarm
             </motion.button>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Floating Rotate button for Desk Mode */}
+      <AnimatePresence>
+        {isDeskModeActive && controlsVisible && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            onClick={(e) => {
+              e.stopPropagation()
+              setManualLandscape(prev => prev === null ? !landscapeRotation : !prev)
+            }}
+            className="absolute bottom-6 left-6 z-30 p-3 rounded-full bg-neutral-900/80 border border-neutral-700/60 text-white shadow-xl cursor-pointer hover:bg-neutral-800 transition-all active:scale-95"
+            aria-label="Toggle Layout Rotation"
+          >
+            <RotateCw className="w-5 h-5" />
+          </motion.button>
         )}
       </AnimatePresence>
 

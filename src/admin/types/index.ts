@@ -28,6 +28,7 @@ export interface FirestoreUser {
   appVersion?: string
   device?: 'mobile' | 'tablet' | 'desktop'
   browser?: string
+  status?: 'active' | 'suspended'
 }
 
 export interface ActivityLog {

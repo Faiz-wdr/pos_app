@@ -11,6 +11,7 @@ interface ClockStoreState extends ClockSettings {
   setShowSeconds: (show: boolean) => void
   setAutoHideControls: (hide: boolean) => void
   setKeepAwake: (awake: boolean) => void
+  setLandscapeRotation: (rotate: boolean) => void
 }
 
 export const useClockStore = create<ClockStoreState>()(
@@ -23,6 +24,7 @@ export const useClockStore = create<ClockStoreState>()(
       showSeconds: true,
       autoHideControls: false,
       keepAwake: true,
+      landscapeRotation: false,
 
       setTheme: (theme) => set({ theme }),
       setThemeColor: (themeColor) => set({ themeColor }),
@@ -31,6 +33,7 @@ export const useClockStore = create<ClockStoreState>()(
       setShowSeconds: (showSeconds) => set({ showSeconds }),
       setAutoHideControls: (autoHideControls) => set({ autoHideControls }),
       setKeepAwake: (keepAwake) => set({ keepAwake }),
+      setLandscapeRotation: (landscapeRotation) => set({ landscapeRotation }),
     }),
     {
       name: 'pos-clock-settings',

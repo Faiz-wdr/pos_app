@@ -1,18 +1,19 @@
 import { useEffect } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
-import { motion } from 'framer-motion'
 import { BottomNav } from '@/components/BottomNav'
 import { useNavigationStore } from '@/core/navigation/navigationStore'
-import { useSettingsStore } from '@/core/settings/settingsStore'
 import { cn } from '@/shared/utils/cn'
 import { onAuthStateChanged } from 'firebase/auth'
 import { auth } from '@/core/firebase/auth'
+import { doc, onSnapshot } from 'firebase/firestore'
+import { db } from '@/core/firebase/firestore'
 import { useAuthStore } from '@/core/firebase/stores/authStore'
 import { authService } from '@/core/firebase/services/authService'
 import { serializeFirebaseUser } from '@/core/firebase/hooks/useAuth'
 import { AuthBottomSheet } from '@/core/firebase/components/auth/AuthBottomSheet'
 import { UpdateDialog } from '@/core/pwa/UpdateDialog'
 import { useUserHeartbeat } from '@/shared/hooks/useUserHeartbeat'
+import { ShieldAlert } from 'lucide-react'
 
 export const RootLayout = () => {
   const location = useLocation()
@@ -20,27 +21,63 @@ export const RootLayout = () => {
   const hideSystemNav = useNavigationStore((state) => state.hideSystemNav)
   const setHideSystemNav = useNavigationStore((state) => state.setHideSystemNav)
   const isFullscreen = useNavigationStore((state) => state.isFullscreen)
-  const animationsEnabled = useSettingsStore((state) => state.animationsEnabled)
   const restoreSession = useAuthStore((state) => state.restoreSession)
+  const user = useAuthStore((state) => state.user)
 
   // Start the background heartbeat activity reporter
   useUserHeartbeat()
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+    let unsubscribeSnapshot: (() => void) | null = null
+
+    const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (unsubscribeSnapshot) {
+        unsubscribeSnapshot()
+        unsubscribeSnapshot = null
+      }
+
       if (firebaseUser) {
+        // Initial sync of profile
         try {
-          const profile = await authService.syncUserProfile(firebaseUser.uid, firebaseUser.email, firebaseUser.displayName, false)
-          restoreSession(profile)
+          await authService.syncUserProfile(firebaseUser.uid, firebaseUser.email, firebaseUser.displayName, false)
         } catch (e) {
-          console.error('Error syncing profile on session restore:', e)
-          restoreSession(serializeFirebaseUser(firebaseUser))
+          console.error('Error syncing profile:', e)
         }
+
+        // Set up real-time listener on user doc
+        const userDocRef = doc(db, 'users', firebaseUser.uid)
+        unsubscribeSnapshot = onSnapshot(userDocRef, (snapshot) => {
+          if (snapshot.exists()) {
+            const data = snapshot.data()
+            const profile = {
+              uid: data.uid,
+              fullName: data.fullName || firebaseUser.displayName || '',
+              email: data.email || firebaseUser.email,
+              photoURL: data.photoURL || null,
+              createdAt: data.createdAt?.toDate?.()?.toISOString() || data.createdAt || new Date().toISOString(),
+              lastLogin: data.lastLogin?.toDate?.()?.toISOString() || data.lastLogin || new Date().toISOString(),
+              isPremium: !!data.isPremium || !!data.premium,
+              enabledModules: data.enabledModules || [],
+              role: data.role || 'user',
+              status: data.status || 'active'
+            }
+            restoreSession(profile)
+          } else {
+            restoreSession(serializeFirebaseUser(firebaseUser))
+          }
+        }, (err) => {
+          console.error('Firestore subscription error:', err)
+          restoreSession(serializeFirebaseUser(firebaseUser))
+        })
       } else {
         restoreSession(null)
       }
     })
-    return () => unsubscribe()
+
+    return () => {
+      unsubscribeAuth()
+      if (unsubscribeSnapshot) unsubscribeSnapshot()
+    }
   }, [restoreSession])
 
   useEffect(() => {
@@ -60,33 +97,65 @@ export const RootLayout = () => {
     setHideSystemNav(isSubModule)
   }, [location.pathname, setActiveTab, setHideSystemNav])
 
+  const handleLogout = async () => {
+    try {
+      await authService.logout()
+      useAuthStore.getState().logout()
+    } catch (e) {
+      console.error('Error logging out suspended account:', e)
+    }
+  }
+
+  const isSuspended = user && user.status === 'suspended'
+
+  const isClockModule = location.pathname.startsWith('/modules/clock')
+
   return (
     <div className="min-h-screen bg-background/50 dark:bg-black/90 flex flex-col justify-between transition-colors duration-300">
       {/* Containerizing layout as mobile device mock on wide viewports, edge-to-edge on mobile */}
       <main
         className={cn(
-          'w-full mx-auto min-h-screen bg-background flex flex-col relative border-x border-border/60 dark:border-border/30 shadow-2xl transition-all duration-300',
+          'w-full mx-auto min-h-screen bg-background flex flex-col relative border-x border-border/60 dark:border-border/30 shadow-2xl transition-all duration-300 overflow-hidden',
           isFullscreen ? 'max-w-none border-x-0' : 'max-w-md',
-          hideSystemNav ? 'pb-0' : 'pb-16 sm:pb-18'
+          hideSystemNav ? 'pb-0' : 'pb-16 sm:pb-18',
+          !isClockModule && 'lock-portrait'
         )}
       >
-        {/* Page transitions */}
-        <motion.div
-          key={location.pathname}
-          initial={animationsEnabled ? { opacity: 0, y: 6 } : { opacity: 1, y: 0 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.12, ease: 'easeOut' }}
-          className={cn(
-            'flex-1 flex flex-col w-full transition-all duration-300',
-            hideSystemNav ? 'px-0 pt-0 pb-0' : 'px-4 pt-4 pb-4'
-          )}
-        >
-          <Outlet />
-        </motion.div>
+        {isSuspended ? (
+          <div className="flex-1 flex flex-col justify-center items-center p-6 text-center space-y-5 animate-in fade-in duration-300">
+            <div className="w-16 h-16 rounded-full bg-red-500/10 text-red-500 border border-red-500/20 flex items-center justify-center shadow-xs">
+              <ShieldAlert className="w-8 h-8" />
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-base font-extrabold text-foreground tracking-tight">Account Restricted</h2>
+              <p className="text-xs text-muted-foreground leading-relaxed max-w-[280px] mx-auto">
+                Your personal account has been suspended by an administrator. Please contact support if you believe this is an error.
+              </p>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="px-6 py-2.5 text-xs font-bold uppercase tracking-wider rounded-xl bg-muted border border-border text-foreground hover:bg-card active:scale-[0.98] transition-all cursor-pointer"
+            >
+              Sign Out
+            </button>
+          </div>
+        ) : (
+          <>
+            {/* Page transitions */}
+            <div
+              className={cn(
+                'flex-1 flex flex-col w-full',
+                hideSystemNav ? 'px-0 pt-0 pb-0' : 'px-4 pt-4 pb-4'
+              )}
+            >
+              <Outlet />
+            </div>
 
-        {!hideSystemNav && <BottomNav />}
-        <AuthBottomSheet />
-        <UpdateDialog />
+            {!hideSystemNav && <BottomNav />}
+            <AuthBottomSheet />
+            <UpdateDialog />
+          </>
+        )}
       </main>
     </div>
   )

@@ -83,6 +83,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
             <option value="online">Online</option>
             <option value="away">Away</option>
             <option value="offline">Offline</option>
+            <option value="suspended">Suspended</option>
           </select>
         </div>
 

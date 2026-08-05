@@ -1,7 +1,9 @@
+import { useState } from 'react'
 import { Dialog } from '@/components/ui/Dialog'
 import { Switch } from '@/components/ui/Switch'
 import { useShoppingSettingsStore } from '../store/settingsStore'
 import { ShoppingSortType } from '../types'
+import { ChevronRight } from 'lucide-react'
 
 interface ShoppingSettingsDialogProps {
   isOpen: boolean
@@ -17,6 +19,9 @@ export const ShoppingSettingsDialog = ({ isOpen, onClose }: ShoppingSettingsDial
     showActualPrice, setShowActualPrice,
     confirmDelete, setConfirmDelete
   } = useShoppingSettingsStore()
+
+  // Sub-dialog selector states
+  const [activeSubDialog, setActiveSubDialog] = useState<'currency' | 'sort' | 'unit' | null>(null)
 
   const currencyOptions = [
     { value: '$', label: 'Dollar ($)' },
@@ -34,129 +39,179 @@ export const ShoppingSettingsDialog = ({ isOpen, onClose }: ShoppingSettingsDial
   ]
 
   const unitOptions = [
-    'Piece',
-    'Kg',
-    'Gram',
-    'Liter',
-    'ml',
-    'Pack',
-    'Bottle',
-    'Box',
-    'Dozen',
-    'Meter',
-    'Feet'
+    'Piece', 'Kg', 'Gram', 'Liter', 'ml', 'Pack', 'Bottle', 'Box', 'Dozen', 'Meter', 'Feet'
   ]
+
+  const getCurrencyLabel = (val: string) => {
+    const opt = currencyOptions.find(o => o.value === val)
+    return opt ? opt.label : val
+  }
+
+  const getSortLabel = (val: ShoppingSortType) => {
+    const opt = sortOptions.find(o => o.value === val)
+    return opt ? opt.label : val
+  }
 
   return (
     <Dialog
       isOpen={isOpen}
       onClose={onClose}
-      title="Shopping List Settings"
-      description="Configure default behaviors, currency symbols, and price layouts."
+      title="Shopping Settings"
     >
-      <div className="space-y-5 pt-2 pb-1 select-none text-left">
+      <div className="space-y-4 pt-2 pb-1 select-none text-left">
         
-        {/* Currency setting */}
-        <div className="space-y-1.5">
-          <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">Currency Symbol</label>
-          <div className="grid grid-cols-5 gap-1.5 bg-muted/65 p-1 rounded-xl border border-border/50">
-            {currencyOptions.map((opt) => {
-              const isSelected = currency === opt.value
-              return (
-                <button
-                  key={opt.value}
-                  onClick={() => setCurrency(opt.value)}
-                  className={`py-2 px-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                    isSelected
-                      ? 'bg-accent text-accent-foreground shadow-xs'
-                      : 'text-muted-foreground hover:text-foreground active:scale-[0.98]'
-                  }`}
-                >
-                  {opt.value}
-                </button>
-              )
-            })}
-          </div>
-        </div>
-
-        <hr className="border-border/60" />
-
-        {/* Default Sort */}
-        <div className="space-y-2">
-          <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">Default Sorting</label>
-          <div className="flex flex-col space-y-1.5">
-            {sortOptions.map((opt) => (
-              <button
-                key={opt.value}
-                onClick={() => setDefaultSort(opt.value)}
-                className={`w-full flex items-center justify-between p-3 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
-                  defaultSort === opt.value 
-                    ? 'border-accent bg-accent/5 text-foreground' 
-                    : 'border-border bg-card/45 text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <span>{opt.label}</span>
-                {defaultSort === opt.value && (
-                  <span className="w-2 h-2 rounded-full bg-accent" />
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <hr className="border-border/60" />
-
-        {/* Default Unit */}
-        <div className="space-y-1.5">
-          <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">Default Unit</label>
-          <select
-            value={defaultUnit}
-            onChange={(e) => setDefaultUnit(e.target.value)}
-            className="w-full px-3 py-2.5 bg-card border border-border/80 rounded-xl text-xs font-bold text-foreground focus-visible:outline-2 focus-visible:outline-accent"
+        {/* General Options Card */}
+        <div className="bg-card/30 border border-border/40 rounded-2xl overflow-hidden divide-y divide-border/30">
+          {/* Default Currency */}
+          <div 
+            onClick={() => setActiveSubDialog('currency')}
+            className="flex justify-between items-center h-12 px-4 hover:bg-muted/40 transition-colors cursor-pointer"
           >
-            {unitOptions.map((unit) => (
-              <option key={unit} value={unit}>
-                {unit}
-              </option>
-            ))}
-          </select>
+            <span className="text-xs font-bold text-foreground">Default Currency</span>
+            <div className="flex items-center space-x-1.5 text-muted-foreground">
+              <span className="text-xs font-medium">{getCurrencyLabel(currency)}</span>
+              <ChevronRight className="w-4 h-4 opacity-60" />
+            </div>
+          </div>
+
+          {/* Default Sorting */}
+          <div 
+            onClick={() => setActiveSubDialog('sort')}
+            className="flex justify-between items-center h-12 px-4 hover:bg-muted/40 transition-colors cursor-pointer"
+          >
+            <span className="text-xs font-bold text-foreground">List Sorting</span>
+            <div className="flex items-center space-x-1.5 text-muted-foreground">
+              <span className="text-xs font-medium">{getSortLabel(defaultSort)}</span>
+              <ChevronRight className="w-4 h-4 opacity-60" />
+            </div>
+          </div>
+
+          {/* Default Unit */}
+          <div 
+            onClick={() => setActiveSubDialog('unit')}
+            className="flex justify-between items-center h-12 px-4 hover:bg-muted/40 transition-colors cursor-pointer"
+          >
+            <span className="text-xs font-bold text-foreground">Default Quantity Unit</span>
+            <div className="flex items-center space-x-1.5 text-muted-foreground">
+              <span className="text-xs font-medium">{defaultUnit}</span>
+              <ChevronRight className="w-4 h-4 opacity-60" />
+            </div>
+          </div>
         </div>
 
-        <hr className="border-border/60" />
-
-        {/* Pricing Switches */}
-        <div className="space-y-3.5">
-          <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">Pricing & Safeties</label>
-
-          {/* Show Expected Price */}
-          <div className="flex items-center justify-between">
-            <div className="flex flex-col space-y-0.5">
-              <span className="text-sm font-semibold">Show Estimated Price</span>
-              <span className="text-xs text-muted-foreground">Enable budgeted price inputs</span>
-            </div>
+        {/* Switches Card */}
+        <div className="bg-card/30 border border-border/40 rounded-2xl overflow-hidden divide-y divide-border/30">
+          {/* Show Estimated Price */}
+          <div className="flex items-center justify-between h-12 px-4">
+            <span className="text-xs font-bold text-foreground">Show Estimated Price</span>
             <Switch checked={showEstimatedPrice} onCheckedChange={setShowEstimatedPrice} />
           </div>
 
           {/* Show Actual Price */}
-          <div className="flex items-center justify-between">
-            <div className="flex flex-col space-y-0.5">
-              <span className="text-sm font-semibold">Show Actual Price</span>
-              <span className="text-xs text-muted-foreground">Enable checkout price inputs</span>
-            </div>
+          <div className="flex items-center justify-between h-12 px-4">
+            <span className="text-xs font-bold text-foreground">Show Actual Price</span>
             <Switch checked={showActualPrice} onCheckedChange={setShowActualPrice} />
           </div>
 
           {/* Confirm Delete */}
-          <div className="flex items-center justify-between">
-            <div className="flex flex-col space-y-0.5">
-              <span className="text-sm font-semibold">Confirm Deletions</span>
-              <span className="text-xs text-muted-foreground">Request confirmation pop-ups</span>
-            </div>
+          <div className="flex items-center justify-between h-12 px-4">
+            <span className="text-xs font-bold text-foreground">Confirm Deletions</span>
             <Switch checked={confirmDelete} onCheckedChange={setConfirmDelete} />
           </div>
         </div>
 
       </div>
+
+      {/* Sub-Dialog: Currency */}
+      <Dialog
+        isOpen={activeSubDialog === 'currency'}
+        onClose={() => setActiveSubDialog(null)}
+        title="Default Currency"
+      >
+        <div className="space-y-1.5 pt-2">
+          {currencyOptions.map((opt) => {
+            const isSelected = currency === opt.value
+            return (
+              <button
+                key={opt.value}
+                onClick={() => {
+                  setCurrency(opt.value)
+                  setActiveSubDialog(null)
+                }}
+                className={`w-full flex items-center justify-between h-12 px-4 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                  isSelected 
+                    ? 'border-accent bg-accent/5 text-foreground' 
+                    : 'border-border/60 bg-card/40 text-muted-foreground hover:text-foreground hover:border-muted-foreground/30'
+                }`}
+              >
+                <span>{opt.label}</span>
+                {isSelected && <span className="w-2.5 h-2.5 rounded-full bg-accent" />}
+              </button>
+            )
+          })}
+        </div>
+      </Dialog>
+
+      {/* Sub-Dialog: Sort */}
+      <Dialog
+        isOpen={activeSubDialog === 'sort'}
+        onClose={() => setActiveSubDialog(null)}
+        title="List Sorting"
+      >
+        <div className="space-y-1.5 pt-2">
+          {sortOptions.map((opt) => {
+            const isSelected = defaultSort === opt.value
+            return (
+              <button
+                key={opt.value}
+                onClick={() => {
+                  setDefaultSort(opt.value)
+                  setActiveSubDialog(null)
+                }}
+                className={`w-full flex items-center justify-between h-12 px-4 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                  isSelected 
+                    ? 'border-accent bg-accent/5 text-foreground' 
+                    : 'border-border/60 bg-card/40 text-muted-foreground hover:text-foreground hover:border-muted-foreground/30'
+                }`}
+              >
+                <span>{opt.label}</span>
+                {isSelected && <span className="w-2.5 h-2.5 rounded-full bg-accent" />}
+              </button>
+            )
+          })}
+        </div>
+      </Dialog>
+
+      {/* Sub-Dialog: Unit */}
+      <Dialog
+        isOpen={activeSubDialog === 'unit'}
+        onClose={() => setActiveSubDialog(null)}
+        title="Default Quantity Unit"
+      >
+        <div className="space-y-1.5 pt-2 max-h-[50vh] overflow-y-auto pr-1">
+          {unitOptions.map((unit) => {
+            const isSelected = defaultUnit === unit
+            return (
+              <button
+                key={unit}
+                onClick={() => {
+                  setDefaultUnit(unit)
+                  setActiveSubDialog(null)
+                }}
+                className={`w-full flex items-center justify-between h-12 px-4 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                  isSelected 
+                    ? 'border-accent bg-accent/5 text-foreground' 
+                    : 'border-border/60 bg-card/40 text-muted-foreground hover:text-foreground hover:border-muted-foreground/30'
+                }`}
+              >
+                <span>{unit}</span>
+                {isSelected && <span className="w-2.5 h-2.5 rounded-full bg-accent" />}
+              </button>
+            )
+          })}
+        </div>
+      </Dialog>
+
     </Dialog>
   )
 }

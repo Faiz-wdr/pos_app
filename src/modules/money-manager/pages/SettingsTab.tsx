@@ -1,25 +1,24 @@
 import React, { useRef, useState } from 'react'
 import { useMoneyStore } from '../store/moneyStore'
-import { useThemeStore, ThemeMode } from '@/core/theme/themeStore'
-import { 
-  Coins, 
-  Moon, 
-  AlertTriangle, 
-  Calendar, 
-  Palette, 
-  Download, 
-  Upload, 
-  RotateCcw
-} from 'lucide-react'
+import { ChevronRight, Download, Upload, AlertTriangle } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/Card'
 import { Switch } from '@/components/ui/Switch'
-import { ActionButton } from '@/admin/components/ActionButton'
+import { Dialog } from '@/components/ui/Dialog'
+import { Input } from '@/components/ui/Input'
+import { Button } from '@/components/ui/Button'
 
 export const SettingsTab: React.FC = () => {
   const { settings, updateSettings, exportBackup, importBackup, resetAllData } = useMoneyStore()
-  const { theme, setTheme } = useThemeStore()
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const [loadingAction, setLoadingAction] = useState<string | null>(null)
+  
+  // Dialog visibility states
+  const [currencyOpen, setCurrencyOpen] = useState(false)
+  const [startDayOpen, setStartDayOpen] = useState(false)
+  const [budgetOpen, setBudgetOpen] = useState(false)
+  const [resetOpen, setResetOpen] = useState(false)
+
+  // Edit states
+  const [tempBudget, setTempBudget] = useState(String(settings.defaultBudget || 0))
 
   const currencyOptions = [
     { label: 'Indian Rupee (₹)', value: '₹' },
@@ -29,51 +28,34 @@ export const SettingsTab: React.FC = () => {
     { label: 'Japanese Yen (¥)', value: '¥' }
   ]
 
-  const themeOptions = [
-    { label: 'Light', value: 'light' },
-    { label: 'Dark', value: 'dark' },
-    { label: 'System Default', value: 'system' }
-  ]
-
-  const colorOptions = [
-    { label: 'Yellow Accent', value: '#f8b518' },
-    { label: 'Sleek Blue', value: '#3b82f6' },
-    { label: 'Emerald Green', value: '#10b981' },
-    { label: 'Rose Pink', value: '#ec4899' },
-    { label: 'Deep Purple', value: '#8b5cf6' }
-  ]
-
   const handleCurrencyChange = async (currency: string) => {
     await updateSettings({ currency })
+    setCurrencyOpen(false)
   }
 
-  const handleThemeChange = async (mode: ThemeMode) => {
-    setTheme(mode)
-    await updateSettings({ theme: mode })
+  const handleStartDayChange = async (day: number) => {
+    await updateSettings({ startDay: day })
+    setStartDayOpen(false)
   }
 
-  const handleStartDayChange = async (dayStr: string) => {
-    const startDay = parseInt(dayStr, 10)
-    if (!isNaN(startDay)) {
-      await updateSettings({ startDay })
+  const handleSaveBudget = async () => {
+    const val = parseFloat(tempBudget)
+    if (!isNaN(val) && val >= 0) {
+      await updateSettings({ defaultBudget: val })
     }
+    setBudgetOpen(false)
   }
 
-  const handleColorChange = async (defaultGoalColor: string) => {
-    await updateSettings({ defaultGoalColor })
-  }
-
-  const handleConfirmDeleteToggle = async (checked: boolean) => {
-    await updateSettings({ confirmDelete: checked })
+  const handleConfirmDeleteToggle = (checked: boolean) => {
+    updateSettings({ confirmDelete: checked })
   }
 
   // Backup routines
   const handleExportBackup = async () => {
-    setLoadingAction('export')
     try {
       await exportBackup()
-    } finally {
-      setLoadingAction(null)
+    } catch (e) {
+      console.error(e)
     }
   }
 
@@ -85,227 +67,265 @@ export const SettingsTab: React.FC = () => {
     const file = e.target.files?.[0]
     if (!file) return
 
-    const confirmText = 'WARNING: Restoring this backup file will completely OVERWRITE your existing transactions, budgets, and savings goals. This action cannot be undone. Are you sure?'
-    if (settings.confirmDelete) {
-      if (!window.confirm(confirmText)) {
-        e.target.value = ''
-        return
-      }
+    const confirmText = 'WARNING: Restoring this backup will completely OVERWRITE all transactions, budgets, and goals. Proceed?'
+    if (!window.confirm(confirmText)) {
+      e.target.value = ''
+      return
     }
 
-    setLoadingAction('import')
     const reader = new FileReader()
-    
     reader.onload = async (evt) => {
       const jsonString = evt.target?.result as string
       try {
         const res = await importBackup(jsonString)
         if (res.success) {
-          alert('Database successfully restored from backup!')
+          alert('Database successfully restored!')
         } else {
-          alert(`Failed to import backup: ${res.error || 'Corrupted file structure'}`)
+          alert(`Failed: ${res.error || 'Corrupted file'}`)
         }
       } catch (err: any) {
-        alert(`Failed to parse backup file: ${err.message || err}`)
-      } finally {
-        setLoadingAction(null)
+        alert(`Failed parsing: ${err.message || err}`)
       }
     }
-
     reader.readAsText(file)
-    e.target.value = '' // Clear selection
+    e.target.value = ''
   }
 
   const handleResetData = async () => {
-    const confirmText = 'ARE YOU ABSOLUTELY SURE? This will permanently wipe all transactions, budgets, goals, and customized settings from your local device.'
-    if (window.confirm(confirmText)) {
-      setLoadingAction('reset')
-      try {
-        await resetAllData()
-        alert('All Money Manager database records have been reset.')
-      } finally {
-        setLoadingAction(null)
-      }
-    }
+    await resetAllData()
+    setResetOpen(false)
+    alert('All data reset.')
   }
 
-  // Generate days 1 to 28
+  const getCurrencyLabel = (val: string) => {
+    const opt = currencyOptions.find(o => o.value === val)
+    return opt ? opt.label : val
+  }
+
+  // Days 1 to 28
   const startDayOptions = Array.from({ length: 28 }, (_, i) => i + 1)
 
   return (
-    <div className="space-y-5 text-left pb-10">
+    <div className="space-y-5 text-left pb-16 select-none animate-in fade-in duration-200">
       
       {/* Title Header */}
       <div className="flex flex-col">
-        <span className="text-[10px] font-bold text-accent uppercase tracking-wider">Module Options</span>
-        <h2 className="text-xl font-bold text-foreground mt-0.5 tracking-tight">Settings</h2>
+        <h2 className="text-xl font-bold text-foreground mt-0.5 tracking-tight">Money Manager Settings</h2>
       </div>
 
       <div className="space-y-4">
-        {/* Currency & Start Day Grid */}
-        <Card className="bg-card/50">
-          <CardContent className="pt-4 pb-4 space-y-4 select-none">
+        {/* General Settings Group */}
+        <h2 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-1">General</h2>
+        <Card className="bg-card/30 border border-border/40 rounded-2xl overflow-hidden">
+          <CardContent className="p-0 divide-y divide-border/30">
             {/* Preferred Currency */}
-            <div className="space-y-2">
-              <div className="flex items-center space-x-2.5">
-                <Coins className="w-4 h-4 text-accent shrink-0" />
-                <h3 className="text-xs font-bold text-foreground">Preferred Currency</h3>
+            <div 
+              onClick={() => setCurrencyOpen(true)}
+              className="flex justify-between items-center h-12 px-4 hover:bg-muted/40 transition-colors cursor-pointer"
+            >
+              <span className="text-xs font-bold text-foreground">Preferred Currency</span>
+              <div className="flex items-center space-x-1.5 text-muted-foreground">
+                <span className="text-xs font-medium">{getCurrencyLabel(settings.currency)}</span>
+                <ChevronRight className="w-4 h-4 opacity-60" />
               </div>
-              <select
-                value={settings.currency}
-                onChange={(e) => handleCurrencyChange(e.target.value)}
-                className="w-full h-10 px-3 bg-muted/30 border border-border rounded-xl text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-accent cursor-pointer"
-              >
-                {currencyOptions.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
             </div>
 
             {/* Start Day of Month */}
-            <div className="space-y-2 pt-2 border-t border-border/40">
-              <div className="flex items-center space-x-2.5">
-                <Calendar className="w-4 h-4 text-accent shrink-0" />
-                <h3 className="text-xs font-bold text-foreground">Start Day of Month</h3>
+            <div 
+              onClick={() => setStartDayOpen(true)}
+              className="flex justify-between items-center h-12 px-4 hover:bg-muted/40 transition-colors cursor-pointer"
+            >
+              <span className="text-xs font-bold text-foreground">Month Start Day</span>
+              <div className="flex items-center space-x-1.5 text-muted-foreground">
+                <span className="text-xs font-medium">Day {settings.startDay}</span>
+                <ChevronRight className="w-4 h-4 opacity-60" />
               </div>
-              <p className="text-[9px] text-muted-foreground leading-normal">
-                Determine the cycle anchor date. Salaries or recurring transactions will adjust around this date.
-              </p>
-              <select
-                value={settings.startDay || 1}
-                onChange={(e) => handleStartDayChange(e.target.value)}
-                className="w-full h-10 px-3 bg-muted/30 border border-border rounded-xl text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-accent cursor-pointer"
-              >
-                {startDayOptions.map((day) => (
-                  <option key={day} value={day}>
-                    Day {day} of the Month
-                  </option>
-                ))}
-              </select>
+            </div>
+
+            {/* Default Budget */}
+            <div 
+              onClick={() => {
+                setTempBudget(String(settings.defaultBudget || 0))
+                setBudgetOpen(true)
+              }}
+              className="flex justify-between items-center h-12 px-4 hover:bg-muted/40 transition-colors cursor-pointer"
+            >
+              <span className="text-xs font-bold text-foreground">Default Budget</span>
+              <div className="flex items-center space-x-1.5 text-muted-foreground">
+                <span className="text-xs font-medium">{settings.currency}{settings.defaultBudget || 0}</span>
+                <ChevronRight className="w-4 h-4 opacity-60" />
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Themes & Aesthetics Card */}
-        <Card className="bg-card/50">
-          <CardContent className="pt-4 pb-4 space-y-4 select-none">
-            {/* Visual Theme */}
-            <div className="space-y-2">
-              <div className="flex items-center space-x-2.5">
-                <Moon className="w-4 h-4 text-accent shrink-0" />
-                <h3 className="text-xs font-bold text-foreground">Visual Theme</h3>
-              </div>
-              <select
-                value={theme}
-                onChange={(e) => handleThemeChange(e.target.value as any)}
-                className="w-full h-10 px-3 bg-muted/30 border border-border rounded-xl text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-accent cursor-pointer"
-              >
-                {themeOptions.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Default Goal Color */}
-            <div className="space-y-2 pt-2 border-t border-border/40">
-              <div className="flex items-center space-x-2.5">
-                <Palette className="w-4 h-4 text-accent shrink-0" />
-                <h3 className="text-xs font-bold text-foreground">Default Savings Goal Color</h3>
-              </div>
-              <select
-                value={settings.defaultGoalColor || '#f8b518'}
-                onChange={(e) => handleColorChange(e.target.value)}
-                className="w-full h-10 px-3 bg-muted/30 border border-border rounded-xl text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-accent cursor-pointer"
-              >
-                {colorOptions.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
+        {/* Safeties Group */}
+        <h2 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-1">Safeties</h2>
+        <Card className="bg-card/30 border border-border/40 rounded-2xl overflow-hidden">
+          <CardContent className="p-0 divide-y divide-border/30">
+            <div className="flex items-center justify-between h-12 px-4">
+              <span className="text-xs font-bold text-foreground">Confirm Deletion</span>
+              <Switch
+                checked={settings.confirmDelete}
+                onCheckedChange={handleConfirmDeleteToggle}
+              />
             </div>
           </CardContent>
         </Card>
 
-        {/* Deletion confirmation switch */}
-        <Card className="bg-card/50">
-          <CardContent className="pt-4 pb-4 flex items-center justify-between space-x-4 select-none">
-            <div className="space-y-1 min-w-0">
-              <div className="flex items-center space-x-2.5">
-                <AlertTriangle className="w-4 h-4 text-accent shrink-0" />
-                <h3 className="text-xs font-bold text-foreground">Confirm Deletion</h3>
-              </div>
-              <p className="text-[9px] text-muted-foreground leading-relaxed">
-                Prompt with warning dialog confirmation before removing transactions or savings goals.
-              </p>
+        {/* Data Group */}
+        <h2 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-1">Backup & Maintenance</h2>
+        <Card className="bg-card/30 border border-border/40 rounded-2xl overflow-hidden">
+          <CardContent className="p-0 divide-y divide-border/30">
+            <div 
+              onClick={handleExportBackup}
+              className="flex justify-between items-center h-12 px-4 hover:bg-muted/40 transition-colors cursor-pointer text-foreground"
+            >
+              <span className="text-xs font-bold flex items-center space-x-2">
+                <Download className="w-4 h-4 text-muted-foreground opacity-80" />
+                <span>Export Data (JSON)</span>
+              </span>
+              <ChevronRight className="w-4 h-4 text-muted-foreground opacity-60" />
             </div>
-            <Switch
-              checked={settings.confirmDelete}
-              onCheckedChange={handleConfirmDeleteToggle}
-              className="shrink-0"
+
+            <div 
+              onClick={handleImportClick}
+              className="flex justify-between items-center h-12 px-4 hover:bg-muted/40 transition-colors cursor-pointer text-foreground"
+            >
+              <span className="text-xs font-bold flex items-center space-x-2">
+                <Upload className="w-4 h-4 text-muted-foreground opacity-80" />
+                <span>Import Data (JSON)</span>
+              </span>
+              <ChevronRight className="w-4 h-4 text-muted-foreground opacity-60" />
+            </div>
+            <input
+              type="file"
+              accept=".json"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              className="hidden"
             />
           </CardContent>
         </Card>
 
-        {/* Backup and Data Maintenance */}
-        <Card className="bg-card/50">
-          <CardContent className="pt-4 pb-4 space-y-3.5 select-none">
-            <div className="flex items-center space-x-2.5">
-              <Download className="w-4 h-4 text-accent shrink-0" />
-              <h3 className="text-xs font-bold text-foreground">Backup & Maintenance</h3>
-            </div>
-            
-            <p className="text-[9px] text-muted-foreground leading-normal">
-              All transactions are stored locally. Export backups regularly to save records, or import JSON backup files to restore logs.
-            </p>
-
-            <div className="grid grid-cols-2 gap-3 pt-1">
-              <ActionButton
-                onClick={handleExportBackup}
-                loading={loadingAction === 'export'}
-                icon={Download}
-                variant="outline"
-                className="w-full h-10 rounded-xl text-[9px] uppercase font-bold tracking-wider cursor-pointer"
-              >
-                Export JSON
-              </ActionButton>
-              
-              <ActionButton
-                onClick={handleImportClick}
-                loading={loadingAction === 'import'}
-                icon={Upload}
-                variant="outline"
-                className="w-full h-10 rounded-xl text-[9px] uppercase font-bold tracking-wider cursor-pointer"
-              >
-                Import JSON
-              </ActionButton>
-              <input
-                type="file"
-                accept=".json"
-                ref={fileInputRef}
-                onChange={handleFileChange}
-                className="hidden"
-              />
-            </div>
-
-            {/* Wipe database */}
-            <div className="pt-3 border-t border-border/40">
-              <ActionButton
-                onClick={handleResetData}
-                loading={loadingAction === 'reset'}
-                icon={RotateCcw}
-                className="w-full h-10 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white border border-red-500/20 hover:border-transparent font-bold uppercase tracking-wider text-[9px] cursor-pointer transition-all"
-              >
-                Reset Money Manager
-              </ActionButton>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Reset / Danger Group */}
+        <div className="pt-2">
+          <Button
+            variant="danger"
+            onClick={() => setResetOpen(true)}
+            className="w-full h-11 font-bold uppercase tracking-wider text-xs rounded-xl cursor-pointer"
+          >
+            Reset Money Manager
+          </Button>
+        </div>
       </div>
+
+      {/* Currency Selection Dialog */}
+      <Dialog
+        isOpen={currencyOpen}
+        onClose={() => setCurrencyOpen(false)}
+        title="Preferred Currency"
+      >
+        <div className="space-y-1.5 pt-2">
+          {currencyOptions.map((opt) => {
+            const isSelected = settings.currency === opt.value
+            return (
+              <button
+                key={opt.value}
+                onClick={() => handleCurrencyChange(opt.value)}
+                className={`w-full flex items-center justify-between h-12 px-4 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                  isSelected 
+                    ? 'border-accent bg-accent/5 text-foreground' 
+                    : 'border-border/60 bg-card/40 text-muted-foreground hover:text-foreground hover:border-muted-foreground/30'
+                }`}
+              >
+                <span>{opt.label}</span>
+                {isSelected && <span className="w-2.5 h-2.5 rounded-full bg-accent" />}
+              </button>
+            )
+          })}
+        </div>
+      </Dialog>
+
+      {/* Start Day Selection Dialog */}
+      <Dialog
+        isOpen={startDayOpen}
+        onClose={() => setStartDayOpen(false)}
+        title="Month Start Day"
+      >
+        <div className="space-y-1.5 pt-2 max-h-[50vh] overflow-y-auto pr-1">
+          {startDayOptions.map((day) => {
+            const isSelected = (settings.startDay || 1) === day
+            return (
+              <button
+                key={day}
+                onClick={() => handleStartDayChange(day)}
+                className={`w-full flex items-center justify-between h-12 px-4 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                  isSelected 
+                    ? 'border-accent bg-accent/5 text-foreground' 
+                    : 'border-border/60 bg-card/40 text-muted-foreground hover:text-foreground hover:border-muted-foreground/30'
+                }`}
+              >
+                <span>Day {day}</span>
+                {isSelected && <span className="w-2.5 h-2.5 rounded-full bg-accent" />}
+              </button>
+            )
+          })}
+        </div>
+      </Dialog>
+
+      {/* Default Budget Dialog */}
+      <Dialog
+        isOpen={budgetOpen}
+        onClose={() => setBudgetOpen(false)}
+        title="Default Budget"
+      >
+        <div className="space-y-4 pt-2">
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">Budget Amount ({settings.currency})</label>
+            <Input
+              type="number"
+              value={tempBudget}
+              onChange={(e) => setTempBudget(e.target.value)}
+              className="h-11 bg-neutral-950 border-neutral-800 focus-visible:ring-1 focus-visible:ring-accent rounded-xl text-xs text-white"
+              placeholder="e.g. 5000"
+            />
+          </div>
+          <div className="flex space-x-3 justify-end">
+            <Button variant="secondary" onClick={() => setBudgetOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="primary" onClick={handleSaveBudget}>
+              Save
+            </Button>
+          </div>
+        </div>
+      </Dialog>
+
+      {/* Reset Confirmation Dialog */}
+      <Dialog
+        isOpen={resetOpen}
+        onClose={() => setResetOpen(false)}
+        title="Reset Money Manager"
+      >
+        <div className="space-y-4 pt-1">
+          <div className="flex items-start space-x-3 p-3 bg-red-500/10 text-red-500 rounded-xl">
+            <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
+            <p className="text-xs leading-relaxed">
+              This action will clear all transactions, budgets, goals, and customized settings from your local device. This cannot be undone.
+            </p>
+          </div>
+          <div className="flex space-x-3 justify-end">
+            <Button variant="secondary" onClick={() => setResetOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="danger" onClick={handleResetData}>
+              Yes, Reset Data
+            </Button>
+          </div>
+        </div>
+      </Dialog>
+
     </div>
   )
 }

@@ -1,6 +1,7 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import * as Icons from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Card, CardContent } from '@/components/ui/Card'
 import { Switch } from '@/components/ui/Switch'
 import { useModuleStore } from '@/core/modules/moduleStore'
@@ -12,10 +13,38 @@ const ModuleIcon = ({ name, className }: { name: string; className?: string }) =
   return <IconComponent className={className} />
 }
 
+const MODULE_FEATURES: Record<string, string[]> = {
+  clock: [
+    'Digital & Analog Clock',
+    'Countdown Timer',
+    'Desk Mode',
+    'Clock Themes'
+  ],
+  shopping: [
+    'Saved Shopping Lists',
+    'Price Calculator',
+    'Purchase Progress',
+    'List Templates'
+  ],
+  income: [
+    'Income & Expenses',
+    'Monthly Budget',
+    'Savings Goals',
+    'Spending Insights'
+  ],
+  'day-planner': [
+    'Daily Timeline',
+    'Reminders',
+    'Recurring Tasks',
+    'Calendar Planning'
+  ]
+}
+
 export const Modules = () => {
   const { modules, registerModule, toggleModule } = useModuleStore()
   const navigate = useNavigate()
   const { isGuest, openAuthSheet } = useAuth()
+  const [expandedModuleId, setExpandedModuleId] = useState<string | null>(null)
 
   // Dynamically register modules with POS
   useEffect(() => {
@@ -60,10 +89,10 @@ export const Modules = () => {
       name: 'Day Planner',
       icon: 'CalendarCheck',
       description: 'Organize tasks, track routines, and plan your daily timeline.',
-      isPremium: false,
+      isPremium: true,
       enabled: true,
-      requiresLogin: false,
-      supportsCloudSync: false,
+      requiresLogin: true,
+      supportsCloudSync: true,
       route: '/modules/day-planner'
     })
   }, [registerModule])
@@ -124,19 +153,17 @@ export const Modules = () => {
         <div className="grid grid-cols-1 gap-4">
           {modules.map((m) => {
             const style = moduleStyles[m.id] || { bg: 'bg-card', btnText: 'text-accent' }
+            const isExpanded = expandedModuleId === m.id
+            const features = MODULE_FEATURES[m.id] || []
+
             return (
               <Card 
                 key={m.id} 
-                onClick={(e) => {
-                  if (m.enabled) {
-                    handleOpenModule(m, e)
-                    if (!e.defaultPrevented) {
-                      navigate(m.route)
-                    }
-                  }
+                onClick={() => {
+                  setExpandedModuleId(isExpanded ? null : m.id)
                 }}
                 className={`relative overflow-hidden transition-all duration-300 border-none shadow-md text-white ${style.bg} ${
-                  m.enabled ? 'cursor-pointer hover:scale-[1.01] active:scale-[0.99]' : 'opacity-70'
+                  m.enabled ? 'cursor-pointer hover:scale-[1.01]' : 'opacity-70 cursor-pointer'
                 }`}
               >
                 <CardContent className="p-3.5">
@@ -169,6 +196,55 @@ export const Modules = () => {
                       />
                     </div>
                   </div>
+
+                  {/* Expandable Details Section */}
+                  <AnimatePresence initial={false}>
+                    {isExpanded && (
+                      <motion.div
+                        key="expanded-content"
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2, ease: 'easeInOut' }}
+                        className="overflow-hidden"
+                      >
+                        <div className="border-t border-white/10 mt-3 pt-3 flex flex-col space-y-3">
+                          <div className="grid grid-cols-2 gap-2 pl-1">
+                            {features.map((feature, idx) => (
+                              <div key={idx} className="flex items-center space-x-1.5 text-[11px] text-white/90">
+                                <Icons.Check className="w-3.5 h-3.5 text-white/70 shrink-0" />
+                                <span className="font-semibold">{feature}</span>
+                              </div>
+                            ))}
+                          </div>
+                          
+                          {/* Launch Module CTA Button */}
+                          <div className="flex justify-end pt-1">
+                            <button
+                              disabled={!m.enabled}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                if (m.enabled) {
+                                  handleOpenModule(m, e)
+                                  if (!e.defaultPrevented) {
+                                    navigate(m.route)
+                                  }
+                                }
+                              }}
+                              className={`px-4 py-1.5 font-extrabold text-[10px] rounded-lg shadow-md transition-all active:scale-95 cursor-pointer flex items-center space-x-1.5 ${
+                                m.enabled 
+                                  ? `bg-white ${style.btnText} hover:bg-neutral-50` 
+                                  : 'bg-white/10 text-white/40 cursor-not-allowed shadow-none'
+                              }`}
+                            >
+                              <span>{m.isPremium && isGuest ? 'Unlock Module' : 'Open Module'}</span>
+                              <Icons.ArrowRight className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </CardContent>
               </Card>
             )

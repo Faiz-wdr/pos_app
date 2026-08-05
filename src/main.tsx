@@ -71,7 +71,11 @@ const router = createBrowserRouter([
       },
       {
         path: 'modules/day-planner',
-        element: <DayPlannerModulePage />
+        element: (
+          <AuthGuard>
+            <DayPlannerModulePage />
+          </AuthGuard>
+        )
       },
       {
         path: 'settings',

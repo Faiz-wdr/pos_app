@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, Sun, Calendar, Sparkles, Settings } from 'lucide-react'
 import { TodayPage } from './TodayPage'
 import { CalendarPage } from './CalendarPage'
@@ -61,9 +60,14 @@ export const DayPlannerModulePage = () => {
             <ArrowLeft className="w-4 h-4" />
           </Link>
 
-          <span className="text-sm font-extrabold text-foreground tracking-tight">
-            Day Planner
-          </span>
+          <div className="flex items-center space-x-1.5">
+            <span className="text-sm font-extrabold text-foreground tracking-tight">
+              Day Planner
+            </span>
+            <span className="text-[8px] bg-accent/20 text-accent font-extrabold uppercase px-1.5 py-0.5 rounded-md tracking-wide select-none">
+              PRO
+            </span>
+          </div>
         </div>
 
         <ModuleOptionsMenu />
@@ -71,18 +75,9 @@ export const DayPlannerModulePage = () => {
 
       {/* Main Tab Screen Content Area */}
       <div className="flex-1 flex flex-col px-4 pt-3 overflow-y-auto select-text">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.15 }}
-            className="flex-1 flex flex-col w-full"
-          >
-            {renderTabContent()}
-          </motion.div>
-        </AnimatePresence>
+        <div className="flex-1 flex flex-col w-full">
+          {renderTabContent()}
+        </div>
       </div>
 
       {/* Module Specific Bottom Navigation Bar (4 tabs) */}

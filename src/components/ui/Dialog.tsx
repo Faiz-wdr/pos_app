@@ -53,16 +53,16 @@ export const Dialog = ({
 
     if (isMobile) {
       return {
-        hidden: { y: '100%', opacity: 1 },
+        hidden: { y: '100%', opacity: 0 },
         visible: { y: 0, opacity: 1 },
-        exit: { y: '100%', opacity: 1 }
+        exit: { y: '100%', opacity: 0 }
       }
     }
 
     return {
-      hidden: { y: 20, opacity: 0, scale: 0.96 },
-      visible: { y: 0, opacity: 1, scale: 1 },
-      exit: { y: 20, opacity: 0, scale: 0.96 }
+      hidden: { y: 20, opacity: 0 },
+      visible: { y: 0, opacity: 1 },
+      exit: { y: 20, opacity: 0 }
     }
   }
 

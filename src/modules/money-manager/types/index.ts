@@ -19,6 +19,7 @@ export interface MoneySettings {
   confirmDelete: boolean
   startDay: number // 1-28
   defaultGoalColor: string
+  defaultBudget?: number
 }
 
 export interface SavingsGoal {

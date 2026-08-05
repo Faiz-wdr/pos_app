@@ -89,3 +89,34 @@
     background: rgba(120, 120, 120, 0.4);
   }
 }
+
+/* Force global layout to stay in portrait when rotated to landscape on mobile */
+@media (max-width: 1023px) and (orientation: landscape) {
+  .lock-portrait {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    width: 100vh !important;
+    height: 100vw !important;
+    transform: translate(-50%, -50%) rotate(-90deg) !important;
+    transform-origin: center !important;
+    max-width: none !important;
+    max-height: none !important;
+    border-radius: 0 !important;
+    border: none !important;
+  }
+}
+
+/* Physical 90-degree Clock rotation when in landscape layout on portrait mobile viewports */
+@media (max-width: 1023px) {
+  .rotate-landscape-content {
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    width: 100vh !important;
+    height: 100vw !important;
+    transform: translate(-50%, -50%) rotate(90deg) !important;
+    transform-origin: center !important;
+    z-index: 50 !important;
+  }
+}

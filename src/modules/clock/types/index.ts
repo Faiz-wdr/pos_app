@@ -9,4 +9,5 @@ export interface ClockSettings {
   showSeconds: boolean
   autoHideControls: boolean
   keepAwake: boolean
+  landscapeRotation: boolean
 }

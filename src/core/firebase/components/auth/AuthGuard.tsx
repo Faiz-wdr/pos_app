@@ -12,6 +12,7 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
   const isGuest = useAuthStore((state) => state.isGuest)
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
   const openAuthSheet = useAuthStore((state) => state.openAuthSheet)
+  const user = useAuthStore((state) => state.user)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -23,8 +24,36 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
     }
   }, [isGuest, openAuthSheet])
 
+  const isPremium = !!user?.isPremium
+
   if (isAuthenticated && !isGuest) {
-    return <>{children}</>
+    if (isPremium) {
+      return <>{children}</>
+    }
+
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center text-center p-6 space-y-6 max-w-sm mx-auto select-none min-h-[60vh]">
+        <div className="p-4.5 bg-amber-500/15 text-amber-500 rounded-full animate-pulse">
+          <Sparkles className="w-10 h-10" />
+        </div>
+        <div className="space-y-2">
+          <h2 className="text-lg font-bold text-foreground tracking-tight">Pro Module Locked</h2>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            This module requires an active Pro Membership. Please contact support or upgrade your plan.
+          </p>
+        </div>
+
+        <div className="w-full space-y-3 pt-4">
+          <Button
+            variant="secondary"
+            onClick={() => navigate('/')}
+            className="w-full font-bold uppercase text-xs tracking-wider h-11 rounded-xl cursor-pointer bg-muted/60 hover:bg-muted border border-border"
+          >
+            Back to Dashboard
+          </Button>
+        </div>
+      </div>
+    )
   }
 
   // Renders a premium locked intercept placeholder screen if they cancel

@@ -34,7 +34,7 @@ export const UserCard: React.FC<UserCardProps> = ({ user, onClick }) => {
             <h4 className="text-xs font-bold text-foreground truncate">{user.fullName || 'Anonymous User'}</h4>
             <p className="text-[10px] text-muted-foreground truncate">{user.email}</p>
           </div>
-          <StatusBadge lastActivity={user.lastActivity} />
+          <StatusBadge lastActivity={user.lastActivity} status={user.status} />
         </div>
 
         <div className="flex items-center justify-between text-[10px] border-t border-border/40 pt-2.5">

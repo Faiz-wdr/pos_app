@@ -3,7 +3,11 @@ import { Button } from '@/components/ui/Button'
 import { useTimerStore } from '../store/timerStore'
 import { formatTimerSeconds } from '../utils/format'
 
-export const TimerDisplay = () => {
+interface TimerDisplayProps {
+  isLandscapeMode?: boolean
+}
+
+export const TimerDisplay = ({ isLandscapeMode = false }: TimerDisplayProps) => {
   const {
     secondsRemaining,
     duration,
@@ -19,6 +23,8 @@ export const TimerDisplay = () => {
   // Format display numbers based on active countdown vs target preset duration
   const displayTime = isRunning ? secondsRemaining : duration
   const { hours, minutes, seconds } = formatTimerSeconds(displayTime)
+
+  const showArrows = !isRunning && !isLandscapeMode
 
   const handleAdjust = (type: 'h' | 'm' | 's', amount: number) => {
     if (isRunning) return
@@ -49,7 +55,7 @@ export const TimerDisplay = () => {
       <div className="flex items-center justify-center space-x-3 sm:space-x-4">
         {/* Hours Column */}
         <div className="flex flex-col items-center">
-          {!isRunning && (
+          {showArrows && (
             <button
               onClick={() => handleAdjust('h', 1)}
               className="p-2 text-muted-foreground hover:text-foreground active:scale-90 font-bold text-lg cursor-pointer"
@@ -62,7 +68,7 @@ export const TimerDisplay = () => {
             <span className="text-3xl sm:text-4xl font-bold tabular-nums select-text">{hours}</span>
           </div>
           <span className="text-[10px] font-bold text-muted-foreground uppercase mt-1">Hrs</span>
-          {!isRunning && (
+          {showArrows && (
             <button
               onClick={() => handleAdjust('h', -1)}
               className="p-2 text-muted-foreground hover:text-foreground active:scale-90 font-bold text-lg cursor-pointer"
@@ -77,7 +83,7 @@ export const TimerDisplay = () => {
 
         {/* Minutes Column */}
         <div className="flex flex-col items-center">
-          {!isRunning && (
+          {showArrows && (
             <button
               onClick={() => handleAdjust('m', 1)}
               className="p-2 text-muted-foreground hover:text-foreground active:scale-90 font-bold text-lg cursor-pointer"
@@ -90,7 +96,7 @@ export const TimerDisplay = () => {
             <span className="text-3xl sm:text-4xl font-bold tabular-nums select-text">{minutes}</span>
           </div>
           <span className="text-[10px] font-bold text-muted-foreground uppercase mt-1">Min</span>
-          {!isRunning && (
+          {showArrows && (
             <button
               onClick={() => handleAdjust('m', -1)}
               className="p-2 text-muted-foreground hover:text-foreground active:scale-90 font-bold text-lg cursor-pointer"
@@ -105,7 +111,7 @@ export const TimerDisplay = () => {
 
         {/* Seconds Column */}
         <div className="flex flex-col items-center">
-          {!isRunning && (
+          {showArrows && (
             <button
               onClick={() => handleAdjust('s', 1)}
               className="p-2 text-muted-foreground hover:text-foreground active:scale-90 font-bold text-lg cursor-pointer"
@@ -118,7 +124,7 @@ export const TimerDisplay = () => {
             <span className="text-3xl sm:text-4xl font-bold tabular-nums select-text text-accent">{seconds}</span>
           </div>
           <span className="text-[10px] font-bold text-muted-foreground uppercase mt-1">Sec</span>
-          {!isRunning && (
+          {showArrows && (
             <button
               onClick={() => handleAdjust('s', -1)}
               className="p-2 text-muted-foreground hover:text-foreground active:scale-90 font-bold text-lg cursor-pointer"

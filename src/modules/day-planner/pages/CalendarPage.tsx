@@ -98,12 +98,9 @@ export const CalendarPage = () => {
       <div className="flex-1 flex flex-col space-y-3 pt-1">
         <div className="flex items-center justify-between px-1">
           <div className="flex flex-col">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-              Timeline for {dayName}
+            <h2 className="text-[11px] font-extrabold text-foreground">
+              {dayName}, {formattedDate}
             </h2>
-            <span className="text-[11px] font-extrabold text-foreground">
-              {formattedDate}
-            </span>
           </div>
 
           <div className="flex items-center space-x-2">

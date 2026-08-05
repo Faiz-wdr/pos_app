@@ -68,7 +68,7 @@ export const UserTable: React.FC<UserTableProps> = React.memo(({ users, onSelect
                 </td>
 
                 <td className="py-3 px-4">
-                  <StatusBadge lastActivity={user.lastActivity} />
+                  <StatusBadge lastActivity={user.lastActivity} status={user.status} />
                 </td>
 
                 <td className="py-3 px-4">

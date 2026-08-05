@@ -39,7 +39,8 @@ export const useAdminUsers = () => {
           lastActivity: data.lastActivity,
           appVersion: data.appVersion || '1.0.0',
           device: data.device || 'unknown',
-          browser: data.browser || 'unknown'
+          browser: data.browser || 'unknown',
+          status: data.status || 'active'
         })
       })
       setRawUsers(usersData)
@@ -70,10 +71,14 @@ export const useAdminUsers = () => {
       if (premiumFilter === 'premium' && !isPremium) return false
       if (premiumFilter === 'free' && isPremium) return false
 
-      const status = getStatusFromLastActivity(user.lastActivity)
-      if (statusFilter === 'online' && status !== 'online') return false
-      if (statusFilter === 'away' && status !== 'away') return false
-      if (statusFilter === 'offline' && status !== 'offline') return false
+      if (statusFilter === 'suspended' && user.status !== 'suspended') return false
+      if (statusFilter !== 'suspended') {
+        if (user.status === 'suspended') return false
+        const status = getStatusFromLastActivity(user.lastActivity)
+        if (statusFilter === 'online' && status !== 'online') return false
+        if (statusFilter === 'away' && status !== 'away') return false
+        if (statusFilter === 'offline' && status !== 'offline') return false
+      }
 
       return true
     })

@@ -109,10 +109,7 @@ export const TodayPage = () => {
 
       {/* Timeline Section */}
       <div className="flex-1 flex flex-col space-y-3">
-        <div className="flex items-center justify-between px-1">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-            Timeline ({activeTasks.length})
-          </h2>
+        <div className="flex items-center justify-end px-1">
           <ScheduleActionsMenu
             dateKey={activeDateKey}
             taskCount={tasks.length}

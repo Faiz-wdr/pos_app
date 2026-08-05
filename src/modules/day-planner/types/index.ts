@@ -75,4 +75,7 @@ export interface PlannerSettings {
   defaultReminder: ReminderOption
   defaultCategory: TaskCategory
   showCompletedTasks: boolean
+  defaultTaskDuration: '15m' | '30m' | '1h' | '2h'
+  carryForwardPreference: 'ask' | 'always' | 'never'
+  notificationPreference: 'all' | 'reminders' | 'muted'
 }

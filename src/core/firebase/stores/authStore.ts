@@ -11,6 +11,8 @@ export interface SerializedUser {
   lastLogin?: string
   isPremium?: boolean
   enabledModules?: string[]
+  role?: string
+  status?: 'active' | 'suspended'
 }
 
 interface AuthState {

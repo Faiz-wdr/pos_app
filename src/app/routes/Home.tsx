@@ -114,10 +114,10 @@ export const Home = () => {
       name: 'Day Planner',
       icon: 'CalendarCheck',
       description: 'Organize tasks, track routines, and plan your daily timeline.',
-      isPremium: false,
+      isPremium: true,
       enabled: true,
-      requiresLogin: false,
-      supportsCloudSync: false,
+      requiresLogin: true,
+      supportsCloudSync: true,
       route: '/modules/day-planner'
     })
   }, [registerModule])
@@ -263,13 +263,13 @@ export const Home = () => {
       id: 'day-planner',
       title: 'Master Your Day, Step by Step',
       description: 'Organize tasks, track routines, and achieve your daily goals with clarity.',
-      badge: 'Free Module',
+      badge: 'Pro Module',
       accentColor: 'text-white bg-white/20',
       gradient: 'from-[#f43f5e] via-[#e11d48] to-[#be123c]',
       btnTextColor: 'text-[#e11d48]',
       icon: 'CalendarCheck',
-      actionText: 'Open',
-      disclaimer: 'PersonalOS Module • Offline First',
+      actionText: 'Unlock',
+      disclaimer: 'PersonalOS Premium Modules • Cloud Sync Enabled',
       action: () => handlePromoAction('day-planner'),
       illustration: (
         <img 
@@ -344,103 +344,105 @@ export const Home = () => {
       </div>
 
       {/* Pro Ad Banner Component */}
-      <div
-        onMouseEnter={() => setIsPaused(true)}
-        onMouseLeave={() => setIsPaused(false)}
-        onTouchStart={() => setIsPaused(true)}
-        onTouchEnd={() => setIsPaused(false)}
-        className="relative overflow-hidden rounded-xl bg-neutral-950 group/banner shadow-sm w-full h-[150px] sm:h-[120px]"
-      >
-        {/* Top-Right Badge */}
-        <div className="absolute top-3 right-3 z-20">
-          <span className="text-[8px] font-bold text-white/80 uppercase px-2 py-0.5 rounded-full bg-white/15 tracking-wider backdrop-blur-xs select-none">
-            Pro
-          </span>
-        </div>
+      {!user?.isPremium && (
+        <div
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+          onTouchStart={() => setIsPaused(true)}
+          onTouchEnd={() => setIsPaused(false)}
+          className="relative overflow-hidden rounded-xl bg-neutral-950 group/banner shadow-sm w-full h-[150px] sm:h-[120px]"
+        >
+          {/* Top-Right Badge */}
+          <div className="absolute top-3 right-3 z-20">
+            <span className="text-[8px] font-bold text-white/80 uppercase px-2 py-0.5 rounded-full bg-white/15 tracking-wider backdrop-blur-xs select-none">
+              Pro
+            </span>
+          </div>
 
-        <AnimatePresence initial={false} custom={direction}>
-          <motion.div
-            key={currentSlide}
-            custom={direction}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            drag="x"
-            dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={0.4}
-            onDragEnd={(_e, info) => {
-              const swipeThreshold = 50
-              if (info.offset.x < -swipeThreshold) {
-                handleNextSlide()
-              } else if (info.offset.x > swipeThreshold) {
-                handlePrevSlide()
-              }
-            }}
-            transition={{ type: 'spring', stiffness: 80, damping: 22 }}
-            className={`p-5 sm:p-6 flex flex-row items-center justify-between gap-4 absolute inset-0 w-full h-full bg-gradient-to-br ${promoSlides[currentSlide].gradient} cursor-grab active:cursor-grabbing touch-none select-none overflow-hidden`}
+          <AnimatePresence initial={false} custom={direction}>
+            <motion.div
+              key={currentSlide}
+              custom={direction}
+              variants={slideVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.4}
+              onDragEnd={(_e, info) => {
+                const swipeThreshold = 50
+                if (info.offset.x < -swipeThreshold) {
+                  handleNextSlide()
+                } else if (info.offset.x > swipeThreshold) {
+                  handlePrevSlide()
+                }
+              }}
+              transition={{ type: 'spring', stiffness: 80, damping: 22 }}
+              className={`p-5 sm:p-6 flex flex-row items-center justify-between gap-4 absolute inset-0 w-full h-full bg-gradient-to-br ${promoSlides[currentSlide].gradient} cursor-grab active:cursor-grabbing touch-none select-none overflow-hidden`}
+            >
+              {/* Left Column: Text Content and Button */}
+              <div className="flex flex-col justify-center h-full z-10 space-y-3 max-w-[65%] select-none">
+                <div className="space-y-0.5">
+                  <h3 className="text-sm sm:text-base font-bold tracking-tight text-white">
+                    {promoSlides[currentSlide].title}
+                  </h3>
+                  <p className="text-[10px] sm:text-[11px] text-white/80 font-medium leading-tight max-w-sm">
+                    {promoSlides[currentSlide].description}
+                  </p>
+                </div>
+
+                <div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      promoSlides[currentSlide].action();
+                    }}
+                    className={`px-4 py-1.5 bg-white ${promoSlides[currentSlide].btnTextColor} hover:bg-neutral-50 font-extrabold text-[10px] rounded-lg shadow-md transition-all active:scale-95 cursor-pointer`}
+                  >
+                    {promoSlides[currentSlide].actionText}
+                  </button>
+                </div>
+              </div>
+
+              {/* Right Column: Beautiful SVG illustration */}
+              <div className="flex items-center justify-center w-[80px] h-[80px] sm:w-[100px] sm:h-[100px] z-10 shrink-0 pointer-events-none select-none">
+                {promoSlides[currentSlide].illustration}
+              </div>
+            </motion.div>
+          </AnimatePresence>
+
+          {/* Left/Right manual sliding navigation arrows */}
+          <button
+            onClick={(e) => { e.stopPropagation(); handlePrevSlide(); }}
+            className="absolute left-2 top-1/2 -translate-y-1/2 z-30 p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white opacity-0 group-hover/banner:opacity-100 transition-opacity duration-200 cursor-pointer shadow-md active:scale-90 border border-white/10"
+            aria-label="Previous slide"
           >
-            {/* Left Column: Text Content and Button */}
-            <div className="flex flex-col justify-center h-full z-10 space-y-3 max-w-[65%] select-none">
-              <div className="space-y-0.5">
-                <h3 className="text-sm sm:text-base font-bold tracking-tight text-white">
-                  {promoSlides[currentSlide].title}
-                </h3>
-                <p className="text-[10px] sm:text-[11px] text-white/80 font-medium leading-tight max-w-sm">
-                  {promoSlides[currentSlide].description}
-                </p>
-              </div>
+            <Icons.ChevronLeft className="w-4 h-4" />
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); handleNextSlide(); }}
+            className="absolute right-2 top-1/2 -translate-y-1/2 z-30 p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white opacity-0 group-hover/banner:opacity-100 transition-opacity duration-200 cursor-pointer shadow-md active:scale-90 border border-white/10"
+            aria-label="Next slide"
+          >
+            <Icons.ChevronRight className="w-4 h-4" />
+          </button>
 
-              <div>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    promoSlides[currentSlide].action();
-                  }}
-                  className={`px-4 py-1.5 bg-white ${promoSlides[currentSlide].btnTextColor} hover:bg-neutral-50 font-extrabold text-[10px] rounded-lg shadow-md transition-all active:scale-95 cursor-pointer`}
-                >
-                  {promoSlides[currentSlide].actionText}
-                </button>
-              </div>
-            </div>
-
-            {/* Right Column: Beautiful SVG illustration */}
-            <div className="flex items-center justify-center w-[80px] h-[80px] sm:w-[100px] sm:h-[100px] z-10 shrink-0 pointer-events-none select-none">
-              {promoSlides[currentSlide].illustration}
-            </div>
-          </motion.div>
-        </AnimatePresence>
-
-        {/* Left/Right manual sliding navigation arrows */}
-        <button
-          onClick={(e) => { e.stopPropagation(); handlePrevSlide(); }}
-          className="absolute left-2 top-1/2 -translate-y-1/2 z-30 p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white opacity-0 group-hover/banner:opacity-100 transition-opacity duration-200 cursor-pointer shadow-md active:scale-90 border border-white/10"
-          aria-label="Previous slide"
-        >
-          <Icons.ChevronLeft className="w-4 h-4" />
-        </button>
-        <button
-          onClick={(e) => { e.stopPropagation(); handleNextSlide(); }}
-          className="absolute right-2 top-1/2 -translate-y-1/2 z-30 p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white opacity-0 group-hover/banner:opacity-100 transition-opacity duration-200 cursor-pointer shadow-md active:scale-90 border border-white/10"
-          aria-label="Next slide"
-        >
-          <Icons.ChevronRight className="w-4 h-4" />
-        </button>
-
-        {/* Centered Carousel Indicators */}
-        <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 flex space-x-1.5 z-20">
-          {promoSlides.map((_, idx) => (
-            <button
-              key={idx}
-              onClick={() => setCurrentSlide(idx)}
-              className={`h-1 rounded-full transition-all duration-300 cursor-pointer ${
-                currentSlide === idx ? 'w-4 bg-white' : 'w-1 bg-white/40 hover:bg-white/60'
-              }`}
-              aria-label={`Go to slide ${idx + 1}`}
-            />
-          ))}
+          {/* Centered Carousel Indicators */}
+          <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 flex space-x-1.5 z-20">
+            {promoSlides.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => setCurrentSlide(idx)}
+                className={`h-1 rounded-full transition-all duration-300 cursor-pointer ${
+                  currentSlide === idx ? 'w-4 bg-white' : 'w-1 bg-white/40 hover:bg-white/60'
+                }`}
+                aria-label={`Go to slide ${idx + 1}`}
+              />
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Unified Modules Grid */}
       {filteredModules.length === 0 ? (

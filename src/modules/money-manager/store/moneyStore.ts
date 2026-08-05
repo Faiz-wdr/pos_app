@@ -54,7 +54,8 @@ export const useMoneyStore = create<MoneyStoreState>((set, get) => ({
     theme: 'system',
     confirmDelete: true,
     startDay: 1,
-    defaultGoalColor: '#f8b518'
+    defaultGoalColor: '#f8b518',
+    defaultBudget: 0
   },
   loading: true,
 
@@ -91,7 +92,8 @@ export const useMoneyStore = create<MoneyStoreState>((set, get) => ({
         theme: 'system',
         confirmDelete: true,
         startDay: 1,
-        defaultGoalColor: '#f8b518'
+        defaultGoalColor: '#f8b518',
+        defaultBudget: 0
       }
       const dbSettings = await db.settings.get('current')
       if (dbSettings) {
@@ -334,7 +336,8 @@ export const useMoneyStore = create<MoneyStoreState>((set, get) => ({
           theme: 'system',
           confirmDelete: true,
           startDay: 1,
-          defaultGoalColor: '#f8b518'
+          defaultGoalColor: '#f8b518',
+          defaultBudget: 0
         }
       })
       await get().loadData()

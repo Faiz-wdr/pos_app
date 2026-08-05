@@ -1,203 +1,317 @@
+import { useState } from 'react'
 import { Card, CardContent } from '@/components/ui/Card'
-import { Switch } from '@/components/ui/Switch'
-import { Button } from '@/components/ui/Button'
-import { Bell, Calendar, Clock, Eye } from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
 import { usePlannerSettingsStore } from '../store/plannerSettingsStore'
-import { usePlannerNotifications } from '../hooks/usePlannerNotifications'
-import { TaskCategory, ReminderOption } from '../types'
-
-const CATEGORIES: TaskCategory[] = ['Personal', 'Study', 'Work', 'Health', 'Family', 'Other']
-const REMINDER_OPTIONS: ReminderOption[] = ['At Time', '5 Minutes Before', '10 Minutes Before', '30 Minutes Before', '1 Hour Before', '1 Day Before']
+import { Dialog } from '@/components/ui/Dialog'
+import { ReminderOption } from '../types'
 
 export const SettingsPage = () => {
   const {
     startWeekOn,
-    timeFormat,
     defaultReminder,
-    defaultCategory,
-    showCompletedTasks,
+    defaultTaskDuration,
+    carryForwardPreference,
+    notificationPreference,
     setStartWeekOn,
-    setTimeFormat,
     setDefaultReminder,
-    setDefaultCategory,
-    setShowCompletedTasks
+    setDefaultTaskDuration,
+    setCarryForwardPreference,
+    setNotificationPreference
   } = usePlannerSettingsStore()
 
-  const { permission, requestPermission } = usePlannerNotifications()
+  // Selector Dialog states
+  const [activeDialog, setActiveDialog] = useState<
+    'weekStart' | 'reminder' | 'duration' | 'carryForward' | 'notification' | null
+  >(null)
+
+  const REMINDER_OPTIONS: { value: ReminderOption; label: string }[] = [
+    { value: 'At Time', label: 'At Time' },
+    { value: '5 Minutes Before', label: '5 Minutes Before' },
+    { value: '10 Minutes Before', label: '10 Minutes Before' },
+    { value: '30 Minutes Before', label: '30 Minutes Before' },
+    { value: '1 Hour Before', label: '1 Hour Before' },
+    { value: '1 Day Before', label: '1 Day Before' }
+  ]
+
+  const DURATION_OPTIONS = [
+    { value: '15m' as const, label: '15 Minutes' },
+    { value: '30m' as const, label: '30 Minutes' },
+    { value: '1h' as const, label: '1 Hour' },
+    { value: '2h' as const, label: '2 Hours' }
+  ]
+
+  const CARRY_FORWARD_OPTIONS = [
+    { value: 'ask' as const, label: 'Ask daily' },
+    { value: 'always' as const, label: 'Always carry forward' },
+    { value: 'never' as const, label: 'Never carry forward' }
+  ]
+
+  const NOTIFICATION_OPTIONS = [
+    { value: 'all' as const, label: 'All Alerts' },
+    { value: 'reminders' as const, label: 'Only Reminders' },
+    { value: 'muted' as const, label: 'Muted' }
+  ]
+
+  const getDurationLabel = (val: string) => {
+    switch (val) {
+      case '15m': return '15 Minutes'
+      case '30m': return '30 Minutes'
+      case '1h': return '1 Hour'
+      case '2h': return '2 Hours'
+      default: return '30 Minutes'
+    }
+  }
+
+  const getCarryForwardLabel = (val: string) => {
+    switch (val) {
+      case 'ask': return 'Ask daily'
+      case 'always': return 'Always'
+      case 'never': return 'Never'
+      default: return 'Ask daily'
+    }
+  }
+
+  const getNotificationLabel = (val: string) => {
+    switch (val) {
+      case 'all': return 'All Alerts'
+      case 'reminders': return 'Only Reminders'
+      case 'muted': return 'Muted'
+      default: return 'All Alerts'
+    }
+  }
 
   return (
-    <div className="flex-1 flex flex-col space-y-3 pb-24 text-left select-none">
-      {/* Header Title */}
+    <div className="flex-1 flex flex-col space-y-5 pb-24 text-left select-none animate-in fade-in duration-200">
+      
+      {/* Header */}
       <div className="flex flex-col">
-        <h1 className="text-lg font-extrabold text-foreground tracking-tight leading-none">
-          Planner Settings
-        </h1>
+        <h1 className="text-xl font-bold text-foreground mt-0.5 tracking-tight">Day Planner Settings</h1>
       </div>
 
       <div className="space-y-4">
-        {/* Calendar & Time Display Settings */}
-        <Card className="bg-card/70 border-border/70 shadow-xs rounded-2xl overflow-hidden">
-          <CardContent className="p-4 sm:p-5 space-y-4">
-            <h3 className="text-xs font-extrabold uppercase text-muted-foreground tracking-wider flex items-center">
-              <Calendar className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
-              Calendar & Time Format
-            </h3>
-
-            {/* Start Week On */}
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <span className="text-xs font-bold text-foreground">Start Week On</span>
-                <p className="text-[11px] text-muted-foreground">Select first day of the week for calendar</p>
-              </div>
-              <div className="flex bg-muted/60 p-1 rounded-xl border border-border/50">
-                <button
-                  onClick={() => setStartWeekOn('Monday')}
-                  className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                    startWeekOn === 'Monday' ? 'bg-accent text-accent-foreground shadow-xs' : 'text-muted-foreground'
-                  }`}
-                >
-                  Mon
-                </button>
-                <button
-                  onClick={() => setStartWeekOn('Sunday')}
-                  className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                    startWeekOn === 'Sunday' ? 'bg-accent text-accent-foreground shadow-xs' : 'text-muted-foreground'
-                  }`}
-                >
-                  Sun
-                </button>
+        {/* General Group */}
+        <h2 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-1">Calendar & Schedule</h2>
+        <Card className="bg-card/30 border border-border/40 rounded-2xl overflow-hidden">
+          <CardContent className="p-0 divide-y divide-border/30">
+            {/* Week Starts On */}
+            <div 
+              onClick={() => setActiveDialog('weekStart')}
+              className="flex justify-between items-center h-12 px-4 hover:bg-muted/40 transition-colors cursor-pointer"
+            >
+              <span className="text-xs font-bold text-foreground">Week Starts On</span>
+              <div className="flex items-center space-x-1.5 text-muted-foreground">
+                <span className="text-xs font-medium">{startWeekOn}</span>
+                <ChevronRight className="w-4 h-4 opacity-60" />
               </div>
             </div>
 
-            <hr className="border-border/40" />
-
-            {/* 12 Hour / 24 Hour */}
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <span className="text-xs font-bold text-foreground">Time Format</span>
-                <p className="text-[11px] text-muted-foreground">Display times in 12h AM/PM or 24h format</p>
-              </div>
-              <div className="flex bg-muted/60 p-1 rounded-xl border border-border/50">
-                <button
-                  onClick={() => setTimeFormat('12h')}
-                  className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                    timeFormat === '12h' ? 'bg-accent text-accent-foreground shadow-xs' : 'text-muted-foreground'
-                  }`}
-                >
-                  12 Hour
-                </button>
-                <button
-                  onClick={() => setTimeFormat('24h')}
-                  className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                    timeFormat === '24h' ? 'bg-accent text-accent-foreground shadow-xs' : 'text-muted-foreground'
-                  }`}
-                >
-                  24 Hour
-                </button>
+            {/* Default Task Duration */}
+            <div 
+              onClick={() => setActiveDialog('duration')}
+              className="flex justify-between items-center h-12 px-4 hover:bg-muted/40 transition-colors cursor-pointer"
+            >
+              <span className="text-xs font-bold text-foreground">Default Task Duration</span>
+              <div className="flex items-center space-x-1.5 text-muted-foreground">
+                <span className="text-xs font-medium">{getDurationLabel(defaultTaskDuration)}</span>
+                <ChevronRight className="w-4 h-4 opacity-60" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Task Defaults Settings */}
-        <Card className="bg-card/70 border-border/70 shadow-xs rounded-2xl overflow-hidden">
-          <CardContent className="p-4 sm:p-5 space-y-4">
-            <h3 className="text-xs font-extrabold uppercase text-muted-foreground tracking-wider flex items-center">
-              <Clock className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
-              Task Defaults
-            </h3>
-
-            {/* Default Category */}
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <span className="text-xs font-bold text-foreground">Default Category</span>
-                <p className="text-[11px] text-muted-foreground">Pre-selected category for quick add</p>
-              </div>
-              <select
-                value={defaultCategory}
-                onChange={(e) => setDefaultCategory(e.target.value as TaskCategory)}
-                className="h-9 px-3 font-bold text-xs rounded-xl bg-background border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
-              >
-                {CATEGORIES.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <hr className="border-border/40" />
-
+        {/* Task Management Preferences */}
+        <h2 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-1">Preferences</h2>
+        <Card className="bg-card/30 border border-border/40 rounded-2xl overflow-hidden">
+          <CardContent className="p-0 divide-y divide-border/30">
             {/* Default Reminder */}
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <span className="text-xs font-bold text-foreground">Default Reminder</span>
-                <p className="text-[11px] text-muted-foreground">Pre-selected alert offset for new tasks</p>
+            <div 
+              onClick={() => setActiveDialog('reminder')}
+              className="flex justify-between items-center h-12 px-4 hover:bg-muted/40 transition-colors cursor-pointer"
+            >
+              <span className="text-xs font-bold text-foreground">Default Reminder</span>
+              <div className="flex items-center space-x-1.5 text-muted-foreground">
+                <span className="text-xs font-medium">{defaultReminder}</span>
+                <ChevronRight className="w-4 h-4 opacity-60" />
               </div>
-              <select
-                value={defaultReminder}
-                onChange={(e) => setDefaultReminder(e.target.value as ReminderOption)}
-                className="h-9 px-3 font-bold text-xs rounded-xl bg-background border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
-              >
-                {REMINDER_OPTIONS.map((rem) => (
-                  <option key={rem} value={rem}>
-                    {rem}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* View & Notification Settings */}
-        <Card className="bg-card/70 border-border/70 shadow-xs rounded-2xl overflow-hidden">
-          <CardContent className="p-4 sm:p-5 space-y-4">
-            <h3 className="text-xs font-extrabold uppercase text-muted-foreground tracking-wider flex items-center">
-              <Eye className="w-3.5 h-3.5 mr-1.5 text-muted-foreground" />
-              View & Notifications
-            </h3>
-
-            {/* Show Completed Tasks */}
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <span className="text-xs font-bold text-foreground">Show Completed Tasks</span>
-                <p className="text-[11px] text-muted-foreground">Display finished tasks in timeline section</p>
-              </div>
-              <Switch
-                checked={showCompletedTasks}
-                onCheckedChange={setShowCompletedTasks}
-              />
             </div>
 
-            <hr className="border-border/40" />
-
-            {/* Browser Notifications */}
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <span className="text-xs font-bold text-foreground">Browser Reminders</span>
-                <p className="text-[11px] text-muted-foreground">
-                  Permission: <span className="font-extrabold capitalize text-foreground">{permission}</span>
-                </p>
+            {/* Carry Forward Preference */}
+            <div 
+              onClick={() => setActiveDialog('carryForward')}
+              className="flex justify-between items-center h-12 px-4 hover:bg-muted/40 transition-colors cursor-pointer"
+            >
+              <span className="text-xs font-bold text-foreground">Carry Forward Preference</span>
+              <div className="flex items-center space-x-1.5 text-muted-foreground">
+                <span className="text-xs font-medium">{getCarryForwardLabel(carryForwardPreference)}</span>
+                <ChevronRight className="w-4 h-4 opacity-60" />
               </div>
-              {permission !== 'granted' ? (
-                <Button
-                  onClick={requestPermission}
-                  size="sm"
-                  variant="primary"
-                  className="rounded-xl h-8 font-bold text-xs cursor-pointer shadow-xs"
-                >
-                  <Bell className="w-3.5 h-3.5 mr-1" />
-                  Enable Alerts
-                </Button>
-              ) : (
-                <span className="text-[10px] font-extrabold uppercase bg-emerald-500/10 text-emerald-500 px-2.5 py-1 rounded-full">
-                  Enabled
-                </span>
-              )}
+            </div>
+
+            {/* Notification Preferences */}
+            <div 
+              onClick={() => setActiveDialog('notification')}
+              className="flex justify-between items-center h-12 px-4 hover:bg-muted/40 transition-colors cursor-pointer"
+            >
+              <span className="text-xs font-bold text-foreground">Notification Preferences</span>
+              <div className="flex items-center space-x-1.5 text-muted-foreground">
+                <span className="text-xs font-medium">{getNotificationLabel(notificationPreference)}</span>
+                <ChevronRight className="w-4 h-4 opacity-60" />
+              </div>
             </div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Week Starts On Dialog */}
+      <Dialog
+        isOpen={activeDialog === 'weekStart'}
+        onClose={() => setActiveDialog(null)}
+        title="Start Week On"
+      >
+        <div className="space-y-1.5 pt-2">
+          {(['Monday', 'Sunday'] as const).map((day) => {
+            const isSelected = startWeekOn === day
+            return (
+              <button
+                key={day}
+                onClick={() => {
+                  setStartWeekOn(day)
+                  setActiveDialog(null)
+                }}
+                className={`w-full flex items-center justify-between h-12 px-4 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                  isSelected 
+                    ? 'border-accent bg-accent/5 text-foreground' 
+                    : 'border-border/60 bg-card/40 text-muted-foreground hover:text-foreground hover:border-muted-foreground/30'
+                }`}
+              >
+                <span>{day}</span>
+                {isSelected && <span className="w-2.5 h-2.5 rounded-full bg-accent" />}
+              </button>
+            )
+          })}
+        </div>
+      </Dialog>
+
+      {/* Default Reminder Dialog */}
+      <Dialog
+        isOpen={activeDialog === 'reminder'}
+        onClose={() => setActiveDialog(null)}
+        title="Default Reminder"
+      >
+        <div className="space-y-1.5 pt-2 max-h-[60vh] overflow-y-auto pr-1">
+          {REMINDER_OPTIONS.map((opt) => {
+            const isSelected = defaultReminder === opt.value
+            return (
+              <button
+                key={opt.value}
+                onClick={() => {
+                  setDefaultReminder(opt.value)
+                  setActiveDialog(null)
+                }}
+                className={`w-full flex items-center justify-between h-12 px-4 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                  isSelected 
+                    ? 'border-accent bg-accent/5 text-foreground' 
+                    : 'border-border/60 bg-card/40 text-muted-foreground hover:text-foreground hover:border-muted-foreground/30'
+                }`}
+              >
+                <span>{opt.label}</span>
+                {isSelected && <span className="w-2.5 h-2.5 rounded-full bg-accent" />}
+              </button>
+            )
+          })}
+        </div>
+      </Dialog>
+
+      {/* Default Task Duration Dialog */}
+      <Dialog
+        isOpen={activeDialog === 'duration'}
+        onClose={() => setActiveDialog(null)}
+        title="Default Task Duration"
+      >
+        <div className="space-y-1.5 pt-2">
+          {DURATION_OPTIONS.map((opt) => {
+            const isSelected = defaultTaskDuration === opt.value
+            return (
+              <button
+                key={opt.value}
+                onClick={() => {
+                  setDefaultTaskDuration(opt.value)
+                  setActiveDialog(null)
+                }}
+                className={`w-full flex items-center justify-between h-12 px-4 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                  isSelected 
+                    ? 'border-accent bg-accent/5 text-foreground' 
+                    : 'border-border/60 bg-card/40 text-muted-foreground hover:text-foreground hover:border-muted-foreground/30'
+                }`}
+              >
+                <span>{opt.label}</span>
+                {isSelected && <span className="w-2.5 h-2.5 rounded-full bg-accent" />}
+              </button>
+            )
+          })}
+        </div>
+      </Dialog>
+
+      {/* Carry Forward Dialog */}
+      <Dialog
+        isOpen={activeDialog === 'carryForward'}
+        onClose={() => setActiveDialog(null)}
+        title="Carry Forward Preference"
+      >
+        <div className="space-y-1.5 pt-2">
+          {CARRY_FORWARD_OPTIONS.map((opt) => {
+            const isSelected = carryForwardPreference === opt.value
+            return (
+              <button
+                key={opt.value}
+                onClick={() => {
+                  setCarryForwardPreference(opt.value)
+                  setActiveDialog(null)
+                }}
+                className={`w-full flex items-center justify-between h-12 px-4 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                  isSelected 
+                    ? 'border-accent bg-accent/5 text-foreground' 
+                    : 'border-border/60 bg-card/40 text-muted-foreground hover:text-foreground hover:border-muted-foreground/30'
+                }`}
+              >
+                <span>{opt.label}</span>
+                {isSelected && <span className="w-2.5 h-2.5 rounded-full bg-accent" />}
+              </button>
+            )
+          })}
+        </div>
+      </Dialog>
+
+      {/* Notification Preference Dialog */}
+      <Dialog
+        isOpen={activeDialog === 'notification'}
+        onClose={() => setActiveDialog(null)}
+        title="Notification Preference"
+      >
+        <div className="space-y-1.5 pt-2">
+          {NOTIFICATION_OPTIONS.map((opt) => {
+            const isSelected = notificationPreference === opt.value
+            return (
+              <button
+                key={opt.value}
+                onClick={() => {
+                  setNotificationPreference(opt.value)
+                  setActiveDialog(null)
+                }}
+                className={`w-full flex items-center justify-between h-12 px-4 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                  isSelected 
+                    ? 'border-accent bg-accent/5 text-foreground' 
+                    : 'border-border/60 bg-card/40 text-muted-foreground hover:text-foreground hover:border-muted-foreground/30'
+                }`}
+              >
+                <span>{opt.label}</span>
+                {isSelected && <span className="w-2.5 h-2.5 rounded-full bg-accent" />}
+              </button>
+            )
+          })}
+        </div>
+      </Dialog>
+
     </div>
   )
 }
