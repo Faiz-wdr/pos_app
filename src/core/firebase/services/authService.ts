@@ -1,11 +1,9 @@
 import { 
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  sendPasswordResetEmail,
   signOut,
-  updateProfile as updateAuthProfile,
-  updateEmail,
-  updatePassword
+  GoogleAuthProvider,
+  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult
 } from 'firebase/auth'
 import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore'
 import { auth } from '../auth'
@@ -15,152 +13,99 @@ export const mapFirebaseError = (error: any): string => {
   const code = error?.code || ''
   const message = error?.message || ''
   switch (code) {
-    case 'auth/invalid-email':
-      return 'Please enter a valid email address.'
-    case 'auth/user-disabled':
-      return 'This user account has been disabled. Please contact support.'
-    case 'auth/user-not-found':
-      return 'No account found with this email. Please check the spelling or sign up.'
-    case 'auth/wrong-password':
-      return 'Incorrect password. Please try again.'
-    case 'auth/email-already-in-use':
-      return 'An account already exists with this email address. Please log in instead.'
-    case 'auth/weak-password':
-      return 'Password is too weak. Please use at least 6 characters.'
-    case 'auth/too-many-requests':
-      return 'Too many failed login attempts. Please try again later.'
-    case 'auth/invalid-credential':
-      return 'Incorrect email or password. Please check your credentials.'
+    case 'auth/popup-closed-by-user':
+      return 'The sign-in popup was closed before completing. Please try again.'
+    case 'auth/popup-blocked':
+      return 'The sign-in popup was blocked by your browser. Please allow popups for this site.'
+    case 'auth/cancelled-popup-request':
+      return 'Sign-in request was cancelled. Please try again.'
     case 'auth/network-request-failed':
-      return 'Connection failed. Please check your internet connectivity.'
-    case 'auth/requires-recent-login':
-      return 'For security, please log out and log back in to perform this action.'
+      return 'Network connection failed. Please check your internet connectivity.'
     case 'permission-denied':
     case 'firestore/permission-denied':
-      return 'Firestore permissions denied. Please make sure you have initialized a Firestore Database in your Firebase Console and updated your Security Rules to allow user document operations.'
+      return 'Access denied. You do not have permissions to access your user profile.'
     default:
-      return message || 'Authentication failed. Please check your details and try again.'
+      return message || 'Google Sign-In failed. Please try again.'
   }
 }
 
 export const authService = {
-  async loginWithEmail(email: string, password: string): Promise<any> {
-    const credential = await signInWithEmailAndPassword(auth, email, password)
-    return credential.user
-  },
-
-  async signupWithEmail(email: string, password: string): Promise<any> {
-    const credential = await createUserWithEmailAndPassword(auth, email, password)
-    return credential.user
-  },
-
-  async sendPasswordReset(email: string): Promise<void> {
-    await sendPasswordResetEmail(auth, email)
-  },
-
-  async syncUserProfile(uid: string, email: string | null, fullName: string | null, isNew: boolean): Promise<any> {
-    const userRef = doc(db, 'users', uid)
+  async signInWithGoogle(isMobileOrPWA: boolean): Promise<any> {
+    const provider = new GoogleAuthProvider()
+    // Always prompt user account selector to avoid auto-selecting locked accounts
+    provider.setCustomParameters({
+      prompt: 'select_account'
+    })
     
-    if (isNew) {
+    if (isMobileOrPWA) {
+      await signInWithRedirect(auth, provider)
+      // Redirection triggers, so this function never resolves on mobile/PWA
+    } else {
+      const result = await signInWithPopup(auth, provider)
+      return result.user
+    }
+  },
+
+  async handleRedirectResult(): Promise<any> {
+    const result = await getRedirectResult(auth)
+    return result?.user || null
+  },
+
+  async syncUserProfile(uid: string, email: string | null, fullName: string | null, photoURL: string | null): Promise<any> {
+    const userRef = doc(db, 'users', uid)
+    const snapshot = await getDoc(userRef)
+    const appVersion = '1.0.0'
+    const nowISO = new Date().toISOString()
+    
+    if (!snapshot.exists()) {
       const newProfile = {
         uid,
         fullName: fullName || '',
-        email,
-        photoURL: null,
-        createdAt: new Date().toISOString(),
-        lastLogin: new Date().toISOString(),
-        isPremium: false,
-        enabledModules: []
+        email: email || '',
+        photoURL: photoURL || null,
+        role: 'user',
+        plan: 'free',
+        enabledModules: [],
+        createdAt: nowISO,
+        lastLogin: nowISO,
+        lastActivity: nowISO,
+        appVersion,
+        status: 'active'
       }
       await setDoc(userRef, {
         ...newProfile,
         createdAt: serverTimestamp(),
-        lastLogin: serverTimestamp()
+        lastLogin: serverTimestamp(),
+        lastActivity: serverTimestamp()
       })
-      return newProfile
-    } else {
-      await updateDoc(userRef, {
-        lastLogin: serverTimestamp()
-      })
-      const snapshot = await getDoc(userRef)
-      if (snapshot.exists()) {
-        const data = snapshot.data()
-        return {
-          uid: data.uid,
-          fullName: data.fullName || fullName || '',
-          email: data.email || email,
-          photoURL: data.photoURL || null,
-          createdAt: data.createdAt?.toDate?.()?.toISOString() || data.createdAt || new Date().toISOString(),
-          lastLogin: new Date().toISOString(),
-          isPremium: !!data.isPremium,
-          enabledModules: data.enabledModules || []
-        }
-      } else {
-        // Fallback profile if Firestore sync fails to find doc
-        return {
-          uid,
-          fullName: fullName || '',
-          email,
-          photoURL: null,
-          createdAt: new Date().toISOString(),
-          lastLogin: new Date().toISOString(),
-          isPremium: false,
-          enabledModules: []
-        }
+      return {
+        ...newProfile,
+        isPremium: false
       }
-    }
-  },
-
-  async updateUserProfile(fullName: string, email: string, password?: string): Promise<any> {
-    const currentUser = auth.currentUser
-    if (!currentUser) throw new Error('No user is logged in.')
-
-    // 1. Update Firebase Auth Profile (Display Name)
-    await updateAuthProfile(currentUser, { displayName: fullName })
-
-    // 2. Update Firebase Auth Email if it has changed (case-insensitive)
-    const normalizedEmail = email?.trim().toLowerCase()
-    const currentEmail = currentUser.email?.trim().toLowerCase()
-    if (normalizedEmail && normalizedEmail !== currentEmail) {
-      await updateEmail(currentUser, normalizedEmail)
-    }
-
-    // 3. Update Firebase Auth Password if provided
-    if (password) {
-      await updatePassword(currentUser, password)
-    }
-
-    // 4. Update Firestore user document
-    const userRef = doc(db, 'users', currentUser.uid)
-    await updateDoc(userRef, {
-      fullName,
-      email
-    })
-
-    // Return updated profile details
-    const snapshot = await getDoc(userRef)
-    if (snapshot.exists()) {
+    } else {
       const data = snapshot.data()
+      const updatedData = {
+        fullName: fullName || data.fullName || '',
+        photoURL: photoURL || data.photoURL || null,
+        lastLogin: serverTimestamp(),
+        lastActivity: serverTimestamp()
+      }
+      await updateDoc(userRef, updatedData)
+      
       return {
         uid: data.uid,
-        fullName: data.fullName || fullName || '',
-        email: data.email || email,
-        photoURL: data.photoURL || null,
-        createdAt: data.createdAt?.toDate?.()?.toISOString() || data.createdAt || new Date().toISOString(),
-        lastLogin: new Date().toISOString(),
-        isPremium: !!data.isPremium,
-        enabledModules: data.enabledModules || []
-      }
-    } else {
-      return {
-        uid: currentUser.uid,
-        fullName,
-        email,
-        photoURL: null,
-        createdAt: new Date().toISOString(),
-        lastLogin: new Date().toISOString(),
-        isPremium: false,
-        enabledModules: []
+        fullName: fullName || data.fullName || '',
+        email: data.email || email || '',
+        photoURL: photoURL || data.photoURL || null,
+        role: data.role || 'user',
+        plan: data.plan || 'free',
+        enabledModules: data.enabledModules || [],
+        createdAt: data.createdAt?.toDate?.()?.toISOString() || data.createdAt || nowISO,
+        lastLogin: nowISO,
+        lastActivity: nowISO,
+        appVersion: data.appVersion || appVersion,
+        status: data.status || 'active',
+        isPremium: data.plan === 'pro' || !!data.isPremium
       }
     }
   },
@@ -170,4 +115,3 @@ export const authService = {
   }
 }
 export default authService
-

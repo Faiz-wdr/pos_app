@@ -3,8 +3,9 @@ import { FirestoreUser } from '../types'
 import { RoleBadge } from './RoleBadge'
 import { PremiumBadge } from './PremiumBadge'
 import { StatusBadge } from './StatusBadge'
-import { User, Eye } from 'lucide-react'
+import { Eye } from 'lucide-react'
 import { ActionButton } from './ActionButton'
+import { UserAvatar } from './UserAvatar'
 
 interface UserTableProps {
   users: FirestoreUser[]
@@ -49,9 +50,11 @@ export const UserTable: React.FC<UserTableProps> = React.memo(({ users, onSelect
               >
                 <td className="py-3 px-4">
                   <div className="flex items-center space-x-3 text-left">
-                    <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground shrink-0 border border-border/40">
-                      <User className="w-4 h-4" />
-                    </div>
+                    <UserAvatar 
+                      photoURL={user.photoURL}
+                      email={user.email}
+                      fullName={user.fullName}
+                    />
                     <div className="flex flex-col min-w-0">
                       <span className="font-semibold text-foreground truncate max-w-[120px] sm:max-w-[180px]">
                         {user.fullName || 'Anonymous'}

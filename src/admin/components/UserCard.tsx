@@ -3,8 +3,9 @@ import { FirestoreUser } from '../types'
 import { RoleBadge } from './RoleBadge'
 import { PremiumBadge } from './PremiumBadge'
 import { StatusBadge } from './StatusBadge'
-import { User, Calendar } from 'lucide-react'
+import { Calendar } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/Card'
+import { UserAvatar } from './UserAvatar'
 
 interface UserCardProps {
   user: FirestoreUser
@@ -27,9 +28,13 @@ export const UserCard: React.FC<UserCardProps> = ({ user, onClick }) => {
     >
       <CardContent className="p-4 space-y-3.5">
         <div className="flex items-center space-x-3 text-left">
-          <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground shrink-0 border border-border/40">
-            <User className="w-5 h-5" />
-          </div>
+          <UserAvatar 
+            photoURL={user.photoURL}
+            email={user.email}
+            fullName={user.fullName}
+            sizeClass="w-10 h-10 rounded-xl"
+            textClass="text-xs"
+          />
           <div className="flex-1 min-w-0">
             <h4 className="text-xs font-bold text-foreground truncate">{user.fullName || 'Anonymous User'}</h4>
             <p className="text-[10px] text-muted-foreground truncate">{user.email}</p>

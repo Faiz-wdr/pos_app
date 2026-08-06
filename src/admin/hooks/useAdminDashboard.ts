@@ -24,6 +24,7 @@ export const useAdminDashboard = () => {
           uid: doc.id,
           fullName: data.fullName || null,
           email: data.email || null,
+          photoURL: data.photoURL || null,
           role: data.role || 'user',
           premium: data.premium ?? data.isPremium ?? false,
           isPremium: data.premium ?? data.isPremium ?? false,

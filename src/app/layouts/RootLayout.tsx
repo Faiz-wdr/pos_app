@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import { BottomNav } from '@/components/BottomNav'
 import { useNavigationStore } from '@/core/navigation/navigationStore'
@@ -8,12 +8,13 @@ import { auth } from '@/core/firebase/auth'
 import { doc, onSnapshot } from 'firebase/firestore'
 import { db } from '@/core/firebase/firestore'
 import { useAuthStore } from '@/core/firebase/stores/authStore'
-import { authService } from '@/core/firebase/services/authService'
+import { authService, mapFirebaseError } from '@/core/firebase/services/authService'
 import { serializeFirebaseUser } from '@/core/firebase/hooks/useAuth'
 import { AuthBottomSheet } from '@/core/firebase/components/auth/AuthBottomSheet'
 import { UpdateDialog } from '@/core/pwa/UpdateDialog'
 import { useUserHeartbeat } from '@/shared/hooks/useUserHeartbeat'
 import { ShieldAlert } from 'lucide-react'
+import { OnboardingScreen } from '@/core/onboarding/components/OnboardingScreen'
 
 export const RootLayout = () => {
   const location = useLocation()
@@ -23,12 +24,40 @@ export const RootLayout = () => {
   const isFullscreen = useNavigationStore((state) => state.isFullscreen)
   const restoreSession = useAuthStore((state) => state.restoreSession)
   const user = useAuthStore((state) => state.user)
+  const [onboardingCompleted, setOnboardingCompleted] = useState(() => localStorage.getItem('personalos_onboarding_completed') === 'true')
 
   // Start the background heartbeat activity reporter
   useUserHeartbeat()
 
   useEffect(() => {
     let unsubscribeSnapshot: (() => void) | null = null
+
+    // Check redirect result on load (mobile browser / standalone PWA)
+    authService.handleRedirectResult()
+      .then(async (firebaseUser) => {
+        if (firebaseUser) {
+          try {
+            const profile = await authService.syncUserProfile(
+              firebaseUser.uid,
+              firebaseUser.email,
+              firebaseUser.displayName,
+              firebaseUser.photoURL
+            )
+            useAuthStore.getState().login(profile)
+          } catch (e) {
+            console.error('Error syncing profile from redirect result:', e)
+          }
+        }
+      })
+      .catch((error) => {
+        console.error('Redirect sign-in error:', error)
+        const userFriendlyMessage = mapFirebaseError(error)
+        useAuthStore.getState().setError(userFriendlyMessage)
+        useAuthStore.getState().openAuthSheet({
+          title: 'Sign In Failed',
+          description: userFriendlyMessage
+        })
+      })
 
     const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
       if (unsubscribeSnapshot) {
@@ -39,7 +68,12 @@ export const RootLayout = () => {
       if (firebaseUser) {
         // Initial sync of profile
         try {
-          await authService.syncUserProfile(firebaseUser.uid, firebaseUser.email, firebaseUser.displayName, false)
+          await authService.syncUserProfile(
+            firebaseUser.uid,
+            firebaseUser.email,
+            firebaseUser.displayName,
+            firebaseUser.photoURL
+          )
         } catch (e) {
           console.error('Error syncing profile:', e)
         }
@@ -53,10 +87,10 @@ export const RootLayout = () => {
               uid: data.uid,
               fullName: data.fullName || firebaseUser.displayName || '',
               email: data.email || firebaseUser.email,
-              photoURL: data.photoURL || null,
+              photoURL: data.photoURL || firebaseUser.photoURL || null,
               createdAt: data.createdAt?.toDate?.()?.toISOString() || data.createdAt || new Date().toISOString(),
               lastLogin: data.lastLogin?.toDate?.()?.toISOString() || data.lastLogin || new Date().toISOString(),
-              isPremium: !!data.isPremium || !!data.premium,
+              isPremium: data.plan === 'pro' || !!data.isPremium || !!data.premium,
               enabledModules: data.enabledModules || [],
               role: data.role || 'user',
               status: data.status || 'active'
@@ -117,11 +151,16 @@ export const RootLayout = () => {
         className={cn(
           'w-full mx-auto min-h-screen bg-background flex flex-col relative border-x border-border/60 dark:border-border/30 shadow-2xl transition-all duration-300 overflow-hidden',
           isFullscreen ? 'max-w-none border-x-0' : 'max-w-md',
-          hideSystemNav ? 'pb-0' : 'pb-16 sm:pb-18',
+          (!onboardingCompleted || hideSystemNav) ? 'pb-0' : 'pb-16 sm:pb-18',
           !isClockModule && 'lock-portrait'
         )}
       >
-        {isSuspended ? (
+        {!onboardingCompleted ? (
+          <>
+            <OnboardingScreen onCompleted={() => setOnboardingCompleted(true)} />
+            <AuthBottomSheet />
+          </>
+        ) : isSuspended ? (
           <div className="flex-1 flex flex-col justify-center items-center p-6 text-center space-y-5 animate-in fade-in duration-300">
             <div className="w-16 h-16 rounded-full bg-red-500/10 text-red-500 border border-red-500/20 flex items-center justify-center shadow-xs">
               <ShieldAlert className="w-8 h-8" />

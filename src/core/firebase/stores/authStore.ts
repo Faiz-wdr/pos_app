@@ -27,6 +27,9 @@ interface AuthState {
   authSheetDescription: string
   authSuccessCallback: (() => void) | null
 
+  error: string | null
+  setError: (error: string | null) => void
+
   login: (user: SerializedUser) => void
   signup: (user: SerializedUser) => void
   logout: () => void
@@ -43,41 +46,48 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       isGuest: true,
       loading: false,
+      error: null,
       isAuthSheetOpen: false,
       authSheetTitle: 'Welcome',
       authSheetDescription: 'Sign in to unlock premium modules and sync your data across devices.',
       authSuccessCallback: null,
 
+      setError: (error) => set({ error }),
       login: (user) => set({ 
         user, 
         isAuthenticated: true, 
-        isGuest: false
+        isGuest: false,
+        error: null
       }),
       signup: (user) => set({ 
         user, 
         isAuthenticated: true, 
-        isGuest: false
+        isGuest: false,
+        error: null
       }),
       logout: () => set({ 
         user: null, 
         isAuthenticated: false, 
         isGuest: true,
         isAuthSheetOpen: false, 
-        authSuccessCallback: null 
+        authSuccessCallback: null,
+        error: null
       }),
       restoreSession: (user) => set({ 
         user, 
         isAuthenticated: user !== null, 
-        isGuest: user === null
+        isGuest: user === null,
+        error: null
       }),
       setLoading: (loading) => set({ loading }),
       openAuthSheet: (options) => set({
         isAuthSheetOpen: true,
+        error: null,
         authSheetTitle: options?.title || 'Welcome',
         authSheetDescription: options?.description || 'Sign in to unlock premium modules and sync your data across devices.',
         authSuccessCallback: options?.onSuccess || null
       }),
-      closeAuthSheet: () => set({ isAuthSheetOpen: false, authSuccessCallback: null })
+      closeAuthSheet: () => set({ isAuthSheetOpen: false, authSuccessCallback: null, error: null })
     }),
     {
       name: 'pos-auth-storage',

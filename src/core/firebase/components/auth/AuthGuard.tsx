@@ -19,7 +19,7 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
     if (isGuest) {
       openAuthSheet({
         title: 'Premium Module',
-        description: 'Unlock premium features by signing in with your email address.'
+        description: 'Unlock premium features by signing in with your Google account.'
       })
     }
   }, [isGuest, openAuthSheet])
@@ -73,7 +73,7 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
         <Button
           onClick={() => openAuthSheet({
             title: 'Premium Module',
-            description: 'Unlock premium features by signing in with your email address.'
+            description: 'Unlock premium features by signing in with your Google account.'
           })}
           className="w-full font-bold uppercase text-xs tracking-wider h-11 rounded-xl cursor-pointer"
         >

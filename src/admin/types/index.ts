@@ -18,6 +18,7 @@ export interface FirestoreUser {
   uid: string
   fullName: string | null
   email: string | null
+  photoURL?: string | null
   role: 'guest' | 'user' | 'super_admin'
   premium?: boolean
   isPremium?: boolean // bridging fields for backward/forward compatibility

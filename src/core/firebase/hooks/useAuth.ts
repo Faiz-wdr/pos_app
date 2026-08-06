@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { useAuthStore, SerializedUser } from '../stores/authStore'
 import { authService, mapFirebaseError } from '../services/authService'
 import { User } from 'firebase/auth'
@@ -13,53 +12,30 @@ export const serializeFirebaseUser = (user: User): SerializedUser => ({
 
 export const useAuth = () => {
   const store = useAuthStore()
-  const [error, setError] = useState<string | null>(null)
-  
-  const loginWithEmail = async (email: string, password: string) => {
-    store.setLoading(true)
-    setError(null)
-    try {
-      const firebaseUser = await authService.loginWithEmail(email, password)
-      const profile = await authService.syncUserProfile(firebaseUser.uid, firebaseUser.email, firebaseUser.displayName, false)
-      store.login(profile)
-      return profile
-    } catch (e: any) {
-      console.error('Error logging in:', e)
-      const mapped = mapFirebaseError(e)
-      setError(mapped)
-      throw new Error(mapped)
-    } finally {
-      store.setLoading(false)
-    }
-  }
 
-  const signupWithEmail = async (email: string, password: string, fullName: string) => {
+  const loginWithGoogle = async () => {
     store.setLoading(true)
-    setError(null)
+    store.setError(null)
     try {
-      const firebaseUser = await authService.signupWithEmail(email, password)
-      const profile = await authService.syncUserProfile(firebaseUser.uid, firebaseUser.email, fullName, true)
-      store.login(profile)
-      return profile
-    } catch (e: any) {
-      console.error('Error signing up:', e)
-      const mapped = mapFirebaseError(e)
-      setError(mapped)
-      throw new Error(mapped)
-    } finally {
-      store.setLoading(false)
-    }
-  }
+      const isMobileUA = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+      const isMobileOrPWA = isMobileUA || isStandalone
 
-  const sendPasswordReset = async (email: string) => {
-    store.setLoading(true)
-    setError(null)
-    try {
-      await authService.sendPasswordReset(email)
+      const firebaseUser = await authService.signInWithGoogle(isMobileOrPWA)
+      if (firebaseUser) {
+        const profile = await authService.syncUserProfile(
+          firebaseUser.uid,
+          firebaseUser.email,
+          firebaseUser.displayName,
+          firebaseUser.photoURL
+        )
+        store.login(profile)
+        return profile
+      }
     } catch (e: any) {
-      console.error('Error sending reset email:', e)
+      console.error('Error logging in with Google:', e)
       const mapped = mapFirebaseError(e)
-      setError(mapped)
+      store.setError(mapped)
       throw new Error(mapped)
     } finally {
       store.setLoading(false)
@@ -69,7 +45,12 @@ export const useAuth = () => {
   const restoreSession = async (firebaseUser: User | null) => {
     if (firebaseUser) {
       try {
-        const profile = await authService.syncUserProfile(firebaseUser.uid, firebaseUser.email, firebaseUser.displayName, false)
+        const profile = await authService.syncUserProfile(
+          firebaseUser.uid,
+          firebaseUser.email,
+          firebaseUser.displayName,
+          firebaseUser.photoURL
+        )
         store.restoreSession(profile)
       } catch (e) {
         console.error('Error syncing profile on session restore:', e)
@@ -82,37 +63,20 @@ export const useAuth = () => {
 
   const logout = async () => {
     store.setLoading(true)
-    setError(null)
+    store.setError(null)
     try {
       await authService.logout()
       store.logout()
     } catch (e: any) {
       console.error('Error during logout:', e)
-      setError(mapFirebaseError(e))
-    } finally {
-      store.setLoading(false)
-    }
-  }
-
-  const updateProfile = async (fullName: string, email: string, password?: string) => {
-    store.setLoading(true)
-    setError(null)
-    try {
-      const updatedProfile = await authService.updateUserProfile(fullName, email, password)
-      store.login(updatedProfile)
-      return updatedProfile
-    } catch (e: any) {
-      console.error('Error updating profile:', e)
-      const mapped = mapFirebaseError(e)
-      setError(mapped)
-      throw new Error(mapped)
+      store.setError(mapFirebaseError(e))
     } finally {
       store.setLoading(false)
     }
   }
 
   const resetAuth = () => {
-    setError(null)
+    store.setError(null)
   }
 
   return {
@@ -120,21 +84,18 @@ export const useAuth = () => {
     isAuthenticated: store.isAuthenticated,
     isGuest: store.isGuest,
     loading: store.loading,
+    error: store.error,
     isAuthSheetOpen: store.isAuthSheetOpen,
     authSheetTitle: store.authSheetTitle,
     authSheetDescription: store.authSheetDescription,
     authSuccessCallback: store.authSuccessCallback,
-    loginWithEmail,
-    signupWithEmail,
-    sendPasswordReset,
+    loginWithGoogle,
     logout,
-    updateProfile,
     restoreSession,
     setLoading: store.setLoading,
     openAuthSheet: store.openAuthSheet,
     closeAuthSheet: store.closeAuthSheet,
-    error,
-    setError,
+    setError: store.setError,
     resetAuth
   }
 }

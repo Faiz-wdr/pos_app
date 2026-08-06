@@ -9,6 +9,7 @@ import { useAuth } from '@/core/firebase/hooks/useAuth'
 import { motion, AnimatePresence } from 'framer-motion'
 import moneyImg from '@/assets/money.png'
 import plannerImg from '@/assets/planner.png'
+import { getGravatarUrl } from '@/shared/utils/gravatar'
 
 const ModuleIcon = ({ name, className, strokeWidth = 2 }: { name: string; className?: string; strokeWidth?: number }) => {
   const IconComponent = (Icons as any)[name]
@@ -61,6 +62,7 @@ const slideVariants = {
 export const Home = () => {
   const [greeting, setGreeting] = useState('Hello')
   const [searchQuery, setSearchQuery] = useState('')
+  const [imgError, setImgError] = useState(false)
   const { modules, registerModule } = useModuleStore()
   const navigate = useNavigate()
   const { isGuest, openAuthSheet, user } = useAuth()
@@ -321,10 +323,35 @@ export const Home = () => {
         </div>
         <button
           onClick={handleProfileClick}
-          className="w-10 h-10 rounded-full bg-card border border-border flex items-center justify-center text-muted-foreground shadow-xs cursor-pointer hover:border-muted-foreground/30 transition-all focus-visible:outline-2 focus-visible:outline-accent"
+          className="w-10 h-10 rounded-full bg-card border border-border flex items-center justify-center text-muted-foreground shadow-xs cursor-pointer hover:border-muted-foreground/30 transition-all focus-visible:outline-2 focus-visible:outline-accent overflow-hidden"
           aria-label="User profile"
         >
-          <User className="w-5 h-5 text-foreground/80" />
+          {(() => {
+            const avatarSrc = user?.photoURL || getGravatarUrl(user?.email)
+            if (avatarSrc && !imgError) {
+              return (
+                <img 
+                  src={avatarSrc} 
+                  alt={user?.fullName || 'User'} 
+                  className="w-full h-full object-cover"
+                  referrerPolicy="no-referrer"
+                  onError={() => setImgError(true)}
+                />
+              )
+            }
+            if (user) {
+              return (
+                <span className="text-[11px] font-bold text-accent uppercase">
+                  {(() => {
+                    const parts = (user.fullName || '').trim().split(/\s+/)
+                    if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase()
+                    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+                  })()}
+                </span>
+              )
+            }
+            return <User className="w-5 h-5 text-foreground/80" />
+          })()}
         </button>
       </div>
 
