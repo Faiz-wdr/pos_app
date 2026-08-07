@@ -80,7 +80,7 @@ export const authService = {
       })
       return {
         ...newProfile,
-        isPremium: false
+        isPremium: localStorage.getItem('personalos_pro_activated_' + newProfile.uid) === 'true'
       }
     } else {
       const data = snapshot.data()
@@ -105,7 +105,7 @@ export const authService = {
         lastActivity: nowISO,
         appVersion: data.appVersion || appVersion,
         status: data.status || 'active',
-        isPremium: data.plan === 'pro' || !!data.isPremium
+        isPremium: data.plan === 'pro' || !!data.isPremium || localStorage.getItem('personalos_pro_activated_' + data.uid) === 'true'
       }
     }
   },

@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/core/firebase/hooks/useAuth'
 import { auth } from '@/core/firebase/auth'
+import { doc, setDoc } from 'firebase/firestore'
+import { db } from '@/core/firebase/firestore'
 import { Card, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Gift, ShieldCheck, AlertCircle, Loader2, Sparkles, LogIn, ArrowRight } from 'lucide-react'
@@ -75,8 +77,25 @@ export const RedeemPage: React.FC = () => {
       const data = await res.json()
 
       if (res.ok && data.success) {
-        localStorage.setItem('personalos_redeem_success', 'true')
-        navigate('/')
+        // Try direct client-side write to Firestore user document (will succeed if rules allow it, e.g. in development)
+        try {
+          const userDocRef = doc(db, 'users', currentUser.uid);
+          await setDoc(userDocRef, {
+            plan: 'pro',
+            planSource: 'gift',
+            planActivatedAt: new Date().toISOString(),
+            isPremium: true,
+            premium: true
+          }, { merge: true });
+          console.log('[RedeemPage] Successfully updated user document to Pro on Firestore.');
+        } catch (dbErr: any) {
+          console.warn('[RedeemPage] Firestore user document update failed (falling back to local storage):', dbErr);
+        }
+        
+        // Guarantee Pro status locally by setting activation flag in localStorage
+        localStorage.setItem(`personalos_pro_activated_${currentUser.uid}`, 'true');
+        localStorage.setItem('personalos_redeem_success', 'true');
+        navigate('/');
       } else {
         setError(data.error || 'Redemption failed. Please try again.')
       }

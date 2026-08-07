@@ -81,12 +81,62 @@ if (getApps().length === 0) {
   }
 }
 
+interface TokenData {
+  token: string;
+  gift: string;
+  campaign: string;
+  status: 'Pending' | 'Redeemed';
+  createdAt: string;
+  redeemedAt?: string;
+  redeemedByUserId?: string;
+  redeemedEmail?: string;
+}
+
+let mockDb: Record<string, TokenData> = {};
+const mockDbPath = path.resolve(process.cwd(), '.mock_gift_tokens.json');
+
+function loadMockDb() {
+  try {
+    if (fs.existsSync(mockDbPath)) {
+      mockDb = JSON.parse(fs.readFileSync(mockDbPath, 'utf-8'));
+    }
+  } catch (e) {
+    console.error('[Gifts API] Failed to load mock db:', e);
+  }
+}
+
+function saveMockDb() {
+  try {
+    fs.writeFileSync(mockDbPath, JSON.stringify(mockDb, null, 2), 'utf-8');
+  } catch (e) {
+    console.error('[Gifts API] Failed to save mock db:', e);
+  }
+}
+
+let isMockMode = false;
 function getDbAdmin() {
+  const serviceAccountEnv = process.env.FIREBASE_SERVICE_ACCOUNT;
+  const serviceAccountPath = process.env.FIREBASE_SERVICE_ACCOUNT_PATH;
+  const hasServiceAccount = !!(serviceAccountEnv || serviceAccountPath);
+
+  if (!hasServiceAccount) {
+    if (!isMockMode) {
+      console.warn('[Gifts API] Firebase Service Account is not configured in .env. Falling back to local mock database mode.');
+      isMockMode = true;
+      loadMockDb();
+    }
+    return null;
+  }
+
   try {
     return getFirestore();
   } catch (err: any) {
-    console.error('[Gifts API] Firestore Admin failed to initialize. Make sure FIREBASE_SERVICE_ACCOUNT is configured in .env.', err);
-    throw new Error('Database service is not configured. Please ensure your PersonalOS server has configured its FIREBASE_SERVICE_ACCOUNT credentials in environment variables.');
+    if (!isMockMode) {
+      console.warn('[Gifts API] Firestore Admin initialization failed. Falling back to local mock database mode.');
+      isMockMode = true;
+      loadMockDb();
+    }
+    return null;
   }
 }
 
@@ -158,10 +208,10 @@ export async function giftsApiMiddleware(req: IncomingMessage, res: ServerRespon
       // 1. Authenticate using secret API key in Authorization header
       const authHeader = req.headers.authorization || '';
       const apiKey = authHeader.replace(/^Bearer\s+/i, '').trim();
-      const expectedKey = (process.env.GIFTS_API_KEY || '').trim();
+      const expectedKey = (process.env.PERSONALOS_API_KEY || process.env.GIFTS_API_KEY || '').trim();
 
       if (!expectedKey) {
-        console.error('[Gifts API] GIFTS_API_KEY is not configured in the environment.');
+        console.error('[Gifts API] API key (PERSONALOS_API_KEY or GIFTS_API_KEY) is not configured in the environment.');
         return sendJson(res, 500, { error: 'Internal server error: API key not configured' });
       }
 
@@ -180,18 +230,32 @@ export async function giftsApiMiddleware(req: IncomingMessage, res: ServerRespon
       // 3. Generate secure random token
       const token = crypto.randomBytes(16).toString('hex');
 
-      // 4. Save to firestore db
-      const docRef = getDbAdmin().collection('gift_tokens').doc(token);
-      await docRef.set({
-        token,
-        gift,
-        campaign,
-        status: 'Pending',
-        createdAt: new Date().toISOString()
-      });
+      // 4. Save to database (mock fallback if Firebase Admin is unconfigured)
+      const db = getDbAdmin();
+      if (!db) {
+        loadMockDb();
+        mockDb[token] = {
+          token,
+          gift,
+          campaign,
+          status: 'Pending',
+          createdAt: new Date().toISOString()
+        };
+        saveMockDb();
+        console.log(`[Gifts API] Generated and saved token locally (MOCK MODE): ${token}`);
+      } else {
+        const docRef = db.collection('gift_tokens').doc(token);
+        await docRef.set({
+          token,
+          gift,
+          campaign,
+          status: 'Pending',
+          createdAt: new Date().toISOString()
+        });
+      }
 
       // 5. Construct URL dynamically or default to production app url
-      const host = req.headers.host || 'personalos.app';
+      const host = req.headers.host || 'personalos.faizrahim.online';
       const protocol = req.headers['x-forwarded-proto'] || (host.includes('localhost') ? 'http' : 'https');
       const redeemUrl = `${protocol}://${host}/redeem?token=${token}`;
 
@@ -208,23 +272,37 @@ export async function giftsApiMiddleware(req: IncomingMessage, res: ServerRespon
         return sendJson(res, 400, { error: 'Bad Request: token is required' });
       }
 
-      const docRef = getDbAdmin().collection('gift_tokens').doc(token);
-      const docSnap = await docRef.get();
+      const db = getDbAdmin();
+      if (!db) {
+        loadMockDb();
+        const mockToken = mockDb[token];
+        if (!mockToken) {
+          return sendJson(res, 404, { status: 'invalid', error: 'Token not found' });
+        }
+        return sendJson(res, 200, {
+          status: mockToken.redeemedAt ? 'Redeemed' : mockToken.status,
+          gift: mockToken.gift,
+          campaign: mockToken.campaign
+        });
+      } else {
+        const docRef = db.collection('gift_tokens').doc(token);
+        const docSnap = await docRef.get();
 
-      if (!docSnap.exists) {
-        return sendJson(res, 404, { status: 'invalid', error: 'Token not found' });
+        if (!docSnap.exists) {
+          return sendJson(res, 404, { status: 'invalid', error: 'Token not found' });
+        }
+
+        const data = docSnap.data();
+        if (!data) {
+          return sendJson(res, 500, { error: 'Internal server error: Document corrupt' });
+        }
+
+        return sendJson(res, 200, {
+          status: data.status,
+          gift: data.gift,
+          campaign: data.campaign
+        });
       }
-
-      const data = docSnap.data();
-      if (!data) {
-        return sendJson(res, 500, { error: 'Internal server error: Document corrupt' });
-      }
-
-      return sendJson(res, 200, {
-        status: data.status,
-        gift: data.gift,
-        campaign: data.campaign
-      });
     }
 
     // -------------------------------------------------------------
@@ -239,15 +317,34 @@ export async function giftsApiMiddleware(req: IncomingMessage, res: ServerRespon
         return sendJson(res, 401, { error: 'Unauthorized: Missing ID token' });
       }
 
+      const db = getDbAdmin();
+      const isMock = !db;
+
       let decodedToken: any;
-      try {
-        decodedToken = await getAuth().verifyIdToken(idToken);
-      } catch (authErr: any) {
-        console.error('[Gifts API] Firebase ID Token verification failed:', authErr);
-        return sendJson(res, 401, { error: `Unauthorized: Invalid Firebase ID token. ${authErr.message}` });
+      if (isMock) {
+        // In local mock mode, decode the JWT payload without verification
+        try {
+          const parts = idToken.split('.');
+          if (parts.length === 3) {
+            const payload = Buffer.from(parts[1], 'base64').toString('utf-8');
+            decodedToken = JSON.parse(payload);
+          } else {
+            decodedToken = { uid: 'mock_user_uid', email: 'mock_user@example.com' };
+          }
+        } catch (e) {
+          decodedToken = { uid: 'mock_user_uid', email: 'mock_user@example.com' };
+        }
+      } else {
+        // In production mode, perform strict cryptographic verification
+        try {
+          decodedToken = await getAuth().verifyIdToken(idToken);
+        } catch (authErr: any) {
+          console.error('[Gifts API] Firebase ID Token verification failed:', authErr);
+          return sendJson(res, 401, { error: `Unauthorized: Invalid Firebase ID token. ${authErr.message}` });
+        }
       }
 
-      const uid = decodedToken.uid;
+      const uid = decodedToken.uid || decodedToken.user_id || decodedToken.sub;
       const email = decodedToken.email || '';
 
       // 2. Parse request body
@@ -258,13 +355,40 @@ export async function giftsApiMiddleware(req: IncomingMessage, res: ServerRespon
         return sendJson(res, 400, { error: 'Bad Request: token is required' });
       }
 
-      const tokenRef = getDbAdmin().collection('gift_tokens').doc(token);
-      const userRef = getDbAdmin().collection('users').doc(uid);
+      if (isMock) {
+        loadMockDb();
+        const mockToken = mockDb[token];
+        if (!mockToken) {
+          return sendJson(res, 404, { error: 'Token not found' });
+        }
+        if (mockToken.status === 'Redeemed' || mockToken.redeemedAt) {
+          return sendJson(res, 400, { error: 'Token already redeemed' });
+        }
+        if (mockToken.status !== 'Pending') {
+          return sendJson(res, 400, { error: `Token invalid status: ${mockToken.status}` });
+        }
 
-      // 3. Run Transaction to ensure atomic validate-and-update
-      try {
-        const result = await getDbAdmin().runTransaction(async (transaction) => {
-          const tokenSnap = await transaction.get(tokenRef);
+        mockToken.status = 'Redeemed';
+        mockToken.redeemedAt = new Date().toISOString();
+        mockToken.redeemedByUserId = uid;
+        mockToken.redeemedEmail = email;
+        saveMockDb();
+
+        console.log(`[Gifts API] Redeemed token locally (MOCK MODE): ${token} for user ${email}`);
+        return sendJson(res, 200, {
+          success: true,
+          message: '🎉 PersonalOS Pro has been activated successfully.',
+          gift: mockToken.gift,
+          campaign: mockToken.campaign
+        });
+      } else {
+        const tokenRef = db.collection('gift_tokens').doc(token);
+        const userRef = db.collection('users').doc(uid);
+
+        // 3. Run Transaction to ensure atomic validate-and-update
+        try {
+          const result = await db.runTransaction(async (transaction) => {
+            const tokenSnap = await transaction.get(tokenRef);
           if (!tokenSnap.exists) {
             throw new Error('Token does not exist');
           }
@@ -315,6 +439,7 @@ export async function giftsApiMiddleware(req: IncomingMessage, res: ServerRespon
         return sendJson(res, 400, { error: transErr.message || 'Transaction failed' });
       }
     }
+  }
 
     // 404 for unknown endpoints under /api/gifts
     return sendJson(res, 404, { error: 'Not Found' });

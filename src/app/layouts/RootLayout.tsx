@@ -25,6 +25,7 @@ export const RootLayout = () => {
   const restoreSession = useAuthStore((state) => state.restoreSession)
   const user = useAuthStore((state) => state.user)
   const [onboardingCompleted, setOnboardingCompleted] = useState(() => localStorage.getItem('personalos_onboarding_completed') === 'true')
+  const showOnboarding = !onboardingCompleted && !user
 
   // Start the background heartbeat activity reporter
   useUserHeartbeat()
@@ -90,18 +91,26 @@ export const RootLayout = () => {
               photoURL: data.photoURL || firebaseUser.photoURL || null,
               createdAt: data.createdAt?.toDate?.()?.toISOString() || data.createdAt || new Date().toISOString(),
               lastLogin: data.lastLogin?.toDate?.()?.toISOString() || data.lastLogin || new Date().toISOString(),
-              isPremium: data.plan === 'pro' || !!data.isPremium || !!data.premium,
+              isPremium: data.plan === 'pro' || !!data.isPremium || !!data.premium || localStorage.getItem('personalos_pro_activated_' + data.uid) === 'true',
               enabledModules: data.enabledModules || [],
               role: data.role || 'user',
               status: data.status || 'active'
             }
             restoreSession(profile)
           } else {
-            restoreSession(serializeFirebaseUser(firebaseUser))
+            const isLocalPro = localStorage.getItem('personalos_pro_activated_' + firebaseUser.uid) === 'true'
+            restoreSession({
+              ...serializeFirebaseUser(firebaseUser),
+              isPremium: isLocalPro
+            })
           }
         }, (err) => {
           console.error('Firestore subscription error:', err)
-          restoreSession(serializeFirebaseUser(firebaseUser))
+          const isLocalPro = localStorage.getItem('personalos_pro_activated_' + firebaseUser.uid) === 'true'
+          restoreSession({
+            ...serializeFirebaseUser(firebaseUser),
+            isPremium: isLocalPro
+          })
         })
       } else {
         restoreSession(null)
@@ -151,11 +160,11 @@ export const RootLayout = () => {
         className={cn(
           'w-full mx-auto min-h-screen bg-background flex flex-col relative border-x border-border/60 dark:border-border/30 shadow-2xl transition-all duration-300 overflow-hidden',
           isFullscreen ? 'max-w-none border-x-0' : 'max-w-md',
-          (!onboardingCompleted || hideSystemNav) ? 'pb-0' : 'pb-16 sm:pb-18',
+          (showOnboarding || hideSystemNav) ? 'pb-0' : 'pb-16 sm:pb-18',
           !isClockModule && 'lock-portrait'
         )}
       >
-        {!onboardingCompleted ? (
+        {showOnboarding ? (
           <>
             <OnboardingScreen onCompleted={() => setOnboardingCompleted(true)} />
             <AuthBottomSheet />
