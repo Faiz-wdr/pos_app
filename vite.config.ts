@@ -95,7 +95,6 @@ export default defineConfig({
           console.error('Failed to generate version.json', e)
         }
       }
-    },
     }
   ],
   resolve: {
