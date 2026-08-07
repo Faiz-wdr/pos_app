@@ -73,6 +73,7 @@ export const Home = () => {
   const [isPaused, setIsPaused] = useState(false)
   const [infoModalOpen, setInfoModalOpen] = useState(false)
   const [updateModalOpen, setUpdateModalOpen] = useState(false)
+  const [successToast, setSuccessToast] = useState<string | null>(null)
 
   useEffect(() => {
     // Free Modules
@@ -141,6 +142,17 @@ export const Home = () => {
     const lastSeenVersion = localStorage.getItem('last_seen_version')
     if (lastSeenVersion !== CURRENT_VERSION) {
       setUpdateModalOpen(true)
+    }
+
+    // Check for gift redemption success flag
+    const successFlag = localStorage.getItem('personalos_redeem_success')
+    if (successFlag === 'true') {
+      setSuccessToast('🎉 PersonalOS Pro has been activated successfully.')
+      localStorage.removeItem('personalos_redeem_success')
+      const timer = setTimeout(() => {
+        setSuccessToast(null)
+      }, 7000)
+      return () => clearTimeout(timer)
     }
   }, [])
 
@@ -311,6 +323,25 @@ export const Home = () => {
   return (
     <div className="flex-1 flex flex-col space-y-6 pb-6 select-none text-left">
       
+      <AnimatePresence>
+        {successToast && (
+          <motion.div
+            initial={{ opacity: 0, y: -15, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -15, scale: 0.95 }}
+            className="p-4 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-2xl text-xs font-bold leading-normal flex items-center justify-between shadow-lg shadow-emerald-500/2 animate-in fade-in"
+          >
+            <span>{successToast}</span>
+            <button 
+              onClick={() => setSuccessToast(null)} 
+              className="ml-2 text-emerald-500 hover:text-emerald-400 cursor-pointer"
+            >
+              <Icons.X className="w-4 h-4" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Header section */}
       <div className="flex items-center justify-between">
         <div className="flex flex-col">

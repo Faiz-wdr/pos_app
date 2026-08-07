@@ -11,6 +11,7 @@ import ShoppingListPage from '@/modules/shopping/pages/ShoppingListPage'
 import HistoryDetailPage from '@/modules/shopping/pages/HistoryDetailPage'
 import Settings from '@/app/routes/Settings'
 import Profile from '@/app/routes/Profile'
+import RedeemPage from '@/app/routes/RedeemPage'
 import AuthGuard from '@/core/firebase/components/auth/AuthGuard'
 import IncomeModulePage from '@/app/routes/IncomeModulePage'
 import DayPlannerModulePage from '@/modules/day-planner/pages/DayPlannerModulePage'
@@ -31,6 +32,7 @@ const PaymentsPage = lazy(() => import('@/admin/pages/PaymentsPage'))
 const ReleasesPage = lazy(() => import('@/admin/pages/ReleasesPage'))
 const SupportPage = lazy(() => import('@/admin/pages/SupportPage'))
 const SettingsPage = lazy(() => import('@/admin/pages/SettingsPage'))
+const GiftTokensPage = lazy(() => import('@/admin/pages/GiftTokensPage'))
 
 const router = createBrowserRouter([
   {
@@ -84,6 +86,10 @@ const router = createBrowserRouter([
       {
         path: 'profile',
         element: <Profile />
+      },
+      {
+        path: 'redeem',
+        element: <RedeemPage />
       }
     ]
   },
@@ -132,6 +138,10 @@ const router = createBrowserRouter([
       {
         path: 'settings',
         element: <SettingsPage />
+      },
+      {
+        path: 'gifts',
+        element: <GiftTokensPage />
       }
     ]
   },

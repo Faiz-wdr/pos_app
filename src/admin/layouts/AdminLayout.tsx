@@ -4,6 +4,7 @@ import {
   LayoutDashboard, 
   Users, 
   Layers, 
+  Gift,
   Settings 
 } from 'lucide-react'
 import Sidebar from '../components/Sidebar'
@@ -15,6 +16,7 @@ export const AdminLayout: React.FC = () => {
     { label: 'Dashboard', path: '/admin', icon: LayoutDashboard, end: true },
     { label: 'Users', path: '/admin/users', icon: Users },
     { label: 'Modules', path: '/admin/modules', icon: Layers },
+    { label: 'Gifts', path: '/admin/gifts', icon: Gift },
     { label: 'Settings', path: '/admin/settings', icon: Settings }
   ]
 

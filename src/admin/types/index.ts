@@ -40,3 +40,15 @@ export interface ActivityLog {
   timestamp: any
   userEmail?: string
 }
+
+export interface GiftToken {
+  id: string
+  token: string
+  gift: string
+  campaign: string
+  status: 'Pending' | 'Redeemed'
+  createdAt: string
+  redeemedAt?: string | null
+  redeemedByUserId?: string | null
+  redeemedEmail?: string | null
+}
