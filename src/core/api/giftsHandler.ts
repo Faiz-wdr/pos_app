@@ -93,12 +93,17 @@ interface TokenData {
 }
 
 let mockDb: Record<string, TokenData> = {};
-const mockDbPath = path.resolve(process.cwd(), '.mock_gift_tokens.json');
+const mockDbPath = process.env.VERCEL
+  ? path.resolve('/tmp', '.mock_gift_tokens.json')
+  : path.resolve(process.cwd(), '.mock_gift_tokens.json');
 
 function loadMockDb() {
   try {
+    const buildPath = path.resolve(process.cwd(), '.mock_gift_tokens.json');
     if (fs.existsSync(mockDbPath)) {
       mockDb = JSON.parse(fs.readFileSync(mockDbPath, 'utf-8'));
+    } else if (fs.existsSync(buildPath)) {
+      mockDb = JSON.parse(fs.readFileSync(buildPath, 'utf-8'));
     }
   } catch (e) {
     console.error('[Gifts API] Failed to load mock db:', e);
