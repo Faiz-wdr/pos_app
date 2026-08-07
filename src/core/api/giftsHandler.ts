@@ -157,9 +157,9 @@ function getDbAdmin() {
   const serviceAccountPath = process.env.FIREBASE_SERVICE_ACCOUNT_PATH;
   const hasServiceAccount = !!(serviceAccountEnv || serviceAccountPath);
 
-  if (!hasServiceAccount) {
+  if (!hasServiceAccount || getApps().length === 0) {
     if (!isMockMode) {
-      console.warn('[Gifts API] Firebase Service Account is not configured in .env. Falling back to local mock database mode.');
+      console.warn('[Gifts API] Firebase Service Account or initialized app is missing. Running in mock database mode.');
       isMockMode = true;
       loadMockDb();
     }
