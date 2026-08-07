@@ -176,7 +176,7 @@ function getRequestBody(req: any): Promise<any> {
         reject(e);
       }
     });
-    req.on('error', (err) => {
+    req.on('error', (err: any) => {
       reject(err);
     });
   });
