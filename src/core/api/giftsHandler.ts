@@ -44,41 +44,74 @@ try {
   console.warn('[Gifts API] Could not dynamically read .env file:', e);
 }
 
+function safeParseServiceAccount(envStr: string): any {
+  const clean = envStr.trim();
+  try {
+    return JSON.parse(clean);
+  } catch (err) {
+    // Try removing surrounding quotes
+    try {
+      if ((clean.startsWith('"') && clean.endsWith('"')) || (clean.startsWith("'") && clean.endsWith("'"))) {
+        return JSON.parse(clean.slice(1, -1).replace(/\\n/g, '\n'));
+      }
+    } catch (e) { }
+
+    // Try escaping raw newlines in private key
+    try {
+      const keyStart = "-----BEGIN PRIVATE KEY-----";
+      const keyEnd = "-----END PRIVATE KEY-----";
+      if (clean.includes(keyStart) && clean.includes(keyEnd)) {
+        const parts = clean.split(keyStart);
+        const subParts = parts[1].split(keyEnd);
+        const rawKey = subParts[0];
+        const escapedKey = rawKey.replace(/\r?\n/g, '\\n');
+        const repaired = parts[0] + keyStart + escapedKey + keyEnd + subParts[1];
+        return JSON.parse(repaired);
+      }
+    } catch (e) { }
+
+    throw err;
+  }
+}
+
 // Safe initialization of Firebase Admin SDK
-if (getApps().length === 0) {
+try {
   const serviceAccountEnv = process.env.FIREBASE_SERVICE_ACCOUNT;
   const serviceAccountPath = process.env.FIREBASE_SERVICE_ACCOUNT_PATH;
+  const hasServiceAccount = !!(serviceAccountEnv || serviceAccountPath);
 
-  if (serviceAccountEnv) {
-    try {
-      const serviceAccount = JSON.parse(serviceAccountEnv);
-      initializeApp({
-        credential: cert(serviceAccount)
-      });
-      console.log('[Gifts API] Firebase Admin initialized from FIREBASE_SERVICE_ACCOUNT env var.');
-    } catch (e) {
-      console.error('[Gifts API] Failed to parse FIREBASE_SERVICE_ACCOUNT. Falling back to default...', e);
-      initializeApp();
+  if (hasServiceAccount && getApps().length === 0) {
+    if (serviceAccountEnv) {
+      try {
+        const serviceAccount = safeParseServiceAccount(serviceAccountEnv);
+        initializeApp({
+          credential: cert(serviceAccount)
+        });
+        console.log('[Gifts API] Firebase Admin initialized from FIREBASE_SERVICE_ACCOUNT env var.');
+      } catch (e) {
+        console.error('[Gifts API] Failed to parse FIREBASE_SERVICE_ACCOUNT env variable:', e);
+      }
+    } else if (serviceAccountPath) {
+      try {
+        const filePath = path.resolve(process.cwd(), serviceAccountPath);
+        if (fs.existsSync(filePath)) {
+          const serviceAccount = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+          initializeApp({
+            credential: cert(serviceAccount)
+          });
+          console.log(`[Gifts API] Firebase Admin initialized from file: ${filePath}`);
+        } else {
+          console.error(`[Gifts API] Service account file not found at path: ${filePath}`);
+        }
+      } catch (e) {
+        console.error(`[Gifts API] Failed to read or parse service account file at ${serviceAccountPath}:`, e);
+      }
     }
-  } else if (serviceAccountPath) {
-    try {
-      const serviceAccount = JSON.parse(fs.readFileSync(path.resolve(serviceAccountPath), 'utf-8'));
-      initializeApp({
-        credential: cert(serviceAccount)
-      });
-      console.log(`[Gifts API] Firebase Admin initialized from file: ${serviceAccountPath}`);
-    } catch (e) {
-      console.error(`[Gifts API] Failed to read service account at ${serviceAccountPath}. Falling back to default...`, e);
-      initializeApp({ projectId: 'personal-os-4e81b' });
-    }
-  } else {
-    try {
-      initializeApp({ projectId: 'personal-os-4e81b' });
-      console.log('[Gifts API] Firebase Admin initialized with default project ID personal-os-4e81b.');
-    } catch (e) {
-      console.warn('[Gifts API] Firebase Admin fallback initialization failed.', e);
-    }
+  } else if (!hasServiceAccount) {
+    console.log('[Gifts API] No Firebase Service Account configured. Admin SDK will not be initialized, running in mock mode.');
   }
+} catch (globalErr) {
+  console.error('[Gifts API] Firebase Admin global initialization failed:', globalErr);
 }
 
 interface TokenData {
@@ -244,9 +277,27 @@ export async function giftsApiMiddleware(req: IncomingMessage, res: ServerRespon
       // 3. Generate secure random token
       const token = crypto.randomBytes(16).toString('hex');
 
-      // 4. Save to database (mock fallback if Firebase Admin is unconfigured)
+      // 4. Save to database (mock fallback if Firebase Admin is unconfigured or fails)
+      let savedToFirestore = false;
       const db = getDbAdmin();
-      if (!db) {
+      if (db) {
+        try {
+          const docRef = db.collection('gift_tokens').doc(token);
+          await docRef.set({
+            token,
+            gift,
+            campaign,
+            status: 'Pending',
+            createdAt: new Date().toISOString()
+          });
+          savedToFirestore = true;
+          console.log(`[Gifts API] Generated and saved token to Firestore: ${token}`);
+        } catch (dbErr) {
+          console.error('[Gifts API] Firestore write failed. Falling back to mock database:', dbErr);
+        }
+      }
+
+      if (!savedToFirestore) {
         loadMockDb();
         mockDb[token] = {
           token,
@@ -257,15 +308,6 @@ export async function giftsApiMiddleware(req: IncomingMessage, res: ServerRespon
         };
         saveMockDb();
         console.log(`[Gifts API] Generated and saved token locally (MOCK MODE): ${token}`);
-      } else {
-        const docRef = db.collection('gift_tokens').doc(token);
-        await docRef.set({
-          token,
-          gift,
-          campaign,
-          status: 'Pending',
-          createdAt: new Date().toISOString()
-        });
       }
 
       // 5. Construct URL dynamically or default to production app url
@@ -286,8 +328,33 @@ export async function giftsApiMiddleware(req: IncomingMessage, res: ServerRespon
         return sendJson(res, 400, { error: 'Bad Request: token is required' });
       }
 
+      let mockValidate = true;
       const db = getDbAdmin();
-      if (!db) {
+      if (db) {
+        try {
+          const docRef = db.collection('gift_tokens').doc(token);
+          const docSnap = await docRef.get();
+
+          if (!docSnap.exists) {
+            mockValidate = false;
+            return sendJson(res, 404, { status: 'invalid', error: 'Token not found' });
+          }
+
+          const data = docSnap.data();
+          if (data) {
+            mockValidate = false;
+            return sendJson(res, 200, {
+              status: data.status,
+              gift: data.gift,
+              campaign: data.campaign
+            });
+          }
+        } catch (dbErr) {
+          console.error('[Gifts API] Firestore read failed in validate-token. Falling back to mock database:', dbErr);
+        }
+      }
+
+      if (mockValidate) {
         loadMockDb();
         const mockToken = mockDb[token];
         if (!mockToken) {
@@ -297,24 +364,6 @@ export async function giftsApiMiddleware(req: IncomingMessage, res: ServerRespon
           status: mockToken.redeemedAt ? 'Redeemed' : mockToken.status,
           gift: mockToken.gift,
           campaign: mockToken.campaign
-        });
-      } else {
-        const docRef = db.collection('gift_tokens').doc(token);
-        const docSnap = await docRef.get();
-
-        if (!docSnap.exists) {
-          return sendJson(res, 404, { status: 'invalid', error: 'Token not found' });
-        }
-
-        const data = docSnap.data();
-        if (!data) {
-          return sendJson(res, 500, { error: 'Internal server error: Document corrupt' });
-        }
-
-        return sendJson(res, 200, {
-          status: data.status,
-          gift: data.gift,
-          campaign: data.campaign
         });
       }
     }

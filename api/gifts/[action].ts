@@ -1,4 +1,4 @@
-import { giftsApiMiddleware } from '../../src/core/api/giftsHandler';
+import { giftsApiMiddleware } from '../../src/core/api/giftsHandler.js';
 
 export default async function handler(req: any, res: any) {
   try {
