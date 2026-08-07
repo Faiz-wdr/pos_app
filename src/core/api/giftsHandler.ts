@@ -154,7 +154,16 @@ function setCorsHeaders(res: ServerResponse, origin: string | undefined) {
 }
 
 // Helper to parse JSON body from request stream
-function getRequestBody(req: IncomingMessage): Promise<any> {
+function getRequestBody(req: any): Promise<any> {
+  // If the body is already parsed (e.g. on Vercel or under body-parsing middlewares), use it immediately
+  if (req.body !== undefined) {
+    try {
+      return Promise.resolve(typeof req.body === 'string' ? JSON.parse(req.body) : req.body);
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  }
+
   return new Promise((resolve, reject) => {
     let body = '';
     req.on('data', (chunk) => {
