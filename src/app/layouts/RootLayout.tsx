@@ -24,6 +24,7 @@ export const RootLayout = () => {
   const isFullscreen = useNavigationStore((state) => state.isFullscreen)
   const restoreSession = useAuthStore((state) => state.restoreSession)
   const user = useAuthStore((state) => state.user)
+  const [authInitialized, setAuthInitialized] = useState(false)
   const [onboardingCompleted, setOnboardingCompleted] = useState(() => localStorage.getItem('personalos_onboarding_completed') === 'true')
   const showOnboarding = !onboardingCompleted && !user
 
@@ -100,12 +101,15 @@ export const RootLayout = () => {
           } else {
             restoreSession(serializeFirebaseUser(firebaseUser))
           }
+          setAuthInitialized(true)
         }, (err) => {
           console.error('Firestore subscription error:', err)
           restoreSession(serializeFirebaseUser(firebaseUser))
+          setAuthInitialized(true)
         })
       } else {
         restoreSession(null)
+        setAuthInitialized(true)
       }
     })
 
@@ -156,7 +160,12 @@ export const RootLayout = () => {
           !isClockModule && 'lock-portrait'
         )}
       >
-        {showOnboarding ? (
+        {!authInitialized ? (
+          <div className="flex-1 flex flex-col items-center justify-center space-y-4 select-none">
+            <div className="w-10 h-10 rounded-full border-2 border-accent border-t-transparent animate-spin" />
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider animate-pulse">Initializing PersonalOS...</p>
+          </div>
+        ) : showOnboarding ? (
           <>
             <OnboardingScreen onCompleted={() => setOnboardingCompleted(true)} />
             <AuthBottomSheet />

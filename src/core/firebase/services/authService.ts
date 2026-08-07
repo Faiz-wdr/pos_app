@@ -37,12 +37,18 @@ export const authService = {
       prompt: 'select_account'
     })
     
-    if (isMobileOrPWA) {
-      await signInWithRedirect(auth, provider)
-      // Redirection triggers, so this function never resolves on mobile/PWA
-    } else {
+    try {
+      // Try popup first as it is more reliable for state persistence and avoids context loss
       const result = await signInWithPopup(auth, provider)
       return result.user
+    } catch (error: any) {
+      // Fallback to redirect if popup is blocked or closed by user, but only on mobile/PWA
+      if (isMobileOrPWA && (error?.code === 'auth/popup-blocked' || error?.code === 'auth/popup-closed-by-user')) {
+        console.warn('Popup blocked/closed, falling back to signInWithRedirect', error)
+        await signInWithRedirect(auth, provider)
+      } else {
+        throw error
+      }
     }
   },
 
