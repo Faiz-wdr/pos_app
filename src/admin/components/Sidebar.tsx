@@ -6,7 +6,6 @@ import {
   Layers, 
   BarChart3, 
   CreditCard, 
-  Gift,
   GitBranch, 
   LifeBuoy, 
   Settings,
@@ -25,7 +24,6 @@ export const Sidebar: React.FC = () => {
     { label: 'Modules', path: '/admin/modules', icon: Layers },
     { label: 'Analytics', path: '/admin/analytics', icon: BarChart3 },
     { label: 'Payments', path: '/admin/payments', icon: CreditCard },
-    { label: 'Gift Tokens', path: '/admin/gifts', icon: Gift },
     { label: 'Releases', path: '/admin/releases', icon: GitBranch },
     { label: 'Support', path: '/admin/support', icon: LifeBuoy },
     { label: 'Settings', path: '/admin/settings', icon: Settings }

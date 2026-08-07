@@ -54,11 +54,7 @@ export const useAuth = () => {
         store.restoreSession(profile)
       } catch (e) {
         console.error('Error syncing profile on session restore:', e)
-        const isLocalPro = localStorage.getItem('personalos_pro_activated_' + firebaseUser.uid) === 'true'
-        store.restoreSession({
-          ...serializeFirebaseUser(firebaseUser),
-          isPremium: isLocalPro
-        })
+        store.restoreSession(serializeFirebaseUser(firebaseUser))
       }
     } else {
       store.restoreSession(null)

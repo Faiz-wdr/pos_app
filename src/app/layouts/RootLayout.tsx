@@ -91,26 +91,18 @@ export const RootLayout = () => {
               photoURL: data.photoURL || firebaseUser.photoURL || null,
               createdAt: data.createdAt?.toDate?.()?.toISOString() || data.createdAt || new Date().toISOString(),
               lastLogin: data.lastLogin?.toDate?.()?.toISOString() || data.lastLogin || new Date().toISOString(),
-              isPremium: data.plan === 'pro' || !!data.isPremium || !!data.premium || localStorage.getItem('personalos_pro_activated_' + data.uid) === 'true',
+              isPremium: data.plan === 'pro' || !!data.isPremium || !!data.premium,
               enabledModules: data.enabledModules || [],
               role: data.role || 'user',
               status: data.status || 'active'
             }
             restoreSession(profile)
           } else {
-            const isLocalPro = localStorage.getItem('personalos_pro_activated_' + firebaseUser.uid) === 'true'
-            restoreSession({
-              ...serializeFirebaseUser(firebaseUser),
-              isPremium: isLocalPro
-            })
+            restoreSession(serializeFirebaseUser(firebaseUser))
           }
         }, (err) => {
           console.error('Firestore subscription error:', err)
-          const isLocalPro = localStorage.getItem('personalos_pro_activated_' + firebaseUser.uid) === 'true'
-          restoreSession({
-            ...serializeFirebaseUser(firebaseUser),
-            isPremium: isLocalPro
-          })
+          restoreSession(serializeFirebaseUser(firebaseUser))
         })
       } else {
         restoreSession(null)

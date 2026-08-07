@@ -96,31 +96,6 @@ export default defineConfig({
         }
       }
     },
-    {
-      name: 'gifts-api-middleware',
-      configureServer(server) {
-        server.middlewares.use(async (req, res, next) => {
-          try {
-            const { giftsApiMiddleware } = await import('./src/core/api/giftsHandler.ts');
-            await giftsApiMiddleware(req, res, next);
-          } catch (e) {
-            console.error('Error in giftsApiMiddleware:', e);
-            next();
-          }
-        });
-      },
-      configurePreviewServer(server) {
-        // Trigger dev server hot reload - modular
-        server.middlewares.use(async (req, res, next) => {
-          try {
-            const { giftsApiMiddleware } = await import('./src/core/api/giftsHandler.ts');
-            await giftsApiMiddleware(req, res, next);
-          } catch (e) {
-            console.error('Error in giftsApiMiddleware:', e);
-            next();
-          }
-        });
-      }
     }
   ],
   resolve: {
