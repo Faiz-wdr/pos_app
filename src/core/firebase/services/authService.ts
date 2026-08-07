@@ -57,13 +57,20 @@ export const authService = {
     const appVersion = '1.0.0'
     const nowISO = new Date().toISOString()
     
+    const adminEmails = [
+      'fayiz.kappil@gmail.com',
+      'kappil.faiz@gmail.com'
+    ]
+    const isAdminEmail = email ? adminEmails.includes(email.toLowerCase().trim()) : false
+    const assignedRole = isAdminEmail ? 'super_admin' : 'user'
+    
     if (!snapshot.exists()) {
       const newProfile = {
         uid,
         fullName: fullName || '',
         email: email || '',
         photoURL: photoURL || null,
-        role: 'user',
+        role: assignedRole,
         plan: 'free',
         enabledModules: [],
         createdAt: nowISO,
@@ -84,12 +91,20 @@ export const authService = {
       }
     } else {
       const data = snapshot.data()
-      const updatedData = {
+      const currentRole = data.role || 'user'
+      const finalRole = isAdminEmail ? 'super_admin' : currentRole
+      
+      const updatedData: any = {
         fullName: fullName || data.fullName || '',
         photoURL: photoURL || data.photoURL || null,
         lastLogin: serverTimestamp(),
         lastActivity: serverTimestamp()
       }
+      
+      if (currentRole !== finalRole) {
+        updatedData.role = finalRole
+      }
+      
       await updateDoc(userRef, updatedData)
       
       return {
@@ -97,7 +112,7 @@ export const authService = {
         fullName: fullName || data.fullName || '',
         email: data.email || email || '',
         photoURL: photoURL || data.photoURL || null,
-        role: data.role || 'user',
+        role: finalRole,
         plan: data.plan || 'free',
         enabledModules: data.enabledModules || [],
         createdAt: data.createdAt?.toDate?.()?.toISOString() || data.createdAt || nowISO,
