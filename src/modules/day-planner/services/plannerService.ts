@@ -1,5 +1,52 @@
 import { db } from '../database/db'
 import { PlannerTask, PlannerTemplate, TemplateItem, RepeatOption } from '../types'
+import { auth } from '@/core/firebase/auth'
+import { db as firestoreDb } from '@/core/firebase/firestore'
+import { doc, setDoc, deleteDoc } from 'firebase/firestore'
+import { sanitizeForFirestore } from '../utils/firestoreUtils'
+
+const getUserId = () => auth.currentUser?.uid
+
+const syncTaskToFirestore = async (task: PlannerTask) => {
+  const userId = getUserId()
+  if (!userId) return
+  try {
+    await setDoc(doc(firestoreDb, 'users', userId, 'tasks', task.id), sanitizeForFirestore(task))
+  } catch (e) {
+    console.error('Error syncing task to firestore:', e)
+  }
+}
+
+const deleteTaskFromFirestore = async (taskId: string) => {
+  const userId = getUserId()
+  if (!userId) return
+  try {
+    await deleteDoc(doc(firestoreDb, 'users', userId, 'tasks', taskId))
+  } catch (e) {
+    console.error('Error deleting task from firestore:', e)
+  }
+}
+
+const syncTemplateToFirestore = async (template: PlannerTemplate) => {
+  const userId = getUserId()
+  if (!userId) return
+  try {
+    await setDoc(doc(firestoreDb, 'users', userId, 'templates', template.id), sanitizeForFirestore(template))
+  } catch (e) {
+    console.error('Error syncing template to firestore:', e)
+  }
+}
+
+const deleteTemplateFromFirestore = async (templateId: string) => {
+  const userId = getUserId()
+  if (!userId) return
+  try {
+    await deleteDoc(doc(firestoreDb, 'users', userId, 'templates', templateId))
+  } catch (e) {
+    console.error('Error deleting template from firestore:', e)
+  }
+}
+
 
 export const STUDENT_ROUTINE_ITEMS: TemplateItem[] = [
   { title: 'Wake Up & Morning Refreshment', startTime: '05:30', endTime: '06:15', category: 'Health', repeat: 'Daily', reminder: 'At Time', notes: 'Drink water & light exercise' },
@@ -44,40 +91,33 @@ const DEFAULT_TEMPLATES: Omit<PlannerTemplate, 'id' | 'createdAt' | 'updatedAt'>
     description: 'Complete 1-day routine for deep work blocks, clients & wellness',
     category: 'Work',
     items: FREELANCER_ROUTINE_ITEMS
-  },
-  {
-    name: 'Morning Routine',
-    description: 'Refreshing start for wellness & productivity',
-    category: 'Health',
-    items: [
-      { title: 'Morning Hydration & Stretch', startTime: '07:00', endTime: '07:30', category: 'Health', repeat: 'Daily', reminder: 'At Time', notes: 'Drink 2 glasses of water' },
-      { title: 'Healthy Breakfast', startTime: '08:00', endTime: '08:30', category: 'Personal', repeat: 'Daily', reminder: 'At Time' },
-      { title: 'Daily Goal Planning', startTime: '08:45', endTime: '09:00', category: 'Work', repeat: 'Daily', reminder: '5 Minutes Before' }
-    ]
-  },
-  {
-    name: 'Weekend Routine',
-    description: 'Relaxed schedule for hobbies & family',
-    category: 'Family',
-    items: [
-      { title: 'Grocery & Errands', startTime: '10:00', endTime: '11:30', category: 'Personal', repeat: 'Weekends', reminder: '30 Minutes Before' },
-      { title: 'Family Lunch & Leisure', startTime: '13:00', endTime: '15:00', category: 'Family', repeat: 'Weekends', reminder: 'At Time' },
-      { title: 'Outdoor Walk or Exercise', startTime: '17:30', endTime: '18:30', category: 'Health', repeat: 'Weekends', reminder: '10 Minutes Before' }
-    ]
   }
 ]
 
 export const seedDefaultTemplatesIfEmpty = async () => {
+  // Clean up old default templates if they exist
+  const oldDefaults = ['Morning Routine', 'Weekend Routine']
+  for (const name of oldDefaults) {
+    const existing = await db.templates.where('name').equals(name).toArray()
+    for (const t of existing) {
+      await db.templates.delete(t.id)
+      await deleteTemplateFromFirestore(t.id)
+    }
+  }
+
   const count = await db.templates.count()
   if (count === 0) {
     const now = Date.now()
     for (const t of DEFAULT_TEMPLATES) {
-      await db.templates.add({
+      const id = `tpl-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`
+      const tpl: PlannerTemplate = {
         ...t,
-        id: `tpl-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+        id,
         createdAt: now,
         updatedAt: now
-      })
+      }
+      await db.templates.add(tpl)
+      await syncTemplateToFirestore(tpl)
     }
   }
 }
@@ -92,28 +132,40 @@ export const createTask = async (task: Omit<PlannerTask, 'id' | 'createdAt' | 'u
     updatedAt: now
   }
   await db.tasks.add(newTask)
+  await syncTaskToFirestore(newTask)
   return id
 }
 
 export const updateTask = async (id: string, updates: Partial<PlannerTask>): Promise<void> => {
+  const now = Date.now()
   await db.tasks.update(id, {
     ...updates,
-    updatedAt: Date.now()
+    updatedAt: now
   })
+  const updatedTask = await db.tasks.get(id)
+  if (updatedTask) {
+    await syncTaskToFirestore(updatedTask)
+  }
 }
 
 export const deleteTask = async (id: string): Promise<void> => {
   await db.tasks.delete(id)
+  await deleteTaskFromFirestore(id)
 }
 
 export const toggleTaskCompleted = async (id: string): Promise<boolean> => {
   const task = await db.tasks.get(id)
   if (!task) return false
   const newCompleted = !task.completed
+  const now = Date.now()
   await db.tasks.update(id, {
     completed: newCompleted,
-    updatedAt: Date.now()
+    updatedAt: now
   })
+  const updatedTask = await db.tasks.get(id)
+  if (updatedTask) {
+    await syncTaskToFirestore(updatedTask)
+  }
   return newCompleted
 }
 
@@ -127,18 +179,25 @@ export const createTemplate = async (template: Omit<PlannerTemplate, 'id' | 'cre
     updatedAt: now
   }
   await db.templates.add(newTemplate)
+  await syncTemplateToFirestore(newTemplate)
   return id
 }
 
 export const updateTemplate = async (id: string, updates: Partial<PlannerTemplate>): Promise<void> => {
+  const now = Date.now()
   await db.templates.update(id, {
     ...updates,
-    updatedAt: Date.now()
+    updatedAt: now
   })
+  const updatedTemplate = await db.templates.get(id)
+  if (updatedTemplate) {
+    await syncTemplateToFirestore(updatedTemplate)
+  }
 }
 
 export const deleteTemplate = async (id: string): Promise<void> => {
   await db.templates.delete(id)
+  await deleteTemplateFromFirestore(id)
 }
 
 export const duplicateTemplate = async (id: string): Promise<string> => {
@@ -155,6 +214,7 @@ export const duplicateTemplate = async (id: string): Promise<string> => {
     updatedAt: now
   }
   await db.templates.add(copy)
+  await syncTemplateToFirestore(copy)
   return newId
 }
 
@@ -167,7 +227,7 @@ export const applyTemplateToDate = async (templateId: string, targetDateKey: str
 
   for (const item of template.items) {
     const taskId = `task-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`
-    await db.tasks.add({
+    const newTask: PlannerTask = {
       id: taskId,
       title: item.title,
       date: targetDateKey,
@@ -180,7 +240,9 @@ export const applyTemplateToDate = async (templateId: string, targetDateKey: str
       completed: false,
       createdAt: now,
       updatedAt: now
-    })
+    }
+    await db.tasks.add(newTask)
+    await syncTaskToFirestore(newTask)
     addedCount++
   }
 
@@ -197,7 +259,7 @@ export const applyPresetRoutineToDate = async (
 
   for (const item of items) {
     const taskId = `task-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`
-    await db.tasks.add({
+    const newTask: PlannerTask = {
       id: taskId,
       title: item.title,
       date: targetDateKey,
@@ -210,7 +272,9 @@ export const applyPresetRoutineToDate = async (
       completed: false,
       createdAt: now,
       updatedAt: now
-    })
+    }
+    await db.tasks.add(newTask)
+    await syncTaskToFirestore(newTask)
     addedCount++
   }
 
@@ -222,6 +286,9 @@ export const clearTasksForDate = async (dateKey: string): Promise<number> => {
   if (tasks.length === 0) return 0
   const ids = tasks.map((t) => t.id)
   await db.tasks.bulkDelete(ids)
+  for (const id of ids) {
+    await deleteTaskFromFirestore(id)
+  }
   return ids.length
 }
 
@@ -234,14 +301,16 @@ export const copyScheduleToDate = async (fromDateKey: string, toDateKey: string)
 
   for (const t of tasks) {
     const taskId = `task-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`
-    await db.tasks.add({
+    const newTask: PlannerTask = {
       ...t,
       id: taskId,
       date: toDateKey,
       completed: false,
       createdAt: now,
       updatedAt: now
-    })
+    }
+    await db.tasks.add(newTask)
+    await syncTaskToFirestore(newTask)
     addedCount++
   }
 
@@ -254,10 +323,15 @@ export const bulkSetScheduleRepeat = async (dateKey: string, repeatOption: Repea
 
   const now = Date.now()
   for (const t of tasks) {
-    await db.tasks.update(t.id, {
+    const updated = {
       repeat: repeatOption,
       updatedAt: now
-    })
+    }
+    await db.tasks.update(t.id, updated)
+    const updatedTask = await db.tasks.get(t.id)
+    if (updatedTask) {
+      await syncTaskToFirestore(updatedTask)
+    }
   }
 
   return tasks.length

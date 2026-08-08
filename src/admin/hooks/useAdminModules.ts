@@ -140,18 +140,23 @@ export const useAdminModules = () => {
   useEffect(() => {
     const modulesCol = collection(db, 'modules')
     const unsubscribeModules = onSnapshot(modulesCol, (snapshot) => {
-      if (snapshot.empty) {
-        // Seed default modules
-        DEFAULT_MODULES.forEach(async (mod) => {
+      const existingIds = new Set(snapshot.docs.map(doc => doc.id))
+      
+      // Seed any missing default modules (such as day-planner)
+      DEFAULT_MODULES.forEach(async (mod) => {
+        if (!existingIds.has(mod.id)) {
           try {
             await setDoc(doc(db, 'modules', mod.id), {
               ...mod,
               lastUpdated: serverTimestamp()
             })
           } catch (e) {
-            console.error('Failed to seed module doc:', mod.id, e)
+            console.error('Failed to seed missing module doc:', mod.id, e)
           }
-        })
+        }
+      })
+
+      if (snapshot.empty) {
         return
       }
 

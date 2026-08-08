@@ -15,6 +15,7 @@ import { UpdateDialog } from '@/core/pwa/UpdateDialog'
 import { useUserHeartbeat } from '@/shared/hooks/useUserHeartbeat'
 import { ShieldAlert } from 'lucide-react'
 import { OnboardingScreen } from '@/core/onboarding/components/OnboardingScreen'
+import { useDayPlannerSync } from '@/modules/day-planner/hooks/useDayPlannerSync'
 
 export const RootLayout = () => {
   const location = useLocation()
@@ -30,6 +31,9 @@ export const RootLayout = () => {
 
   // Start the background heartbeat activity reporter
   useUserHeartbeat()
+
+  // Start the Day Planner cloud sync manager
+  useDayPlannerSync()
 
   useEffect(() => {
     let unsubscribeSnapshot: (() => void) | null = null

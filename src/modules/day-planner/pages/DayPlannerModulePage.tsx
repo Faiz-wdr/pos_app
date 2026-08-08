@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowLeft, Sun, Calendar, Sparkles, Settings } from 'lucide-react'
+import { ArrowLeft, Sun, Calendar, Settings, FileText } from 'lucide-react'
 import { TodayPage } from './TodayPage'
 import { CalendarPage } from './CalendarPage'
 import { TemplatesPage } from './TemplatesPage'
@@ -16,7 +16,7 @@ type PlannerTab = 'today' | 'calendar' | 'templates' | 'settings'
 const TABS: { id: PlannerTab; label: string; icon: any }[] = [
   { id: 'today', label: 'Today', icon: Sun },
   { id: 'calendar', label: 'Calendar', icon: Calendar },
-  { id: 'templates', label: 'Templates', icon: Sparkles },
+  { id: 'templates', label: 'Templates', icon: FileText },
   { id: 'settings', label: 'Settings', icon: Settings }
 ]
 
