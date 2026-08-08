@@ -1,15 +1,20 @@
 export interface Transaction {
   id?: number
+  uuid?: string // Unique identifier for cloud sync
   amount: number
   type: 'income' | 'expense'
   category: string
   date: string // format: YYYY-MM-DD
   notes?: string
+  createdAt?: number
+  updatedAt?: number
 }
 
 export interface Budget {
   id?: string // e.g. 'monthly'
   amount: number
+  createdAt?: number
+  updatedAt?: number
 }
 
 export interface MoneySettings {
@@ -20,10 +25,13 @@ export interface MoneySettings {
   startDay: number // 1-28
   defaultGoalColor: string
   defaultBudget?: number
+  createdAt?: number
+  updatedAt?: number
 }
 
 export interface SavingsGoal {
   id?: number
+  uuid?: string // Unique identifier for cloud sync
   name: string
   targetAmount: number
   currentAmount: number
@@ -31,4 +39,6 @@ export interface SavingsGoal {
   icon: string
   color: string
   archived: boolean
+  createdAt?: number
+  updatedAt?: number
 }

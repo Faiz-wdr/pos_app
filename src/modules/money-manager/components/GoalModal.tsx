@@ -5,23 +5,13 @@ import { useMoneyStore } from '../store/moneyStore'
 import { SavingsGoal } from '../types'
 import { ActionButton } from '@/admin/components/ActionButton'
 import { Input } from '@/components/ui/Input'
+import { ConfirmDialog } from './ConfirmDialog'
 
 interface GoalModalProps {
   isOpen: boolean
   onClose: () => void
   goalToEdit?: SavingsGoal | null
 }
-
-const iconOptions = [
-  { name: 'Laptop', label: 'Tech/Mac' },
-  { name: 'Smartphone', label: 'Phone' },
-  { name: 'Compass', label: 'Travel' },
-  { name: 'Heart', label: 'Wedding/Health' },
-  { name: 'Moon', label: 'Umrah/Faith' },
-  { name: 'Home', label: 'Emergency Fund' },
-  { name: 'Gift', label: 'Gifts' },
-  { name: 'Sparkles', label: 'Future Goal' }
-]
 
 const colorOptions = [
   '#f8b518', // Accent yellow
@@ -43,9 +33,11 @@ export const GoalModal: React.FC<GoalModalProps> = ({
   const [targetAmount, setTargetAmount] = useState('')
   const [currentAmount, setCurrentAmount] = useState('0')
   const [targetDate, setTargetDate] = useState('')
-  const [icon, setIcon] = useState('Sparkles')
   const [color, setColor] = useState('#f8b518')
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  
+  // Custom delete confirmation
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false)
 
   useEffect(() => {
     if (isOpen) {
@@ -54,17 +46,16 @@ export const GoalModal: React.FC<GoalModalProps> = ({
         setTargetAmount(goalToEdit.targetAmount.toString())
         setCurrentAmount(goalToEdit.currentAmount.toString())
         setTargetDate(goalToEdit.targetDate || '')
-        setIcon(goalToEdit.icon)
         setColor(goalToEdit.color)
       } else {
         setName('')
         setTargetAmount('')
         setCurrentAmount('0')
         setTargetDate('')
-        setIcon('Sparkles')
         setColor(settings.defaultGoalColor || '#f8b518')
       }
       setErrorMsg(null)
+      setConfirmDeleteOpen(false)
     }
   }, [isOpen, goalToEdit, settings])
 
@@ -95,7 +86,7 @@ export const GoalModal: React.FC<GoalModalProps> = ({
       targetAmount: targetVal,
       currentAmount: currentVal,
       targetDate: targetDate || undefined,
-      icon,
+      icon: 'Target', // Default Icon
       color,
       archived: false
     }
@@ -112,15 +103,16 @@ export const GoalModal: React.FC<GoalModalProps> = ({
     }
   }
 
-  const handleDelete = async () => {
-    if (!goalToEdit || goalToEdit.id === undefined) return
-    
+  const handleDeleteClick = () => {
     if (settings.confirmDelete) {
-      if (!window.confirm(`Are you sure you want to delete the goal "${goalToEdit.name}"?`)) {
-        return
-      }
+      setConfirmDeleteOpen(true)
+    } else {
+      handleConfirmDelete()
     }
+  }
 
+  const handleConfirmDelete = async () => {
+    if (!goalToEdit || goalToEdit.id === undefined) return
     try {
       await deleteGoal(goalToEdit.id)
       onClose()
@@ -260,32 +252,6 @@ export const GoalModal: React.FC<GoalModalProps> = ({
             </div>
           </div>
 
-          {/* Icon Selector Grid */}
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block px-0.5">
-              Select Icon
-            </label>
-            <div className="grid grid-cols-4 gap-2">
-              {iconOptions.map((opt) => {
-                const isSelected = icon === opt.name
-                return (
-                  <button
-                    key={opt.name}
-                    type="button"
-                    onClick={() => setIcon(opt.name)}
-                    className={`py-2 px-1 rounded-xl border text-[9px] font-bold uppercase tracking-wider cursor-pointer transition-all active:scale-95 text-center ${
-                      isSelected
-                        ? 'bg-accent/15 border-accent text-accent'
-                        : 'bg-muted/15 border-border/60 text-muted-foreground'
-                    }`}
-                  >
-                    {opt.label}
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-
           {/* Action Row */}
           <div className="pt-4 flex flex-col space-y-2.5">
             <ActionButton
@@ -308,7 +274,7 @@ export const GoalModal: React.FC<GoalModalProps> = ({
                 </button>
                 <button
                   type="button"
-                  onClick={handleDelete}
+                  onClick={handleDeleteClick}
                   className="h-10 bg-red-500/10 hover:bg-red-500/25 border border-red-500/20 text-red-500 rounded-xl flex items-center justify-center space-x-2 text-[10px] uppercase font-bold tracking-wider cursor-pointer transition-colors"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -319,6 +285,18 @@ export const GoalModal: React.FC<GoalModalProps> = ({
           </div>
         </form>
       </motion.div>
+
+      {/* Styled Delete Confirmation Dialog */}
+      {goalToEdit && (
+        <ConfirmDialog
+          isOpen={confirmDeleteOpen}
+          onClose={() => setConfirmDeleteOpen(false)}
+          onConfirm={handleConfirmDelete}
+          title="Delete Goal"
+          message={`Are you sure you want to permanently delete "${goalToEdit.name}"? This cannot be undone.`}
+          confirmText="Delete"
+        />
+      )}
     </>
   )
 }

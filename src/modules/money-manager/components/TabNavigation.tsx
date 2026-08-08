@@ -1,5 +1,5 @@
 import React from 'react'
-import { LayoutDashboard, History, BarChart3, Wallet, Settings } from 'lucide-react'
+import { LayoutDashboard, History, BarChart3, Settings } from 'lucide-react'
 
 interface TabNavigationProps {
   activeTab: string
@@ -11,10 +11,9 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({
   onChange
 }) => {
   const tabs = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'transactions', label: 'History', icon: History },
+    { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+    { id: 'transactions', label: 'Transactions', icon: History },
     { id: 'reports', label: 'Reports', icon: BarChart3 },
-    { id: 'budget', label: 'Budget', icon: Wallet },
     { id: 'settings', label: 'Settings', icon: Settings }
   ]
 

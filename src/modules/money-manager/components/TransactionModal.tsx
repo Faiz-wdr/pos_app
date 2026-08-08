@@ -4,19 +4,22 @@ import { X, Calendar, Edit3, Save } from 'lucide-react'
 import { useMoneyStore } from '../store/moneyStore'
 import { ActionButton } from '@/admin/components/ActionButton'
 import { Input } from '@/components/ui/Input'
+import { Transaction } from '../types'
 
 interface TransactionModalProps {
   isOpen: boolean
   onClose: () => void
   defaultType?: 'income' | 'expense'
+  transactionToEdit?: Transaction | null
 }
 
 export const TransactionModal: React.FC<TransactionModalProps> = ({
   isOpen,
   onClose,
-  defaultType = 'expense'
+  defaultType = 'expense',
+  transactionToEdit = null
 }) => {
-  const { addTransaction, settings } = useMoneyStore()
+  const { addTransaction, updateTransaction, settings } = useMoneyStore()
   const [type, setType] = useState<'income' | 'expense'>(defaultType)
   const [amount, setAmount] = useState('')
   const [category, setCategory] = useState('')
@@ -27,26 +30,34 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   // Reset/Initialize values when opening
   useEffect(() => {
     if (isOpen) {
-      setType(defaultType)
-      setAmount('')
-      setCategory('')
-      setDate(new Date().toISOString().split('T')[0])
-      setNotes('')
+      if (transactionToEdit) {
+        setType(transactionToEdit.type)
+        setAmount(String(transactionToEdit.amount))
+        setCategory(transactionToEdit.category)
+        setDate(transactionToEdit.date)
+        setNotes(transactionToEdit.notes || '')
+      } else {
+        setType(defaultType)
+        setAmount('')
+        setCategory('')
+        setDate(new Date().toISOString().split('T')[0])
+        setNotes('')
+      }
       setErrorMsg(null)
     }
-  }, [isOpen, defaultType])
+  }, [isOpen, defaultType, transactionToEdit])
 
   if (!isOpen) return null
 
-  const incomeCategories = ['Salary', 'Freelance', 'Gift', 'Other']
+  // Categories list matching exact specifications
+  const incomeCategories = ['Salary', 'Freelance', 'Business', 'Gift', 'Other']
   const expenseCategories = [
     'Food',
-    'Travel',
+    'Transport',
     'Shopping',
     'Bills',
-    'Rent',
-    'Education',
     'Health',
+    'Education',
     'Entertainment',
     'Other'
   ]
@@ -71,13 +82,23 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     }
 
     try {
-      await addTransaction({
-        amount: numAmount,
-        type,
-        category,
-        date,
-        notes: notes.trim() || undefined
-      })
+      if (transactionToEdit) {
+        await updateTransaction(transactionToEdit.id!, {
+          amount: numAmount,
+          type,
+          category,
+          date,
+          notes: notes.trim() || undefined
+        })
+      } else {
+        await addTransaction({
+          amount: numAmount,
+          type,
+          category,
+          date,
+          notes: notes.trim() || undefined
+        })
+      }
       onClose()
     } catch (err: any) {
       setErrorMsg(err.message || 'Failed to save transaction records.')
@@ -103,15 +124,18 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
         animate={{ y: 0 }}
         exit={{ y: '100%' }}
         transition={{ type: 'spring', damping: 25, stiffness: 220 }}
-        className="fixed bottom-0 left-0 right-0 max-w-lg mx-auto bg-card border-t border-border rounded-t-3xl z-50 flex flex-col max-h-[85vh] shadow-2xl select-none"
+        className="fixed bottom-0 left-0 right-0 max-w-lg mx-auto bg-card border-t border-border rounded-t-3xl z-50 flex flex-col max-h-[85vh] shadow-2xl select-none animate-in slide-in-from-bottom duration-200"
       >
         {/* Handle bar */}
         <div className="w-12 h-1 bg-muted rounded-full mx-auto my-3 shrink-0" />
 
         {/* Header */}
         <div className="flex items-center justify-between px-6 pb-2 shrink-0">
-          <h3 className="text-sm font-bold text-foreground">Add Transaction</h3>
+          <h3 className="text-sm font-bold text-foreground">
+            {transactionToEdit ? 'Edit Transaction' : 'Add Transaction'}
+          </h3>
           <button
+            type="button"
             onClick={onClose}
             className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground border border-border/40 cursor-pointer"
           >
@@ -170,7 +194,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="0.00"
-                autoFocus
+                autoFocus={!transactionToEdit}
                 className="h-12 pl-8 text-lg font-bold font-mono bg-muted/20 border-border focus-visible:ring-accent rounded-xl"
               />
             </div>
